@@ -1,16 +1,21 @@
 FOR RELEASE:
 
+disable veto after switching screen when a kingdom has been generated
+option settings kann man manchmal nicht ändern?
+how to handle cornucopia and guilds?
+
+Fix editions UI, it sucks. Maybe just go for the x, 1, 2, ✓ approach
+when selecting a different expansion, the expansion card list state doesnt reset
+LIGHT MODE IST GULASCH
+attack cards etc in settings
+Instead of (un)owned text: Release year
+
 Split piles:
 Actual split piles have supply set to false. This means they will not be randomized
 and they do not have a disable button next to them in the library. In a way, split
 piles are part of the supply, but for all intents and purposes, the "main" card suffices
 
 -----
-
-Delete branches:
-git branch -d master
-git push origin --delete master
-git branch -a
 
 
 NEW

@@ -314,6 +314,70 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Get the current OwnedEdition state for an expansion with multiple editions.
+     * Returns the appropriate state based on which editions are owned.
+     */
+    fun getOwnedEdition(expansion: ExpansionWithEditions): OwnedEdition {
+        val isFirstOwned = expansion.firstEdition?.isOwned == true
+        val isSecondOwned = expansion.secondEdition?.isOwned == true
+
+        return when {
+            isFirstOwned && isSecondOwned -> OwnedEdition.BOTH
+            isFirstOwned -> OwnedEdition.FIRST
+            isSecondOwned -> OwnedEdition.SECOND
+            else -> OwnedEdition.NONE
+        }
+    }
+
+    /**
+     * Cycle through ownership states for an expansion with multiple editions.
+     * The cycle is: NONE → FIRST → SECOND → BOTH → NONE
+     * Updates both the database and the in-memory state.
+     */
+    // TODO Review
+    fun cycleMultiEditionOwnership(expansion: ExpansionWithEditions) {
+        viewModelScope.launch {
+            val currentOwned = getOwnedEdition(expansion)
+            val newOwned = when (currentOwned) {
+                OwnedEdition.NONE -> OwnedEdition.FIRST
+                OwnedEdition.FIRST -> OwnedEdition.SECOND
+                OwnedEdition.SECOND -> OwnedEdition.BOTH
+                OwnedEdition.BOTH -> OwnedEdition.NONE
+            }
+
+            // Update first edition ownership
+            expansion.firstEdition?.let { first ->
+                val shouldOwnFirst = newOwned == OwnedEdition.FIRST || newOwned == OwnedEdition.BOTH
+                expansionDao.updateFirstEditionOwned(expansion.name, shouldOwnFirst)
+            }
+
+            // Update second edition ownership
+            expansion.secondEdition?.let { second ->
+                val shouldOwnSecond = newOwned == OwnedEdition.SECOND || newOwned == OwnedEdition.BOTH
+                expansionDao.updateSecondEditionOwned(expansion.name, shouldOwnSecond)
+            }
+
+            // Update the in-memory state
+            _expansionsWithEditions.value = _expansionsWithEditions.value.map {
+                if (it.name == expansion.name) {
+                    it.copy(
+                        firstEdition = it.firstEdition?.copy(
+                            isOwned = newOwned == OwnedEdition.FIRST || newOwned == OwnedEdition.BOTH
+                        ),
+                        secondEdition = it.secondEdition?.copy(
+                            isOwned = newOwned == OwnedEdition.SECOND || newOwned == OwnedEdition.BOTH
+                        )
+                    )
+                } else {
+                    it
+                }
+            }
+
+            Log.i("LibraryViewModel", "Cycled ownership for ${expansion.name}: $currentOwned -> $newOwned")
+        }
+    }
+
     /////////////////////////
     // Expansion functions //
     /////////////////////////

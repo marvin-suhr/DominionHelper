@@ -49,7 +49,6 @@ import com.marvinsuhr.dominionhelper.ui.LibraryViewModel
 import com.marvinsuhr.dominionhelper.ui.components.BlacklistedCardsListItem
 import com.marvinsuhr.dominionhelper.ui.components.CardDetailPager
 import com.marvinsuhr.dominionhelper.ui.components.CardView
-import com.marvinsuhr.dominionhelper.ui.components.EditionListItem
 import com.marvinsuhr.dominionhelper.ui.components.ExpansionListItem
 import com.marvinsuhr.dominionhelper.ui.components.LibraryCardList
 import com.marvinsuhr.dominionhelper.ui.components.SearchBar
@@ -88,8 +87,8 @@ sealed class LibraryListItem {
      */
     data class CardsFoundInfoItem(
         val count: Int,
-        val sortType: com.marvinsuhr.dominionhelper.ui.LibraryViewModel.SortType,
-        val onSortTypeSelected: (com.marvinsuhr.dominionhelper.ui.LibraryViewModel.SortType) -> Unit
+        val sortType: LibraryViewModel.SortType,
+        val onSortTypeSelected: (LibraryViewModel.SortType) -> Unit
     ) : LibraryListItem()
 
     /**
@@ -210,7 +209,6 @@ fun LibraryScreen(
                                 expansion = item.expansion,
                                 viewModel = viewModel,
                                 onExpansionClick = { viewModel.selectExpansion(item.expansion) },
-                                onEditionClick = { viewModel.selectEdition(it) },
                                 onOwnershipToggle = { expansion, isOwned ->
                                     viewModel.updateExpansionOwnership(expansion, isOwned)
                                 }
@@ -336,45 +334,28 @@ private fun ExpansionListItemContent(
     expansion: ExpansionWithEditions,
     viewModel: LibraryViewModel,
     onExpansionClick: () -> Unit,
-    onEditionClick: (Expansion) -> Unit,
     onOwnershipToggle: (Expansion, Boolean) -> Unit
 ) {
+    val hasMultipleEditions = expansion.firstEdition != null && expansion.secondEdition != null
+
     ExpansionListItem(
         expansion = expansion,
         onClick = onExpansionClick,
         onOwnershipToggle = {
-            // Trigger toggle for single edition items
-            // Note: ExpansionIcon already checks hasMultipleEditions before calling this
-            val editionToToggle = expansion.firstEdition ?: expansion.secondEdition
-            editionToToggle?.let { edition ->
-                onOwnershipToggle(edition, !edition.isOwned)
+            if (hasMultipleEditions) {
+                // Multi-edition: cycle through ownership states (NONE → FIRST → SECOND → BOTH → NONE)
+                viewModel.cycleMultiEditionOwnership(expansion)
+            } else {
+                // Single edition: simple toggle
+                val editionToToggle = expansion.firstEdition ?: expansion.secondEdition
+                editionToToggle?.let { edition ->
+                    onOwnershipToggle(edition, !edition.isOwned)
+                }
             }
         },
-        hasMultipleEditions = expansion.firstEdition != null && expansion.secondEdition != null,
-        isExpanded = expansion.isExpanded,
+        hasMultipleEditions = hasMultipleEditions,
         onToggleExpansion = { viewModel.toggleExpansion(expansion) }
     )
-
-    // Nested Edition Items (when expanded and has multiple editions)
-    if (expansion.isExpanded && (expansion.firstEdition != null && expansion.secondEdition != null)) {
-        Column(modifier = Modifier.padding(start = 32.dp)) {
-            EditionListItem(
-                expansion = expansion.firstEdition,
-                onClick = { onEditionClick(expansion.firstEdition) },
-                onToggleClick = {
-                    onOwnershipToggle(expansion.firstEdition, !expansion.firstEdition.isOwned)
-                },
-                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-            )
-            EditionListItem(
-                expansion = expansion.secondEdition,
-                onClick = { onEditionClick(expansion.secondEdition) },
-                onToggleClick = {
-                    onOwnershipToggle(expansion.secondEdition, !expansion.secondEdition.isOwned)
-                }
-            )
-        }
-    }
 }
 
 /**
@@ -383,8 +364,8 @@ private fun ExpansionListItemContent(
 @Composable
 private fun CardsFoundInfoRow(
     count: Int,
-    sortType: com.marvinsuhr.dominionhelper.ui.LibraryViewModel.SortType,
-    onSortTypeSelected: (com.marvinsuhr.dominionhelper.ui.LibraryViewModel.SortType) -> Unit
+    sortType: LibraryViewModel.SortType,
+    onSortTypeSelected: (LibraryViewModel.SortType) -> Unit
 ) {
     var showSortDialog by remember { mutableStateOf(false) }
 
@@ -450,8 +431,8 @@ private fun BlacklistedCardsSection(
  */
 @Composable
 private fun SortTypeDialog(
-    sortType: com.marvinsuhr.dominionhelper.ui.LibraryViewModel.SortType,
-    onSortTypeSelected: (com.marvinsuhr.dominionhelper.ui.LibraryViewModel.SortType) -> Unit,
+    sortType: LibraryViewModel.SortType,
+    onSortTypeSelected: (LibraryViewModel.SortType) -> Unit,
     onDismiss: () -> Unit
 ) {
     Dialog(
@@ -488,7 +469,7 @@ private fun SortTypeDialog(
                     color = DividerDefaults.color
                 )
 
-                com.marvinsuhr.dominionhelper.ui.LibraryViewModel.SortType.entries.forEach { sortOption ->
+                LibraryViewModel.SortType.entries.forEach { sortOption ->
                     val isSelected = sortOption == sortType
                     Row(
                         modifier = Modifier
