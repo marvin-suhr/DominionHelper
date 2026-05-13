@@ -26,6 +26,7 @@ object UserPreferencesKeys {
     val RANDOM_EXPANSION_AMOUNT = intPreferencesKey("random_expansion_amount_preference")
 
     val VETO_MODE = stringPreferencesKey("veto_mode_preference")
+    val ALLOW_VETOING = booleanPreferencesKey("allow_vetoing_preference")
     val NUMBER_OF_CARDS_TO_GENERATE = intPreferencesKey("number_of_cards_to_generate_preference")
 
     val LANDSCAPE_CATEGORIES = intPreferencesKey("landscape_categories_preference")
@@ -111,6 +112,18 @@ class UserPrefsRepository @Inject constructor(
     suspend fun setVetoMode(newMode: VetoMode) {
         context.dataStore.edit { settings ->
             settings[UserPreferencesKeys.VETO_MODE] = newMode.name
+        }
+    }
+
+    // Allow vetoing
+    val allowVetoing: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.ALLOW_VETOING] ?: true // Default to true
+        }
+
+    suspend fun setAllowVetoing(allow: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.ALLOW_VETOING] = allow
         }
     }
 

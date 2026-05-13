@@ -29,6 +29,7 @@ sealed class SettingItem {
     data class SwitchSetting(
         //val key: String,
         val title: String,
+        val description: String? = null,
         val isChecked: Boolean,
         val onCheckedChange: (Boolean) -> Unit
     ) : SettingItem() {
@@ -69,6 +70,16 @@ sealed class SettingItem {
     ) : SettingItem() {
         override fun toString(): String {
             return "ChoiceSetting(title='$title', selectedOption=$selectedOption)"
+        }
+    }
+
+    data class FeedbackSetting(
+        val title: String,
+        val subtitle: String,
+        val onClick: () -> Unit
+    ) : SettingItem() {
+        override fun toString(): String {
+            return "FeedbackSetting(title='$title')"
         }
     }
 }
@@ -135,6 +146,7 @@ class SettingsViewModel @Inject constructor(
             userPrefsRepository.randomMode,
             userPrefsRepository.randomExpansionAmount,
             userPrefsRepository.vetoMode,
+            userPrefsRepository.allowVetoing,
             userPrefsRepository.numberOfCardsToGenerate,
             userPrefsRepository.landscapeCategories,
             userPrefsRepository.landscapeDifferentCategories,
@@ -146,11 +158,12 @@ class SettingsViewModel @Inject constructor(
             val currentRandomMode = values[2] as RandomMode
             val currentRandomExpAmount = values[3] as Int
             val currentVetoMode = values[4] as VetoMode
-            val currentNumCardsToGen = values[5] as Int
-            val currentLandscapeCategories = values[6] as Int
-            val currentLandscapeDiffCat = values[7] as Boolean
-            val currentDarkAgesMode = values[8] as DarkAgesMode
-            val currentProsperityMode = values[9] as ProsperityMode
+            val currentAllowVetoing = values[5] as Boolean
+            val currentNumCardsToGen = values[6] as Int
+            val currentLandscapeCategories = values[7] as Int
+            val currentLandscapeDiffCat = values[8] as Boolean
+            val currentDarkAgesMode = values[9] as DarkAgesMode
+            val currentProsperityMode = values[10] as ProsperityMode
 
             listOfNotNull( // Use listOfNotNull if some settings might be conditionally absent
                 // Interface Section
@@ -174,6 +187,7 @@ class SettingsViewModel @Inject constructor(
                 // where dynamic colors are available
                 SettingItem.SwitchSetting(
                     title = "Dynamic color",
+                    description = "Use colors from the system style",
                     isChecked = useSystemTheme,
                     onCheckedChange = { setUseSystemTheme(it) }
                 ).takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.S },
@@ -186,13 +200,6 @@ class SettingsViewModel @Inject constructor(
                     min = 1,
                     max = 10,
                     onNumberChange = { setRandomExpansionAmount(it) }
-                ),
-                SettingItem.NumberSetting(
-                    title = "Number of cards to generate",
-                    number = currentNumCardsToGen,
-                    min = 10,
-                    max = 20,
-                    onNumberChange = { setNumberOfCardsToGenerate(it) }
                 ),
                 SettingItem.ChoiceSetting(
                     title = "Random mode",
@@ -207,6 +214,15 @@ Full Random: select cards completely randomly from selected expansions.
                         
 Even Amounts: select equal card amounts from selected expansion."""
                 ),
+
+                // Switch to allow or disallow vetoing cards
+                SettingItem.SwitchSetting(
+                    title = "Allow vetoing cards",
+                    description = "Allow striking cards after generating",
+                    isChecked = currentAllowVetoing,
+                    onCheckedChange = { setAllowVetoing(it) }
+                ),
+
                 SettingItem.ChoiceSetting(
                     title = "Veto mode",
                     selectedOption = currentVetoMode,
@@ -215,13 +231,21 @@ Even Amounts: select equal card amounts from selected expansion."""
                     onOptionSelected = { setVetoMode(it) },
                     description =
 """Choose what happens when a card is vetoed.
-                        
+
 Reroll from same: select cards from the same expansion as the vetoed card.
-                        
+
 Reroll from any: select cards completely randomly from selected expansions.
 
 Don't reroll: just remove cards until there's only 10 left."""
-                ),
+                ).takeIf { currentAllowVetoing },
+
+                SettingItem.NumberSetting(
+                    title = "Number of cards to generate",
+                    number = currentNumCardsToGen,
+                    min = 10,
+                    max = 20,
+                    onNumberChange = { setNumberOfCardsToGenerate(it) }
+                ).takeIf { currentAllowVetoing },
 
                 // Landscapes Section
                 SettingItem.SectionHeader("Landscape cards"),
@@ -232,6 +256,7 @@ Don't reroll: just remove cards until there's only 10 left."""
                     max = 2,
                     onNumberChange = { setLandscapeCategories(it) }
                 ),
+
                 SettingItem.SwitchSetting(
                     title = "Use different landscape categories",
                     isChecked = currentLandscapeDiffCat,
@@ -253,6 +278,14 @@ Don't reroll: just remove cards until there's only 10 left."""
                     allOptions = ProsperityMode.entries.toList(),
                     optionDisplayFormatter = { it.displayName },
                     onOptionSelected = { setProsperityBasicCardsMode(it) }
+                ),
+
+                // Feedback Section
+                SettingItem.SectionHeader("Feedback"),
+                SettingItem.FeedbackSetting(
+                    title = "Send feedback",
+                    subtitle = "Share your ideas, report bugs, or request features",
+                    onClick = { /* Open email client - handled in UI */ }
                 )
             )
         }
@@ -279,6 +312,12 @@ Don't reroll: just remove cards until there's only 10 left."""
     fun setVetoMode(mode: VetoMode) {
         viewModelScope.launch {
             userPrefsRepository.setVetoMode(mode)
+        }
+    }
+
+    fun setAllowVetoing(allow: Boolean) {
+        viewModelScope.launch {
+            userPrefsRepository.setAllowVetoing(allow)
         }
     }
 

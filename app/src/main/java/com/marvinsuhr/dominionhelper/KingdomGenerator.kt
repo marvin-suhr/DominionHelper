@@ -344,7 +344,6 @@ class KingdomGenerator @Inject constructor(
         val newCard: Card? = when (userPrefsRepository.vetoMode.first()) {
 
             // Reroll from the same expansion
-            // TODO: This rerolls from any OWNED expansion, but we need to reroll from any SELECTED expansion probably
             VetoMode.REROLL_SAME -> {
                 Log.i("KingdomGenerator", "Rerolling from the same expansion.")
                 generateSingleRandomCardFromExpansion(
@@ -355,6 +354,7 @@ class KingdomGenerator @Inject constructor(
             }
 
             // Reroll from any owned expansions
+            // TODO: This rerolls from any OWNED expansion, but we need to reroll from any SELECTED expansion probably
             VetoMode.REROLL_ANY -> {
                 Log.i("KingdomGenerator", "Rerolling from any expansions.")
                 generateSingleRandomCard(cardsToExclude, isLandscape)

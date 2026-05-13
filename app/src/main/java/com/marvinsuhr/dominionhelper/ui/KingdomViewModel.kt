@@ -153,14 +153,16 @@ class KingdomViewModel @Inject constructor(
         )
 
     val isCardDismissalEnabled: StateFlow<Boolean> = combine(
+        userPrefsRepository.allowVetoing,
         userPrefsRepository.vetoMode,
         _kingdom,
         _isNewKingdom
-    ) { currentVetoMode, currentKingdom, isNew ->
+    ) { allowVetoing, currentVetoMode, currentKingdom, isNew ->
         // Only allow vetoing if:
         // 1. It's a newly created kingdom (not previously saved), AND
-        // 2. Either veto mode is enabled OR we have more than 10 cards
-        isNew && (currentVetoMode != VetoMode.NO_REROLL || currentKingdom.randomCards.size > 10)
+        // 2. Vetoing is enabled, AND
+        // 3. A veto mode with rerolling is enabled OR we have more than 10 cards
+        isNew && allowVetoing && (currentVetoMode != VetoMode.NO_REROLL || currentKingdom.randomCards.size > 10)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),

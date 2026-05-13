@@ -1,20 +1,33 @@
 package com.marvinsuhr.dominionhelper.ui.components
 
 import android.util.Log
+import android.content.Intent
+import android.net.Uri
+
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.Top
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Circle
@@ -22,8 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -35,6 +47,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.marvinsuhr.dominionhelper.ui.SettingItem
+import androidx.core.net.toUri
 
 
 @Composable
@@ -66,6 +81,7 @@ fun SettingsList(
                 is SettingItem.TextSetting -> TextSettingItem(setting)
                 is SettingItem.NumberSetting -> NumberSettingItem(setting)
                 is SettingItem.ChoiceSetting<*> -> ChoiceSettingItem(setting)
+                is SettingItem.FeedbackSetting -> FeedbackSettingItem(setting)
             }
         }
 
@@ -106,10 +122,24 @@ fun SwitchSettingItem(setting: SettingItem.SwitchSetting) {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = setting.title,
-            modifier = Modifier.weight(1f)
-        )
+        Column(
+            modifier = Modifier
+                .height(48.dp)
+                .weight(1f)
+        ) {
+            Text(
+                text = setting.title,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (setting.description != null) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = setting.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         Switch(
             checked = setting.isChecked,
             onCheckedChange = setting.onCheckedChange
@@ -153,8 +183,7 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
         )
 
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // Minus button
             IconButton(
@@ -171,7 +200,7 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
                 )
             }
 
-            OutlinedTextField(
+            BasicTextField(
                 value = textFieldValue,
                 onValueChange = { newText ->
                     textFieldValue = newText
@@ -180,17 +209,36 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
                         setting.onNumberChange(clampedValue)
                     }
                 },
-                modifier = Modifier.width(64.dp),
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(40.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true,
-                readOnly = false,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                )
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        innerTextField()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(end = 1.dp, bottom = 1.dp, start = 1.dp, top = 1.dp)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                shape = MaterialTheme.shapes.small
+                            )
+                    )
+                }
             )
 
             // Plus button
@@ -216,63 +264,73 @@ fun <E : Enum<E>> ChoiceSettingItem(setting: SettingItem.ChoiceSetting<E>) {
     var showDialog by remember { mutableStateOf(false) }
     var showInfoDialog by remember { mutableStateOf(false) }
 
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDialog = true }
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = setting.title,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (setting.description != null) {
-                        IconButton(
-                            onClick = { showInfoDialog = true },
-                            modifier = Modifier.padding(start = 4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Info,
-                                contentDescription = "Information",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(4.dp)
-                            )
-                        }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showDialog = true }
+            .padding(16.dp)
+            .height(48.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min) // Forces the Row to follow the Text's height
+            ) {
+                Text(
+                    text = setting.title,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                if (setting.description != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .clickable { showInfoDialog = true }
+                            .padding(start = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = "Information",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .height(0.dp) // <--- CRITICAL: Prevents Icon from pushing Row height
+                                .aspectRatio(1f)
+                            //modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
-                Text(
-                    text = setting.optionDisplayFormatter(setting.selectedOption),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
-        }
-
-        if (showDialog) {
-            EnumSelectionDialog(
-                title = setting.title,
-                options = setting.allOptions,
-                selectedOption = setting.selectedOption,
-                optionDisplayFormatter = setting.optionDisplayFormatter,
-                onOptionSelected = { option ->
-                    setting.onOptionSelected(option)
-                    showDialog = false
-                },
-                onDismiss = { showDialog = false }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = setting.optionDisplayFormatter(setting.selectedOption),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
 
-        if (showInfoDialog && setting.description != null) {
-            InfoDialog(
-                title = setting.title,
-                description = setting.description,
-                onDismiss = { showInfoDialog = false }
-            )
-        }
+    if (showDialog) {
+        EnumSelectionDialog(
+            title = setting.title,
+            options = setting.allOptions,
+            selectedOption = setting.selectedOption,
+            optionDisplayFormatter = setting.optionDisplayFormatter,
+            onOptionSelected = { option ->
+                setting.onOptionSelected(option)
+                showDialog = false
+            },
+            onDismiss = { showDialog = false }
+        )
+    }
+
+    if (showInfoDialog && setting.description != null) {
+        InfoDialog(
+            title = setting.title,
+            description = setting.description,
+            onDismiss = { showInfoDialog = false }
+        )
     }
 }
 
@@ -338,6 +396,49 @@ fun <E : Enum<E>> EnumSelectionDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun FeedbackSettingItem(setting: SettingItem.FeedbackSetting) {
+    val context = LocalContext.current
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = "mailto:marvin@msuhr.dev".toUri()
+                    putExtra(Intent.EXTRA_SUBJECT, "Dominion Kingdoms Feedback")
+                    putExtra(Intent.EXTRA_TEXT, "Hi Marvin,\n\n")
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    // Handle case where no email app is available
+                }
+            }
+            .padding(16.dp)
+            .height(48.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = setting.title,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = setting.subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = "Send feedback",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
