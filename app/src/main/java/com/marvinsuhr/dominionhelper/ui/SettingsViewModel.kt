@@ -64,7 +64,8 @@ sealed class SettingItem {
         val selectedOption: E,
         val allOptions: List<E>,
         val optionDisplayFormatter: (E) -> String = { it.name }, // Default display is enum constant name
-        val onOptionSelected: (E) -> Unit
+        val onOptionSelected: (E) -> Unit,
+        val description: String? = null // Optional description for info button
     ) : SettingItem() {
         override fun toString(): String {
             return "ChoiceSetting(title='$title', selectedOption=$selectedOption)"
@@ -179,13 +180,6 @@ class SettingsViewModel @Inject constructor(
 
                 // Generation Section
                 SettingItem.SectionHeader("Card generation"),
-                SettingItem.ChoiceSetting(
-                    title = "Random mode",
-                    selectedOption = currentRandomMode,
-                    allOptions = RandomMode.entries.toList(),
-                    optionDisplayFormatter = { it.displayName },
-                    onOptionSelected = { setRandomMode(it) }
-                ),
                 SettingItem.NumberSetting(
                     title = "Number of expansions to choose from",
                     number = currentRandomExpAmount,
@@ -201,11 +195,32 @@ class SettingsViewModel @Inject constructor(
                     onNumberChange = { setNumberOfCardsToGenerate(it) }
                 ),
                 SettingItem.ChoiceSetting(
+                    title = "Random mode",
+                    selectedOption = currentRandomMode,
+                    allOptions = RandomMode.entries.toList(),
+                    optionDisplayFormatter = { it.displayName },
+                    onOptionSelected = { setRandomMode(it) },
+                    description =
+"""Choose how cards are selected.
+                        
+Full Random: select cards completely randomly from selected expansions.
+                        
+Even Amounts: select equal card amounts from selected expansion."""
+                ),
+                SettingItem.ChoiceSetting(
                     title = "Veto mode",
                     selectedOption = currentVetoMode,
                     allOptions = VetoMode.entries.toList(),
                     optionDisplayFormatter = { it.displayName },
-                    onOptionSelected = { setVetoMode(it) }
+                    onOptionSelected = { setVetoMode(it) },
+                    description =
+"""Choose what happens when a card is vetoed.
+                        
+Reroll from same: select cards from the same expansion as the vetoed card.
+                        
+Reroll from any: select cards completely randomly from selected expansions.
+
+Don't reroll: just remove cards until there's only 10 left."""
                 ),
 
                 // Landscapes Section

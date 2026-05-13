@@ -137,6 +137,10 @@ class KingdomViewModel @Inject constructor(
     private val _playerCount = MutableStateFlow(2)
     val playerCount: StateFlow<Int> = _playerCount.asStateFlow()
 
+    // Track if there are any owned expansions
+    val hasOwnedExpansions: StateFlow<Boolean> = expansionDao.hasAnyOwnedExpansion()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     // Error message
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()

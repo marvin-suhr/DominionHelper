@@ -41,6 +41,7 @@ fun KingdomsScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     val allKingdoms by viewModel.allKingdoms.collectAsState()
+    val hasOwnedExpansions by viewModel.hasOwnedExpansions.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -80,6 +81,7 @@ fun KingdomsScreen(
 
             KingdomList(
                 kingdomList = allKingdoms,
+                hasOwnedExpansions = hasOwnedExpansions,
                 onGenerateKingdom = { viewModel.getRandomKingdom() },
                 onKingdomClicked = { viewModel.selectKingdom(it) },
                 onDeleteClick = { viewModel.deleteKingdom(it.uuid) },

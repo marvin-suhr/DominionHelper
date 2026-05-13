@@ -56,4 +56,7 @@ interface ExpansionDao {
 
     @Query("SELECT COUNT(*) FROM expansions")
     suspend fun count(): Int
+
+    @Query("SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM expansions WHERE isOwned = 1")
+    fun hasAnyOwnedExpansion(): Flow<Boolean>
 }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -26,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Casino
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Button
@@ -75,6 +77,7 @@ import kotlin.text.ifEmpty
 @Composable
 fun KingdomList(
     kingdomList: List<Kingdom>,
+    hasOwnedExpansions: Boolean,
     onGenerateKingdom: () -> Unit,
     onKingdomClicked: (Kingdom) -> Unit,
     onDeleteClick: (Kingdom) -> Unit,
@@ -94,18 +97,31 @@ fun KingdomList(
             //GenerateKingdomButton(onGenerateKingdom)
             Spacer(Modifier) // This forces the list to stay on top
         }
-        items(
-            items = kingdomList,
-            key = { kingdom -> kingdom.uuid }
-        ) { kingdom ->
-            KingdomCard(
-                kingdom = kingdom,
-                onDeleteClick = { onDeleteClick(kingdom) },
-                onKingdomClick = { onKingdomClicked(kingdom) },
-                onFavoriteClick = { onFavoriteClick(kingdom) },
-                onKingdomNameChange = { uuid, newName -> onKingdomNameChange(uuid, newName) },
-                modifier = Modifier.animateItem()
-            )
+
+        if (kingdomList.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxHeight()
+                        .fillMaxWidth()
+                ) {
+                    EmptyKingdomsListMessage(hasOwnedExpansions)
+                }
+            }
+        } else {
+            items(
+                items = kingdomList,
+                key = { kingdom -> kingdom.uuid }
+            ) { kingdom ->
+                KingdomCard(
+                    kingdom = kingdom,
+                    onDeleteClick = { onDeleteClick(kingdom) },
+                    onKingdomClick = { onKingdomClicked(kingdom) },
+                    onFavoriteClick = { onFavoriteClick(kingdom) },
+                    onKingdomNameChange = { uuid, newName -> onKingdomNameChange(uuid, newName) },
+                    modifier = Modifier.animateItem()
+                )
+            }
         }
     }
 }
@@ -125,6 +141,57 @@ fun GenerateKingdomButton(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Generate a new kingdom ")
             }
+        }
+    }
+}
+
+@Composable
+fun EmptyKingdomsListMessage(hasOwnedExpansions: Boolean) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Casino,
+            contentDescription = null,
+            modifier = Modifier
+                .size(80.dp)
+                .padding(bottom = 16.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        )
+
+        Text(
+            text = "No kingdoms generated yet",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        if (hasOwnedExpansions) {
+            Text(
+                text = "You have expansions selected! Tap the + button to generate your first kingdom",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+
+            Text(
+                text = "Customize generation rules and constraints in the Settings tab",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            Text(
+                text = "Select your owned expansions in the Library tab to get started",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
