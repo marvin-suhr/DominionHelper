@@ -302,7 +302,7 @@ fun <E : Enum<E>> EnumSelectionDialog(
                     ) {
                         RadioButton(
                             selected = isSelected,
-                            onClick = { }
+                            onClick = { onOptionSelected(option) }
                         )
                         Text(
                             text = optionDisplayFormatter(option),

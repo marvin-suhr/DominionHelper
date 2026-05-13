@@ -29,8 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.marvinsuhr.dominionhelper.model.ExpansionWithEditions
@@ -39,7 +43,7 @@ import com.marvinsuhr.dominionhelper.utils.getDrawableId
 
 // TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
 
-// Display a parent expansion item
+// Display an expansion item
 @Composable
 fun ExpansionListItem(
     expansion: ExpansionWithEditions,
@@ -77,6 +81,7 @@ fun ExpansionListItem(
     }
 }
 
+// Display expansion image (1st or 2nd edition depending on ownership)
 @Composable
 fun ExpansionImage(expansion: ExpansionWithEditions) {
     val context = LocalContext.current
@@ -87,9 +92,9 @@ fun ExpansionImage(expansion: ExpansionWithEditions) {
 
     val imageName = when {
         // If only first edition is owned, show first edition image
-        isFirstOwned && !isSecondOwned -> expansion.firstEdition?.imageName
+        isFirstOwned && !isSecondOwned -> expansion.firstEdition.imageName
         // Otherwise show second edition image (NONE, SECOND, or BOTH owned)
-        else -> expansion.secondEdition?.imageName ?: expansion.firstEdition?.imageName
+        else -> expansion.secondEdition?.imageName ?: expansion.firstEdition?.imageName // Error if 2nd not found?
     }
 
     val drawableId = getDrawableId(context, imageName ?: "")
@@ -113,12 +118,20 @@ fun ExpansionLabels(
         modifier = modifier.padding(Constants.PADDING_SMALL)
     ) {
         Text(
-            text = expansion.name,
+            //text = expansion.name,
+            text = buildAnnotatedString {
+                withStyle(SpanStyle(fontSize = Constants.CARD_NAME_FONT_SIZE, fontWeight = FontWeight.Bold)) {
+                    append(expansion.name)
+                }
+                withStyle(SpanStyle(fontSize = Constants.TEXT_SMALL, fontStyle = FontStyle.Italic)) {
+                    append(" (${expansion.firstEdition?.year})")
+                }
+            },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontSize = Constants.CARD_NAME_FONT_SIZE,
         )
-        // TODO
+
         Text(
             text = expansion.firstEdition?.size?.text + " expansion",
             maxLines = 1,

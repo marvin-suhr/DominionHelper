@@ -41,7 +41,8 @@ data class Expansion(
     val edition: Int,
     @SerializedName("image_name") val imageName: String,
     val isOwned: Boolean,
-    val size: ExpansionSize
+    val size: ExpansionSize,
+    val year: Int
 )
 
 // To data package

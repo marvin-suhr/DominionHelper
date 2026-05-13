@@ -5,7 +5,8 @@
     "name": "Base",
     "edition": 1,
     "image_name": "set_dominion_1e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2008
   },
   {
     "id": "BASE_2E",
@@ -13,7 +14,8 @@
     "name": "Base",
     "edition": 2,
     "image_name": "set_dominion_2e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2016
   },
   {
     "id": "INTRIGUE_1E",
@@ -21,7 +23,8 @@
     "name": "Intrigue",
     "edition": 1,
     "image_name": "set_intrigue_1e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2009
   },
   {
     "id": "INTRIGUE_2E",
@@ -29,7 +32,8 @@
     "name": "Intrigue",
     "edition": 2,
     "image_name": "set_intrigue_2e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2016
   },
   {
     "id": "SEASIDE_1E",
@@ -37,7 +41,8 @@
     "name": "Seaside",
     "edition": 1,
     "image_name": "set_seaside_1e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2009
   },
   {
     "id": "SEASIDE_2E",
@@ -45,7 +50,8 @@
     "name": "Seaside",
     "edition": 2,
     "image_name": "set_seaside_2e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2022
   },
   {
     "id": "ALCHEMY",
@@ -53,7 +59,8 @@
     "name": "Alchemy",
     "edition": 1,
     "image_name": "set_alchemy",
-    "size": "Small"
+    "size": "Small",
+    "year": 2010
   },
   {
     "id": "PROSPERITY_1E",
@@ -61,7 +68,8 @@
     "name": "Prosperity",
     "edition": 1,
     "image_name": "set_prosperity_1e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2010
   },
   {
     "id": "PROSPERITY_2E",
@@ -69,7 +77,8 @@
     "name": "Prosperity",
     "edition": 2,
     "image_name": "set_prosperity_2e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2022
   },
   {
     "id": "CORNUCOPIA_1E",
@@ -77,7 +86,8 @@
     "name": "Cornucopia",
     "edition": 1,
     "image_name": "set_cornucopia",
-    "size": "Small"
+    "size": "Small",
+    "year": 2011
   },
   {
     "id": "HINTERLANDS_1E",
@@ -85,7 +95,8 @@
     "name": "Hinterlands",
     "edition": 1,
     "image_name": "set_hinterlands_1e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2011
   },
   {
     "id": "HINTERLANDS_2E",
@@ -93,7 +104,8 @@
     "name": "Hinterlands",
     "edition": 2,
     "image_name": "set_hinterlands_2e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2022
   },
   {
     "id": "DARK_AGES",
@@ -101,7 +113,8 @@
     "name": "Dark Ages",
     "edition": 1,
     "image_name": "set_dark_ages",
-    "size": "Large"
+    "size": "Large",
+    "year": 2012
   },
   {
     "id": "GUILDS_1E",
@@ -109,7 +122,8 @@
     "name": "Guilds",
     "edition": 1,
     "image_name": "set_guilds",
-    "size": "Small"
+    "size": "Small",
+    "year": 2013
   },
   {
     "id": "CORNUCOPIA_GUILDS_2E",
@@ -117,7 +131,8 @@
     "name": "Cornucopia & Guilds",
     "edition": 2,
     "image_name": "set_cornucopia_guilds_2e",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2024
   },
   {
     "id": "ADVENTURES",
@@ -125,7 +140,8 @@
     "name": "Adventures",
     "edition": 1,
     "image_name": "set_adventures",
-    "size": "Large"
+    "size": "Large",
+    "year": 2015
   },
   {
     "id": "EMPIRES",
@@ -133,7 +149,8 @@
     "name": "Empires",
     "edition": 1,
     "image_name": "set_empires",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2016
   },
   {
     "id": "NOCTURNE",
@@ -141,7 +158,8 @@
     "name": "Nocturne",
     "edition": 1,
     "image_name": "set_nocturne",
-    "size": "Large"
+    "size": "Large",
+    "year": 2017
   },
   {
     "id": "RENAISSANCE",
@@ -149,7 +167,8 @@
     "name": "Renaissance",
     "edition": 1,
     "image_name": "set_renaissance",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2018
   },
   {
     "id": "MENAGERIE",
@@ -157,7 +176,8 @@
     "name": "Menagerie",
     "edition": 1,
     "image_name": "set_menagerie",
-    "size": "Large"
+    "size": "Large",
+    "year": 2020
   },
   {
     "id": "ALLIES",
@@ -165,7 +185,8 @@
     "name": "Allies",
     "edition": 1,
     "image_name": "set_allies",
-    "size": "Large"
+    "size": "Large",
+    "year": 2022
   },
   {
     "id": "PLUNDER",
@@ -173,7 +194,8 @@
     "name": "Plunder",
     "edition": 1,
     "image_name": "set_plunder",
-    "size": "Large"
+    "size": "Large",
+    "year": 2022
   },
   {
     "id": "RISING_SUN",
@@ -181,7 +203,8 @@
     "name": "Rising Sun",
     "edition": 1,
     "image_name": "set_rising_sun",
-    "size": "Medium"
+    "size": "Medium",
+    "year": 2024
   },
   {
     "id": "PROMO",
@@ -189,6 +212,7 @@
     "name": "Promo",
     "edition": 1,
     "image_name": "set_promo",
-    "size": "Small"
+    "size": "Small",
+    "year": 2008
   }
 ]
