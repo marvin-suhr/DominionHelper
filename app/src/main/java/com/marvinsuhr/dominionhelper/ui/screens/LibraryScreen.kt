@@ -229,7 +229,7 @@ fun LibraryScreen(
                             CardView(
                                 card = item.card,
                                 onCardClick = { viewModel.selectCard(item.card) },
-                                showIcon = false,
+                                showIcon = true,
                                 onToggleEnable = { viewModel.toggleCardEnabled(item.card) }
                             )
                         }
