@@ -266,6 +266,8 @@ fun LibraryScreen(
                 },
                 onCardClick = { viewModel.selectCard(it) },
                 onToggleEnable = { viewModel.toggleCardEnabled(it) },
+                onFavorite = { viewModel.toggleCardFavorite(it) },
+                onBan = { viewModel.toggleCardEnabled(it) },
                 listState = cardListState,
                 paddingValues = calculatePadding(innerPadding)
             )
@@ -282,6 +284,8 @@ fun LibraryScreen(
                 onEditionSelected = { _, _ -> },
                 onCardClick = { viewModel.selectCard(it) },
                 onToggleEnable = { viewModel.toggleCardEnabled(it) },
+                onFavorite = { viewModel.toggleCardFavorite(it) },
+                onBan = { viewModel.toggleCardEnabled(it) },
                 listState = cardListState,
                 paddingValues = calculatePadding(innerPadding)
             )

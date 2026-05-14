@@ -194,6 +194,9 @@ interface CardDao {
         isLandscape: Boolean
     ): Card?
 
+    @Query("UPDATE cards SET isFavorite = :isFavorite WHERE id = :cardId")
+    suspend fun toggleCardFavorite(cardId: Int, isFavorite: Boolean)
+
     @Query("UPDATE cards SET isEnabled = :isEnabled WHERE id = :cardId")
     suspend fun toggleCardEnabled(cardId: Int, isEnabled: Boolean)
 

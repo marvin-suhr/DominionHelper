@@ -193,7 +193,7 @@ class SettingsViewModel @Inject constructor(
                 ).takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.S },
 
                 // Generation Section
-                SettingItem.SectionHeader("Card generation"),
+                SettingItem.SectionHeader("Kingdom generation"),
                 SettingItem.NumberSetting(
                     title = "Number of expansions to choose from",
                     number = currentRandomExpAmount,

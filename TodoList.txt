@@ -1,8 +1,26 @@
 FOR RELEASE:
+Test favorite / ban
+favorite cards under manage
+sort type favorite?
+davorite icon somewhere
+remove unban "+"?
+
 CORNUCOPIA AND GUILDS?? broken
-LIGHT MODE
+
+
 Trash mat etc icon -> Maybe add placeholders cards to the set its from?
-remake "ban card" button
+dynamic color style default off
+top bar color
+
+
+
+long press tutorial
+
+topappbar for card detail?
+
+return to "home" when tapping nav bar icon while in submenu
+
+long press ripples??
 
 fehlende Kartentypen hinzufügen
 

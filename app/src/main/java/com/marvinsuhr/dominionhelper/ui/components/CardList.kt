@@ -11,10 +11,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,15 +37,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ripple
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,20 +58,15 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -79,13 +75,15 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle.Companion.Italic
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -116,7 +114,9 @@ fun LibraryCardList(
     selectedEdition: OwnedEdition,
     onEditionSelected: (Int, OwnedEdition) -> Unit,
     onCardClick: (Card) -> Unit,
-    onToggleEnable: (Card) -> Unit,
+    onToggleEnable: (Card) -> Unit = { },
+    onFavorite: (Card) -> Unit = { },
+    onBan: (Card) -> Unit = { },
     listState: LazyListState = rememberLazyListState(),
     paddingValues: PaddingValues
 ) {
@@ -146,6 +146,7 @@ fun LibraryCardList(
             }
         }
 
+        // Skip card spacers when not sorting by card type
         if (sortType != LibraryViewModel.SortType.TYPE) {
             items(cardList) { card ->
                 CardView(
@@ -153,10 +154,14 @@ fun LibraryCardList(
                     onCardClick,
                     card.isEnabled,
                     showIcon = false,
-                    onToggleEnable = { onToggleEnable(card) })
+                    onToggleEnable = { onToggleEnable(card) },
+                    onFavorite = { onFavorite(card) },
+                    onBan = { onBan(card) }
+                )
             }
         } else {
 
+            // Kingdom cards in library
             if (supplyCards.isNotEmpty()) {
                 item {
                     CardSpacer("Kingdom Cards (${supplyCards.size})")
@@ -167,11 +172,14 @@ fun LibraryCardList(
                         onCardClick = { onCardClick(card) }, // Pass the clicked card
                         enabled = card.isEnabled,
                         showIcon = false,
-                        onToggleEnable = { onToggleEnable(card) }
+                        onToggleEnable = { onToggleEnable(card) },
+                        onFavorite = { onFavorite(card) },
+                        onBan = { onBan(card) }
                     )
                 }
             }
 
+            // Other cards in library
             if (specialCards.isNotEmpty()) {
                 item {
                     CardSpacer("Other Cards (${specialCards.size})")
@@ -182,12 +190,12 @@ fun LibraryCardList(
                         card = card,
                         onCardClick = { onCardClick(card) },
                         enabled = card.isEnabled,
-                        showIcon = false,
-                        onToggleEnable = { onToggleEnable(card) }
+                        showIcon = false
                     )
                 }
             }
 
+            // Landscape cards in library
             if (landscapeCards.isNotEmpty()) {
                 item {
                     CardSpacer("Landscape Cards (${landscapeCards.size})")
@@ -198,7 +206,9 @@ fun LibraryCardList(
                         onCardClick = { onCardClick(card) },
                         enabled = card.isEnabled,
                         showIcon = false,
-                        onToggleEnable = { onToggleEnable(card) }
+                        onToggleEnable = { onToggleEnable(card) },
+                        onFavorite = { onFavorite(card) },
+                        onBan = { onBan(card) }
                     )
                 }
             }
@@ -545,106 +555,92 @@ fun CardView(
     enabled: Boolean = true,
     showIcon: Boolean = true,
     amount: Int = 1,
-    onToggleEnable: () -> Unit = {}
+    onToggleEnable: () -> Unit = { },
+    onFavorite: () -> Unit = { },
+    onBan: () -> Unit = { }
 ) {
-    val focusManager: FocusManager = LocalFocusManager.current
     var showPopupMenu by remember { mutableStateOf(false) }
-    var wasLongPress by remember { mutableStateOf(false) }
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    // Detect long press using the pressed state
-    LaunchedEffect(isPressed) {
-        if (isPressed) {
-            delay(500) // 500ms for long press
-            if (isPressed) { // Still pressed
-                wasLongPress = true
-                showPopupMenu = true
-            }
-        } else if (wasLongPress) {
-            // Reset long press flag after release
-            delay(100)
-            wasLongPress = false
-        }
-    }
+    var touchOffset by remember { mutableStateOf(Offset.Zero) } // Store touch coordinates
 
     Box(
         modifier = Modifier
             .height(Constants.CARD_HEIGHT)
             .fillMaxWidth()
-    ) {
-        Card(
-            modifier = Modifier
-                .height(Constants.CARD_HEIGHT)
-                .alpha(if (enabled) 1f else 0.6f)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = ripple(),
-                    enabled = enabled,
-                    onClick = {
-                        // Only handle click if it wasn't a long press
-                        if (!wasLongPress) {
-                            focusManager.clearFocus()
-                            onCardClick(card)
-                        }
+            .alpha(if (enabled) 1f else 0.6f)
+            // Use pointerInput to distinguish between Tap and LongPress
+            .pointerInput(card, onCardClick) {
+                detectTapGestures(
+                    onTap = {
+                        if (enabled) onCardClick(card)
+                    },
+                    onLongPress = { offset ->
+                        touchOffset = offset
+                        showPopupMenu = true
                     }
                 )
-        ) {
-        Row {
-            // Vertical colored bar indicating card type
-            ColoredBar(card.getColorByTypes())
+            }
+    ) {
+        Card(modifier = Modifier.fillMaxSize()) {
+            Row {
+                ColoredBar(card.getColorByTypes())
+                CardImage(card)
+                CardLabels(card, amount, modifier = Modifier.weight(1f))
 
-            // Cropped card image
-            CardImage(card)
-
-            // Card name and price
-            CardLabels(card, amount, modifier = Modifier.weight(1f))
-
-            if (showIcon) {
-                CardIcon(card.expansionImageId, card.sets[0].name)
-            } else if (!card.basic && card.supply) {
-                CardButton(card.isEnabled, onToggleEnable)
+                if (showIcon) {
+                    CardIcon(card.expansionImageId, card.sets[0].name)
+                } else if (!card.isEnabled) {
+                    CardButton(onToggleEnable)
+                }
             }
         }
-    }
 
-        // Popup menu shown on long press
-        if (showPopupMenu) {
-            LongPressPopup(
-                onDismiss = {
-                    showPopupMenu = false
-                    wasLongPress = false
-                }
-            )
-        }
+        // The "Actual" Context Menu element
+        CardContextMenu(
+            expanded = showPopupMenu,
+            offset = touchOffset,
+            onDismiss = { showPopupMenu = false },
+            onFavorite = onFavorite,
+            onBan = onBan
+        )
     }
 }
 
 @Composable
-private fun LongPressPopup(
-    onDismiss: () -> Unit
+fun CardContextMenu(
+    expanded: Boolean,
+    offset: Offset,
+    onDismiss: () -> Unit,
+    onFavorite: () -> Unit,
+    onBan: () -> Unit
 ) {
-    Popup(
-        alignment = Alignment.Center,
+    val density = LocalDensity.current
+
+    // We convert the touch offset to Dp so the menu knows where to go
+    val xOffset = with(density) { offset.x.toDp() }
+    val yOffset = with(density) { offset.y.toDp() }
+
+    DropdownMenu(
+        expanded = expanded,
         onDismissRequest = onDismiss,
-        properties = PopupProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true
-        )
+        // offset centers the menu on the touch point
+        offset = DpOffset(xOffset, yOffset - Constants.CARD_HEIGHT)
     ) {
-        Surface(
-            modifier = Modifier.clickable { /* Does nothing */ },
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp,
-            shadowElevation = 8.dp
-        ) {
-            Text(
-                text = "test",
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
+        DropdownMenuItem(
+            text = { Text("Favorite Card") },
+            onClick = {
+                onFavorite()
+                onDismiss()
+            },
+            leadingIcon = { Icon(Icons.Default.Star, contentDescription = null) }
+        )
+        DropdownMenuItem(
+            text = { Text("Ban Card") },
+            onClick = {
+                onBan()
+                onDismiss()
+            },
+            leadingIcon = { Icon(Icons.Default.Block, contentDescription = null) }
+        )
     }
 }
 
@@ -943,7 +939,7 @@ fun CardIcon(imageId: Int, setName: String) {
 }
 
 @Composable
-fun CardButton(isEnabled: Boolean, onToggleEnable: () -> Unit) {
+fun CardButton(onToggleEnable: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -951,10 +947,10 @@ fun CardButton(isEnabled: Boolean, onToggleEnable: () -> Unit) {
             .clickable { onToggleEnable() }
     ) {
         Icon(
-            imageVector = if (isEnabled) Icons.Filled.Remove else Icons.Default.Add,
-            contentDescription = if (isEnabled) "Allowed" else "Banned",
+            imageVector = Icons.Default.Add,
+            contentDescription = "Unban card",
             modifier = Modifier.size(Constants.ICON_SIZE),
-            tint = if (isEnabled) MaterialTheme.colorScheme.error.copy(alpha = 0.3f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
         )
     }
 }

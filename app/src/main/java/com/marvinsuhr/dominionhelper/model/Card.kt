@@ -32,6 +32,7 @@ data class Card(
     val categories: List<Category>,
     val potion: Boolean,
     @ColumnInfo(defaultValue = "1") val isEnabled: Boolean,
+    @ColumnInfo(defaultValue = "1") val isFavorite: Boolean,
     val overpay: Boolean,
     @SerializedName("special_cost") val specialCost: Boolean
 ) {

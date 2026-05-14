@@ -73,7 +73,7 @@ object AppColorScheme {
         surfaceDim = if (isDark) Color(0xFF1B1B1F) else Color(0xFFDADADD),
         surfaceContainer = if (isDark) Color(0xFF2B2A2E) else Color(0xFFE0DCD6), // Nav bar
         surfaceContainerHigh = if (isDark) Color(0xFF2B2A2E) else Color(0xFFE8EAF0), // not used
-        surfaceContainerHighest = if (isDark) Color(0xFF36353A) else Color(0xFFEBE8E0), // Card background
+        surfaceContainerHighest = if (isDark) Color(0xFF36353A) else Color(0xFFEBE8E0), // Card background - 0xFFF3EEE2 action card color
         surfaceContainerLow = if (isDark) Color(0xFF181819) else Color(0xFFE3E6E0), // not used
         surfaceContainerLowest = if (isDark) Color(0xFF101012) else Color(0xFFE1E4DC) // not used
     )

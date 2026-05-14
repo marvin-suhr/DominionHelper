@@ -652,6 +652,27 @@ class LibraryViewModel @Inject constructor(
     val disabledCardCount: StateFlow<Int> = cardDao.getDisabledCardCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    fun toggleCardFavorite(card: Card) {
+        viewModelScope.launch {
+
+            val newIsFavoriteState = !card.isFavorite
+
+            // Update database
+            cardDao.toggleCardFavorite(card.id, newIsFavoriteState)
+
+            // Update object
+            _cardsToShow.value = _cardsToShow.value.map { c ->
+                if (c.id == card.id) {
+                    c.copy(isFavorite = newIsFavoriteState)
+                } else {
+                    c
+                }
+            }
+
+            Log.d("LibraryViewModel", "Toggled card ${card.name} to favorite $newIsFavoriteState")
+        }
+    }
+
     fun toggleCardEnabled(card: Card) {
         viewModelScope.launch {
 
@@ -674,7 +695,7 @@ class LibraryViewModel @Inject constructor(
                 _cardsToShow.value = sortCards(_cardsToShow.value)
             }
 
-            Log.d("LibraryViewModel", "Toggled card ${card.name} to $newIsEnabledState")
+            Log.d("LibraryViewModel", "Toggled card ${card.name} to enabled $newIsEnabledState")
         }
     }
 }
