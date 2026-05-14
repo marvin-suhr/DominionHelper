@@ -27,6 +27,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,6 +59,10 @@ class MainActivity : ComponentActivity() {
                 initial = null
             )
             val darkTheme = darkModePreference ?: isSystemDarkMode
+
+            WindowCompat.getInsetsController(window, window.decorView).apply {
+                isAppearanceLightStatusBars = !darkTheme
+            }
 
             val useSystemTheme by userPrefsRepository.useSystemTheme.collectAsState(initial = true)
 

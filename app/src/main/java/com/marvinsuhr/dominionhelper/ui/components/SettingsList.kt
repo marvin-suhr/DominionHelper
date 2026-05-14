@@ -36,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -50,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -203,10 +205,13 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
             BasicTextField(
                 value = textFieldValue,
                 onValueChange = { newText ->
-                    textFieldValue = newText
-                    newText.toIntOrNull()?.let { number ->
-                        val clampedValue = number.coerceIn(setting.min, setting.max)
-                        setting.onNumberChange(clampedValue)
+                    // Only allow numbers and max 2 digits
+                    if (newText.all { it.isDigit() } && newText.length <= 2) {
+                        newText.toIntOrNull()?.let { number ->
+                            val clampedValue = number.coerceIn(setting.min, setting.max)
+                            textFieldValue = clampedValue.toString()
+                            setting.onNumberChange(clampedValue)
+                        }
                     }
                 },
                 modifier = Modifier
@@ -218,6 +223,7 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 decorationBox = { innerTextField ->
                     Box(

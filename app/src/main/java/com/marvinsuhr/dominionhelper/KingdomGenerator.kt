@@ -131,10 +131,10 @@ class KingdomGenerator @Inject constructor(
 
     private fun generateKingdomNameFromExpansionsList(expansionNames: List<String>): String {
         return when {
-            expansionNames.isEmpty() -> "Unnamed Kingdom"
+            expansionNames.isEmpty() -> "Unnamed Kingdom" // TODO error?
             expansionNames.size == 1 -> expansionNames[0]
             expansionNames.size == 2 -> "${expansionNames[0]}, ${expansionNames[1]}"
-            else -> "${expansionNames[0]}, ${expansionNames[1]}, ..."
+            else -> "${expansionNames[0]}, ${expansionNames[1]}, +${expansionNames.size - 2}"
         }
     }
 

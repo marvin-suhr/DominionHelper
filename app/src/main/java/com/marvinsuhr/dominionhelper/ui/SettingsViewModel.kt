@@ -250,7 +250,7 @@ Don't reroll: just remove cards until there's only 10 left."""
                 // Landscapes Section
                 SettingItem.SectionHeader("Landscape cards"),
                 SettingItem.NumberSetting(
-                    title = "Landscape categories to include",
+                    title = "Landscape cards to include",
                     number = currentLandscapeCategories,
                     min = 0,
                     max = 2,

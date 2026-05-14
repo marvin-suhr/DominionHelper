@@ -1,19 +1,27 @@
 FOR RELEASE:
+CORNUCOPIA AND GUILDS?? broken
+LIGHT MODE
+Trash mat etc icon -> Maybe add placeholders cards to the set its from?
+remake "ban card" button
 
-disable veto after switching screen when a kingdom has been generated
-option settings kann man manchmal nicht ändern?
-how to handle cornucopia and guilds?
+fehlende Kartentypen hinzufügen
 
-Fix editions UI, it sucks. Maybe just go for the x, 1, 2, ✓ approach
+Instead of hiding veto mode, just show as disabled?
+
+disable veto after switching screen when a kingdom has been generated -> set new to false
+option settings kann man manchmal nicht ändern? ???
+
 when selecting a different expansion, the expansion card list state doesnt reset
-LIGHT MODE IST GULASCH
 attack cards etc in settings
-Instead of (un)owned text: Release year
 
 Split piles:
-Actual split piles have supply set to false. This means they will not be randomized
+Actual split pile cards have supply set to false. This means they will not be randomized
 and they do not have a disable button next to them in the library. In a way, split
 piles are part of the supply, but for all intents and purposes, the "main" card suffices
+
+I think logic says that you can generate a kingdom if at least 1 expansion is owned. check:
+ - does promo count? - yes
+ - does it take banned cards into account? - no - less than 10 cards is possible
 
 -----
 
@@ -31,16 +39,6 @@ ProGuard/R8 (for Release Builds):
 •Make sure you don't explicitly add firebase-crashlytics-ndk unless you need NDK crash reporting, as it might interfere with Java/Kotlin symbol uploading if not configured correctly.
 
 ------------------------------
-
-// Remove touch effect from nav bar
-// List card types in detail view pretty
-// Tutorial screen (https://developer.android.com/develop/ui/compose/components/tooltip)
-// top system bar transparent
-// Kingdoms as default route
-
-CORNUCOPIA / GUILDS: Don't switch ownership at the same time, not all regions merged them (?)
-
----
 
 UI bounds pass
 
