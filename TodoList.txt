@@ -67,6 +67,8 @@ LinkedHashSets?
 
 - Make complex routes to link to speciofic kingdoms? kingdoms://kingdom/1,2,3,4 ... list of card IDs
 
+
+
 GENERATION
 
 - Reload additional cards after veto, constraints berücksichtigen

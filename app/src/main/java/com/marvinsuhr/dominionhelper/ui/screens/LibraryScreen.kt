@@ -73,6 +73,11 @@ sealed class LibraryListItem {
     ) : LibraryListItem()
 
     /**
+     * Expansion header item (section header shown once before all expansions)
+     */
+    data object ExpansionHeaderItem : LibraryListItem()
+
+    /**
      * Expansion item from the library
      */
     data class ExpansionItem(val expansion: ExpansionWithEditions) : LibraryListItem()
@@ -187,6 +192,7 @@ fun LibraryScreen(
                     key = { item ->
                         when (item) {
                             is LibraryListItem.SearchItem -> "search_bar"
+                            LibraryListItem.ExpansionHeaderItem -> "expansion_header"
                             is LibraryListItem.ExpansionItem -> "expansion_${item.expansion.name}"
                             is LibraryListItem.CardItem -> "card_${item.card.id}"
                             is LibraryListItem.CardsFoundInfoItem -> "cards_found_info"
@@ -202,6 +208,10 @@ fun LibraryScreen(
                                 searchText = item.searchText,
                                 onSearchTextChange = item.onSearchTextChange
                             )
+                        }
+
+                        LibraryListItem.ExpansionHeaderItem -> {
+                            ExpansionHeader()
                         }
 
                         is LibraryListItem.ExpansionItem -> {
@@ -306,6 +316,7 @@ private fun buildListItems(
     return when (uiState) {
         LibraryUiState.EXPANSIONS -> buildList {
             add(LibraryListItem.SearchItem(searchText) { viewModel.changeSearchText(it) })
+            add(LibraryListItem.ExpansionHeaderItem)
             expansionsWithEditions.forEach { expansion ->
                 add(LibraryListItem.ExpansionItem(expansion))
             }
@@ -323,6 +334,21 @@ private fun buildListItems(
         }
 
         else -> emptyList()
+    }
+}
+
+/**
+ * Displays the blacklisted cards section header and item.
+ */
+@Composable
+private fun ExpansionHeader() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Expansions",
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = LocalContentColor.current.copy(alpha = 0.6f)
+        )
     }
 }
 

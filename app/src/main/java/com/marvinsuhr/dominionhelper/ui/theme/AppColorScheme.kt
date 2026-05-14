@@ -71,53 +71,58 @@ object AppColorScheme {
         scrim = if (isDark) Color(0xFF000000) else Color(0xFFFFFFFF),
         surfaceBright = if (isDark) Color(0xFF2C2B2F) else Color(0xFFECE0E4),
         surfaceDim = if (isDark) Color(0xFF1B1B1F) else Color(0xFFDADADD),
-        surfaceContainer = if (isDark) Color(0xFF1F1F22) else Color(0xFFE4E6EB),
-        surfaceContainerHigh = if (isDark) Color(0xFF2B2A2E) else Color(0xFFE8EAF0),
-        surfaceContainerHighest = if (isDark) Color(0xFF36353A) else Color(0xFFECEEF4),
-        surfaceContainerLow = if (isDark) Color(0xFF181819) else Color(0xFFE3E6E0),
-        surfaceContainerLowest = if (isDark) Color(0xFF101012) else Color(0xFFE1E4DC)
+        surfaceContainer = if (isDark) Color(0xFF2B2A2E) else Color(0xFFE0DCD6), // Nav bar
+        surfaceContainerHigh = if (isDark) Color(0xFF2B2A2E) else Color(0xFFE8EAF0), // not used
+        surfaceContainerHighest = if (isDark) Color(0xFF36353A) else Color(0xFFEBE8E0), // Card background
+        surfaceContainerLow = if (isDark) Color(0xFF181819) else Color(0xFFE3E6E0), // not used
+        surfaceContainerLowest = if (isDark) Color(0xFF101012) else Color(0xFFE1E4DC) // not used
     )
 
     // Light Mode Colors
     val lightCustomColors = createColorScheme(
-        /*primary = Color(0xFF2563EB),
+        // Primary: Warm amber/gold (Dominion card backs)
+        primary = Color(0xFFD4901F),
         onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFD3E4FF),
-        onPrimaryContainer = Color(0xFF001C3F),
-        inversePrimary = Color(0xFF9CBAFF),*/
-        primary = Color(0xFFB77E1F),
-        onPrimary = Color(0xFF3A2D00),
-        primaryContainer = Color(0xFF554300),
-        onPrimaryContainer = Color(0xFFFFE187),
-        inversePrimary = Color(0xFF755B00),
+        primaryContainer = Color(0xFFFFDD87),
+        onPrimaryContainer = Color(0xFF2E1500),
 
-        secondary = Color(0xFFB77E1F),
+        // Secondary: Warm copper/accent
+        secondary = Color(0xFF8B5E3C),
         onSecondary = Color(0xFFFFFFFF),
-        secondaryContainer = Color(0xFFFFDDB3),
-        onSecondaryContainer = Color(0xFF2B1500),
+        secondaryContainer = Color(0xFFB8CB8D),
+        onSecondaryContainer = Color(0xFF252F20),
 
-        tertiary = Color(0xFF2E7D32),
+        // Tertiary: Olive green (earth tone)
+        tertiary = Color(0xFF5C6B3F),
         onTertiary = Color(0xFFFFFFFF),
-        tertiaryContainer = Color(0xFFB8F1BB),
-        onTertiaryContainer = Color(0xFF002105),
+        tertiaryContainer = Color(0xFFD0E8B8),
+        onTertiaryContainer = Color(0xFF192220),
 
-        error = Color(0xFFBA1A1A),
+        // Error: Soft red (less harsh)
+        error = Color(0xFFDC6A6A),
         onError = Color(0xFFFFFFFF),
-        errorContainer = Color(0xFFFFDAD6),
-        onErrorContainer = Color(0xFF410002),
+        errorContainer = Color(0xFFFFDAD4),
+        onErrorContainer = Color(0xFF411F2A),
 
-        background = Color(0xFFF2F2F7),//background = Color(0xFFFAF8F5),
-        onBackground = Color(0xFF1B1B1F),
-        surface = Color(0xFFFFFFFF),//surface = Color(0xFFFAF8F5),
-        onSurface = Color(0xFF1B1B1F),
-        surfaceVariant = Color(0xFFE5E5EA),//surfaceVariant = Color(0xFFEBE1DD),
-        onSurfaceVariant = Color(0xFF3C3C43),//onSurfaceVariant = Color(0xFF47474F),
+        // Background: Warm off-white (cream instead of cool gray)
+        background = Color(0xFFFAF8F3),
+        onBackground = Color(0xFF1C1B18),
 
-        outline = Color(0xFF787680),
-        outlineVariant = Color(0xFFC8C6CF),
+        // Surface: Warm white
+        surface = Color(0xFFFFFBF9),
+        onSurface = Color(0xFF1C1B18),
 
-        inverseSurface = Color(0xFF2F3033),
-        inverseOnSurface = Color(0xFFF4F1F4),
+        // SurfaceVariant: Warm gray
+        surfaceVariant = Color(0xFFE1E3DD),
+        onSurfaceVariant = Color(0xFF454744),
+
+        outline = Color(0xFF747773),
+        outlineVariant = Color(0xFFB4B6BB),
+
+        inverseSurface = Color(0xFF2F3032),
+        inverseOnSurface = Color(0xFFF1F1F6),
+
+        inversePrimary = Color(0xFFFFB972),
 
         isDark = false
     )

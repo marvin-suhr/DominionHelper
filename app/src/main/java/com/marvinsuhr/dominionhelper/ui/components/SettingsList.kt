@@ -110,7 +110,7 @@ fun SectionHeaderItem(setting: SettingItem.SectionHeader) {
         modifier = Modifier
             .fillMaxWidth()
             // Asymmetric padding: larger top gap, smaller bottom gap
-            .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 8.dp),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary
     )
@@ -198,7 +198,8 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
             ) {
                 Text(
                     text = "-",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -258,7 +259,8 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
             ) {
                 Text(
                     text = "+",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -315,6 +317,12 @@ fun <E : Enum<E>> ChoiceSettingItem(setting: SettingItem.ChoiceSetting<E>) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
     }
 
     if (showDialog) {
@@ -431,7 +439,7 @@ fun FeedbackSettingItem(setting: SettingItem.FeedbackSetting) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = setting.title,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(

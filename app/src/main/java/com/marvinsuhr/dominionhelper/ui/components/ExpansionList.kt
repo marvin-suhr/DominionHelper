@@ -105,7 +105,7 @@ fun ExpansionImage(expansion: ExpansionWithEditions) {
         modifier = Modifier
             .aspectRatio(1f)
             .padding(Constants.PADDING_MEDIUM),
-        colorFilter = ColorFilter.tint(LocalContentColor.current)
+        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
     )
 }
 
@@ -118,7 +118,6 @@ fun ExpansionLabels(
         modifier = modifier.padding(Constants.PADDING_SMALL)
     ) {
         Text(
-            //text = expansion.name,
             text = buildAnnotatedString {
                 withStyle(SpanStyle(fontSize = Constants.CARD_NAME_FONT_SIZE, fontWeight = FontWeight.Bold)) {
                     append(expansion.name)
@@ -130,6 +129,7 @@ fun ExpansionLabels(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontSize = Constants.CARD_NAME_FONT_SIZE,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Text(
@@ -195,7 +195,7 @@ fun ExpansionOwnershipIcon(
                             imageVector = Icons.Outlined.Circle,
                             contentDescription = "Unowned",
                             modifier = Modifier.size(Constants.ICON_SIZE),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }

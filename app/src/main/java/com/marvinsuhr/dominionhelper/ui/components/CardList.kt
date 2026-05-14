@@ -677,7 +677,8 @@ fun CardLabels(card: Card, amount: Int, modifier: Modifier) {
             text = card.name + if (amount > 1) " ($amount)" else "",
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            fontSize = Constants.CARD_NAME_FONT_SIZE
+            fontSize = Constants.CARD_NAME_FONT_SIZE,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -866,7 +867,7 @@ fun CardIcon(imageId: Int, setName: String) {
             contentDescription = "$setName icon",
             modifier = Modifier
                 .size(Constants.ICON_SIZE),
-            colorFilter = ColorFilter.tint(LocalContentColor.current)
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
         )
     }
 }
