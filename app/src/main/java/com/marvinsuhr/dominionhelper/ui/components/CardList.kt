@@ -600,7 +600,10 @@ fun CardView(
             offset = touchOffset,
             onDismiss = { showPopupMenu = false },
             onFavorite = onFavorite,
-            onBan = onBan
+            onBan = onBan,
+            isFavorite = card.isFavorite,
+            isEnabled = card.isEnabled,
+            hasSupply = card.supply
         )
     }
 }
@@ -611,7 +614,10 @@ fun CardContextMenu(
     offset: Offset,
     onDismiss: () -> Unit,
     onFavorite: () -> Unit,
-    onBan: () -> Unit
+    onBan: () -> Unit,
+    isFavorite: Boolean = false,
+    isEnabled: Boolean = true,
+    hasSupply: Boolean = true
 ) {
     val density = LocalDensity.current
 
@@ -626,7 +632,7 @@ fun CardContextMenu(
         offset = DpOffset(xOffset, yOffset - Constants.CARD_HEIGHT)
     ) {
         DropdownMenuItem(
-            text = { Text("Favorite Card") },
+            text = { Text(if (isFavorite) "Unfavorite Card" else "Favorite Card") },
             onClick = {
                 onFavorite()
                 onDismiss()
@@ -634,12 +640,15 @@ fun CardContextMenu(
             leadingIcon = { Icon(Icons.Default.Star, contentDescription = null) }
         )
         DropdownMenuItem(
-            text = { Text("Ban Card") },
+            text = { Text(if (isEnabled) "Ban Card" else "Unban Card") },
             onClick = {
-                onBan()
-                onDismiss()
+                if (hasSupply) {
+                    onBan()
+                    onDismiss()
+                }
             },
-            leadingIcon = { Icon(Icons.Default.Block, contentDescription = null) }
+            leadingIcon = { Icon(Icons.Default.Block, contentDescription = null) },
+            enabled = hasSupply
         )
     }
 }
@@ -739,13 +748,28 @@ fun CardLabels(card: Card, amount: Int, modifier: Modifier) {
             .fillMaxHeight()
             .padding(horizontal = Constants.PADDING_MINI, vertical = 12.dp)
     ) {
-        Text(
-            text = card.name + if (amount > 1) " ($amount)" else "",
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            fontSize = Constants.CARD_NAME_FONT_SIZE,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = card.name + if (amount > 1) " ($amount)" else "",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = Constants.CARD_NAME_FONT_SIZE,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f, fill = false)
+            )
+
+            if (card.isFavorite) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = "Favorite",
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 

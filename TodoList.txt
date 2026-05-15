@@ -1,9 +1,8 @@
 FOR RELEASE:
 Test favorite / ban
-favorite cards under manage
 sort type favorite?
-davorite icon somewhere
 remove unban "+"?
+banning doesnt work in search results
 
 CORNUCOPIA AND GUILDS?? broken
 
@@ -13,6 +12,8 @@ dynamic color style default off
 top bar color
 
 
+
+Tokens for additional material
 
 long press tutorial
 
