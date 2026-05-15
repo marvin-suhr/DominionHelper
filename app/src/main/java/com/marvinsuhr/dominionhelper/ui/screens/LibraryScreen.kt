@@ -50,6 +50,7 @@ import com.marvinsuhr.dominionhelper.ui.components.BlacklistedCardsListItem
 import com.marvinsuhr.dominionhelper.ui.components.CardDetailPager
 import com.marvinsuhr.dominionhelper.ui.components.CardView
 import com.marvinsuhr.dominionhelper.ui.components.ExpansionListItem
+import com.marvinsuhr.dominionhelper.ui.components.FavoriteCardsListItem
 import com.marvinsuhr.dominionhelper.ui.components.LibraryCardList
 import com.marvinsuhr.dominionhelper.ui.components.SearchBar
 import com.marvinsuhr.dominionhelper.utils.Constants
@@ -97,6 +98,19 @@ sealed class LibraryListItem {
     ) : LibraryListItem()
 
     /**
+     * Manage header item (section header shown once before favorite and blacklisted cards)
+     */
+    data object ManageHeaderItem : LibraryListItem()
+
+    /**
+     * Section header for favorite cards (shown above blacklisted cards)
+     */
+    data class FavoriteCardsSectionItem(
+        val favoriteCardCount: Int,
+        val onClick: () -> Unit
+    ) : LibraryListItem()
+
+    /**
      * Section header for blacklisted cards (shown at bottom of expansion list)
      */
     data class BlacklistedSectionItem(
@@ -126,7 +140,8 @@ fun LibraryScreen(
     val selectedCard by viewModel.selectedCard.collectAsState()
     val sortType by viewModel.sortType.collectAsState()
     val searchText by viewModel.searchText.collectAsState()
-    val disabledCardCount by viewModel.disabledCardCount.collectAsState()
+    val disabledCardCount by viewModel.blacklistedCardCount.collectAsState()
+    val favoriteCardCount by viewModel.favoriteCardCount.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     // List states
@@ -143,6 +158,8 @@ fun LibraryScreen(
                 LibraryUiState.EXPANSION_CARDS -> cardListState.animateScrollToItem(0)
                 LibraryUiState.SEARCH_RESULTS -> libraryListState.animateScrollToItem(0)
                 LibraryUiState.EXPANSIONS -> libraryListState.animateScrollToItem(0)
+                LibraryUiState.FAVORITE_CARDS -> cardListState.animateScrollToItem(0)
+                LibraryUiState.BLACKLISTED_CARDS -> cardListState.animateScrollToItem(0)
                 else -> {}
             }
         }
@@ -171,13 +188,14 @@ fun LibraryScreen(
     // Unified list view for EXPANSIONS and SEARCH_RESULTS
     when (uiState) {
         LibraryUiState.EXPANSIONS, LibraryUiState.SEARCH_RESULTS -> {
-            val listItems = remember(uiState, expansionsWithEditions, cardsToShow, searchText, disabledCardCount) {
+            val listItems = remember(uiState, expansionsWithEditions, cardsToShow, searchText, disabledCardCount, favoriteCardCount) {
                 buildListItems(
                     uiState = uiState,
                     expansionsWithEditions = expansionsWithEditions,
                     cardsToShow = cardsToShow,
                     searchText = searchText,
                     disabledCardCount = disabledCardCount,
+                    favoriteCardCount = favoriteCardCount,
                     viewModel = viewModel
                 )
             }
@@ -192,10 +210,12 @@ fun LibraryScreen(
                     key = { item ->
                         when (item) {
                             is LibraryListItem.SearchItem -> "search_bar"
-                            LibraryListItem.ExpansionHeaderItem -> "expansion_header"
+                            is LibraryListItem.ExpansionHeaderItem -> "expansion_header"
                             is LibraryListItem.ExpansionItem -> "expansion_${item.expansion.name}"
                             is LibraryListItem.CardItem -> "card_${item.card.id}"
                             is LibraryListItem.CardsFoundInfoItem -> "cards_found_info"
+                            is LibraryListItem.ManageHeaderItem -> "manage_header"
+                            is LibraryListItem.FavoriteCardsSectionItem -> "favorite_section"
                             is LibraryListItem.BlacklistedSectionItem -> "blacklisted_section"
                         }
                     },
@@ -210,8 +230,8 @@ fun LibraryScreen(
                             )
                         }
 
-                        LibraryListItem.ExpansionHeaderItem -> {
-                            ExpansionHeader()
+                        is LibraryListItem.ExpansionHeaderItem -> {
+                            HeaderItem("Expansions")
                         }
 
                         is LibraryListItem.ExpansionItem -> {
@@ -242,8 +262,19 @@ fun LibraryScreen(
                             )
                         }
 
+                        is LibraryListItem.ManageHeaderItem -> {
+                            HeaderItem("Manage")
+                        }
+
+                        is LibraryListItem.FavoriteCardsSectionItem -> {
+                            FavoriteCardsListItem(
+                                favoriteCardCount = item.favoriteCardCount,
+                                onClick = item.onClick
+                            )
+                        }
+
                         is LibraryListItem.BlacklistedSectionItem -> {
-                            BlacklistedCardsSection(
+                            BlacklistedCardsListItem(
                                 disabledCardCount = item.disabledCardCount,
                                 onClick = item.onClick
                             )
@@ -264,6 +295,24 @@ fun LibraryScreen(
                 onEditionSelected = { editionClicked, ownedEdition ->
                     viewModel.selectEdition(selectedExpansion!!, editionClicked, ownedEdition)
                 },
+                onCardClick = { viewModel.selectCard(it) },
+                onToggleEnable = { viewModel.toggleCardEnabled(it) },
+                onFavorite = { viewModel.toggleCardFavorite(it) },
+                onBan = { viewModel.toggleCardEnabled(it) },
+                listState = cardListState,
+                paddingValues = calculatePadding(innerPadding)
+            )
+        }
+
+        // Show list of favorite cards
+        LibraryUiState.FAVORITE_CARDS -> {
+            Log.i("LibraryScreen", "View favorite cards")
+            LibraryCardList(
+                cardList = cardsToShow,
+                sortType = sortType,
+                includeEditionSelection = false,
+                selectedEdition = com.marvinsuhr.dominionhelper.model.OwnedEdition.NONE,
+                onEditionSelected = { _, _ -> },
                 onCardClick = { viewModel.selectCard(it) },
                 onToggleEnable = { viewModel.toggleCardEnabled(it) },
                 onFavorite = { viewModel.toggleCardFavorite(it) },
@@ -315,6 +364,7 @@ private fun buildListItems(
     cardsToShow: List<Card>,
     searchText: String,
     disabledCardCount: Int,
+    favoriteCardCount: Int,
     viewModel: LibraryViewModel
 ): List<LibraryListItem> {
     return when (uiState) {
@@ -324,6 +374,8 @@ private fun buildListItems(
             expansionsWithEditions.forEach { expansion ->
                 add(LibraryListItem.ExpansionItem(expansion))
             }
+            add(LibraryListItem.ManageHeaderItem)
+            add(LibraryListItem.FavoriteCardsSectionItem(favoriteCardCount) { viewModel.showFavoriteCards() })
             add(LibraryListItem.BlacklistedSectionItem(disabledCardCount) { viewModel.showBlacklistedCards() })
         }
 
@@ -342,13 +394,13 @@ private fun buildListItems(
 }
 
 /**
- * Displays the blacklisted cards section header and item.
+ * Displays a header item in the list
  */
 @Composable
-private fun ExpansionHeader() {
+private fun HeaderItem(text: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Expansions",
+            text = text,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
             style = MaterialTheme.typography.titleMedium,
             color = LocalContentColor.current.copy(alpha = 0.6f)
@@ -429,29 +481,6 @@ private fun CardsFoundInfoRow(
                 showSortDialog = false
             },
             onDismiss = { showSortDialog = false }
-        )
-    }
-}
-
-/**
- * Displays the blacklisted cards section header and item.
- */
-@Composable
-private fun BlacklistedCardsSection(
-    disabledCardCount: Int,
-    onClick: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Manage",
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
-            style = MaterialTheme.typography.titleMedium,
-            color = LocalContentColor.current.copy(alpha = 0.6f)
-        )
-
-        BlacklistedCardsListItem(
-            disabledCardCount = disabledCardCount,
-            onClick = onClick
         )
     }
 }

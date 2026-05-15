@@ -224,4 +224,10 @@ interface CardDao {
 
     @Query("SELECT COUNT(*) FROM cards WHERE isEnabled = 0")
     fun getDisabledCardCount(): Flow<Int>
+
+    @Query("SELECT * FROM cards WHERE isFavorite = 1")
+    suspend fun getFavoriteCards(): List<Card>
+
+    @Query("SELECT COUNT(*) FROM cards WHERE isFavorite = 1")
+    fun getFavoriteCardCount(): Flow<Int>
 }

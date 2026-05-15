@@ -29,7 +29,8 @@ enum class LibraryUiState {
     EXPANSION_CARDS,
     SEARCH_RESULTS,
     CARD_DETAIL,
-    BLACKLISTED_CARDS
+    BLACKLISTED_CARDS,
+    FAVORITE_CARDS
 }
 
 @HiltViewModel
@@ -78,6 +79,13 @@ class LibraryViewModel @Inject constructor(
                 return true
             }
 
+            LibraryUiState.FAVORITE_CARDS -> {
+                Log.i("BackHandler", "Leave favorite cards -> Return to expansion list")
+                clearSelectedExpansion()
+                switchUiStateTo(LibraryUiState.EXPANSIONS)
+                return true
+            }
+
             LibraryUiState.CARD_DETAIL -> {
                 Log.i("BackHandler", "Deselect card -> Return to card list")
                 clearSelectedCard()
@@ -116,7 +124,7 @@ class LibraryViewModel @Inject constructor(
 
     override val showTopAppBar: StateFlow<Boolean> =
         uiState.map { uiState ->
-            uiState != LibraryUiState.EXPANSIONS && uiState != LibraryUiState.SEARCH_RESULTS && uiState != LibraryUiState.CARD_DETAIL
+            uiState != LibraryUiState.EXPANSIONS && uiState != LibraryUiState.SEARCH_RESULTS && uiState != LibraryUiState.CARD_DETAIL && uiState != LibraryUiState.FAVORITE_CARDS && uiState != LibraryUiState.BLACKLISTED_CARDS
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     // Fields
@@ -166,6 +174,7 @@ class LibraryViewModel @Inject constructor(
 
             LibraryUiState.SEARCH_RESULTS -> "Search Results" // I think this isn't shown
             LibraryUiState.BLACKLISTED_CARDS -> "Blacklisted Cards"
+            LibraryUiState.FAVORITE_CARDS -> "Favorite Cards"
             LibraryUiState.CARD_DETAIL -> selectedCard?.name ?: "Details"
         }
     }.stateIn(
@@ -649,7 +658,19 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    val disabledCardCount: StateFlow<Int> = cardDao.getDisabledCardCount()
+    val blacklistedCardCount: StateFlow<Int> = cardDao.getDisabledCardCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    fun showFavoriteCards() {
+        viewModelScope.launch {
+            val favoriteCards = cardDao.getFavoriteCards()
+            _cardsToShow.value = sortCards(favoriteCards)
+            _uiState.value = LibraryUiState.FAVORITE_CARDS
+            Log.d("LibraryViewModel", "Showing ${favoriteCards.size} favorite cards")
+        }
+    }
+
+    val favoriteCardCount: StateFlow<Int> = cardDao.getFavoriteCardCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     fun toggleCardFavorite(card: Card) {

@@ -406,7 +406,7 @@ fun KingdomCardList(
         // DEPENDENT CARDS
         if (kingdom.hasDependentCards()) {
             item {
-                CardSpacer("Additional Cards")
+                CardSpacer("Additional Material")
             }
             items(kingdom.dependentCards.keys.toList()) { card ->
                 CardView(

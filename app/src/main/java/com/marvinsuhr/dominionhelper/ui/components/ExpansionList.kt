@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Card
@@ -233,6 +234,87 @@ fun CircleWithNumber(number: Int) {
         )
     }
 }
+
+// TODO: Abstraction over favorite and blacklisted cards list
+@Composable
+fun FavoriteCardsListItem(
+    favoriteCardCount: Int,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .height(Constants.CARD_HEIGHT)
+            .then(
+                if (favoriteCardCount > 0) {
+                    Modifier.clickable { onClick() }
+                } else {
+                    Modifier
+                }
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon
+            Icon(
+                imageVector = Icons.Filled.Star,
+                contentDescription = "Favorite Cards",
+                tint = if (favoriteCardCount > 0) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    LocalContentColor.current.copy(alpha = 0.38f)
+                },
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .padding(Constants.PADDING_MEDIUM)
+            )
+
+            // Text
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(Constants.PADDING_SMALL)
+            ) {
+                Text(
+                    text = "Favorite Cards",
+                    fontSize = Constants.CARD_NAME_FONT_SIZE,
+                    color = if (favoriteCardCount > 0) {
+                        LocalContentColor.current
+                    } else {
+                        LocalContentColor.current.copy(alpha = 0.38f)
+                    }
+                )
+                Text(
+                    text = "$favoriteCardCount favorite cards",
+                    fontSize = Constants.TEXT_SMALL,
+                    color = LocalContentColor.current.copy(alpha = 0.6f)
+                )
+            }
+
+            // Trailing chevron icon
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "View favorite cards",
+                    tint = if (favoriteCardCount > 0) {
+                        LocalContentColor.current
+                    } else {
+                        LocalContentColor.current.copy(alpha = 0.38f)
+                    },
+                    modifier = Modifier.size(Constants.ICON_SIZE)
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun BlacklistedCardsListItem(
