@@ -12,10 +12,21 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable        # Keep file names and line numbers.
+-keep public class * extends java.lang.Exception  # Optional: Keep custom exceptions.
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Necessary?
+
+# Keep the data model classes
+-keep class dev.msuhr.dominionkingdoms.model.** { *; }
+
+# Keep the TypeAdapters so Gson can use them
+-keep class * extends com.google.gson.TypeAdapter
+-keepnames class dev.msuhr.dominionkingdoms.model.** { *; }
+
+# Keep Enums (Set, Type, Category) from being renamed
+-keepclassmembers enum dev.msuhr.dominionkingdoms.model.** { *; }

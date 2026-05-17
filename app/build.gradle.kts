@@ -1,3 +1,4 @@
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -12,37 +13,74 @@ plugins {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.fromTarget("11")
+        jvmTarget = JvmTarget.fromTarget("17")
     }
 }
 
 android {
-    namespace = "com.marvinsuhr.dominionhelper"
+    namespace = "dev.msuhr.dominionkingdoms"
     compileSdk = 36
 
+    // Needed?
+    signingConfigs {
+        getByName("debug") {
+            // This allows you to run the release build on your phone
+            // without needing your production play store key
+            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+        }
+
+        create("release") {
+            val storePath = System.getenv("RELEASE_STORE_PATH")
+
+            if (!storePath.isNullOrEmpty()) {
+                storeFile = file(storePath)
+                storePassword = System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.marvinsuhr.dominionhelper"
+        applicationId = "dev.msuhr.dominionkingdoms"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
+        versionCode = 5
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+
+        debug {
+            applicationIdSuffix = ".debug"
+        }
+
         release {
             isMinifyEnabled = true
-            // Add proguard rule to not minify card images (They are only referenced dynamically)
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // If the user has the release env variable, sign with it.
+            // Otherwise, gracefully fall back to the debug key so the build doesn't crash.
+            signingConfig = if (!System.getenv("RELEASE_STORE_PATH").isNullOrEmpty()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+
+            configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = true
+            }
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
@@ -64,7 +102,6 @@ dependencies {
     implementation(libs.androidx.animation)// try rem
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose) // Potentially for Hilt integration with Navigtaion ViewModels
 
     // Data Management
     implementation(libs.androidx.room.runtime)
@@ -79,13 +116,15 @@ dependencies {
 
     // Dependency Injection
     implementation(libs.hilt.android)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose) // Potentially for Hilt integration with Navigtaion ViewModels
     ksp(libs.hilt.android.compiler)
 
     // Firebase / (Crashlytics)
     implementation(platform(libs.firebase.bom))
-    //implementation(libs.firebase.crashlytics.ktx) // This doesn't work tho
-    implementation(libs.firebase.crashlytics.ndk) // Only needed for native C code??
+    implementation(libs.firebase.crashlytics)
+    //implementation("com.google.firebase:firebase-crashlytics") // Duplicate
+    //implementation(libs.firebase.crashlytics.ndk) // Only needed for native C code??
+    //implementation(libs.firebase.crashlytics.ktx)
     implementation(libs.firebase.analytics)
 
     // Testing

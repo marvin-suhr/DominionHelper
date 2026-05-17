@@ -6,6 +6,9 @@ banning doesnt work in search results
 
 CORNUCOPIA AND GUILDS?? broken
 
+1 message for version code 4
+Warning
+This App Bundle contains native code, and you've not uploaded debug symbols. We recommend you upload a symbol file to make your crashes and ANRs easier to analyze and debug. Learn More
 
 Trash mat etc icon -> Maybe add placeholders cards to the set its from?
 dynamic color style default off

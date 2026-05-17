@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Dominion Helper"
+rootProject.name = "Dominion Kingdoms"
 include(":app")
  
