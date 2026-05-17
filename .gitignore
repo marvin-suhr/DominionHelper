@@ -1,3 +1,9 @@
+# Build artifacts
+*.apk
+*.aab
+*.dm
+build/
+
 *.iml
 .gradle
 /local.properties
@@ -10,6 +16,8 @@
 /.idea/compiler.xml
 /.idea/gradle.xml
 /.idea/misc.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
 
 .DS_Store
 /build
@@ -19,3 +27,6 @@
 local.properties
 /images_pre_conversion
 /app/google-services.json
+/app/release
+
+Info.txt
