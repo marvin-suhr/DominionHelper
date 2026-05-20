@@ -112,6 +112,8 @@ fun KingdomsScreen(
                 listState = kingdomListState,
                 isDismissEnabled = isDismissEnabled,
                 onCardDismissed = { viewModel.onCardDismissed(it) },
+                onFavorite = { viewModel.toggleCardFavorite(it) },
+                onBan = { viewModel.toggleCardEnabled(it) },
                 paddingValues = calculatePadding(innerPadding)
             )
         }

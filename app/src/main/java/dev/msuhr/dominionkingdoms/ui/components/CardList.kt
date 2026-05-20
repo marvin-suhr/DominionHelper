@@ -359,6 +359,8 @@ fun KingdomCardList(
     listState: LazyListState = rememberLazyListState(),
     isDismissEnabled: Boolean,
     onCardDismissed: (Card) -> Unit,
+    onFavorite: (Card) -> Unit = { },
+    onBan: (Card) -> Unit = { },
     paddingValues: PaddingValues
 ) {
     Log.i(
@@ -382,14 +384,16 @@ fun KingdomCardList(
             key = { card -> card.id }
         ) { card ->
             if (isDismissEnabled)
-                DismissableCard(card, onCardDismissed, onCardClick, Modifier.animateItem())
+                DismissableCard(card, onCardDismissed, onCardClick, onFavorite, onBan, Modifier.animateItem())
             else {
                 CardView(
                     card,
                     onCardClick,
-                    enabled = true,
+                    enabled = card.isEnabled,
                     showIcon = true,
-                    kingdom.randomCards[card]!!
+                    kingdom.randomCards[card]!!,
+                    onFavorite = { onFavorite(card) },
+                    onBan = { onBan(card) }
                 )
             }
         }
@@ -404,14 +408,16 @@ fun KingdomCardList(
                 key = { card -> card.id }
             ) { card ->
                 if (isDismissEnabled)
-                    DismissableCard(card, onCardDismissed, onCardClick, Modifier.animateItem())
+                    DismissableCard(card, onCardDismissed, onCardClick, onFavorite, onBan, Modifier.animateItem())
                 else {
                     CardView(
                         card,
                         onCardClick,
-                        enabled = true,
+                        enabled = card.isEnabled,
                         showIcon = true,
-                        kingdom.landscapeCards[card]!!
+                        kingdom.landscapeCards[card]!!,
+                        onFavorite = { onFavorite(card) },
+                        onBan = { onBan(card) }
                     )
                 }
             }
@@ -426,7 +432,7 @@ fun KingdomCardList(
                 CardView(
                     card,
                     onCardClick,
-                    enabled = true,
+                    enabled = card.isEnabled,
                     showIcon = true,
                     kingdom.dependentCards[card]!!
                 )
@@ -441,7 +447,7 @@ fun KingdomCardList(
             CardView(
                 card,
                 onCardClick,
-                enabled = true,
+                enabled = card.isEnabled,
                 showIcon = true,
                 kingdom.startingCards[card]!!
             )
@@ -458,7 +464,7 @@ fun KingdomCardList(
             )
         }
         items(kingdom.basicCards.keys.toList()) { card ->
-            CardView(card, onCardClick, enabled = true, showIcon = true, kingdom.basicCards[card]!!)
+            CardView(card, onCardClick, enabled = card.isEnabled, showIcon = true, kingdom.basicCards[card]!!)
         }
     }
 }
@@ -499,6 +505,8 @@ fun DismissableCard(
     card: Card,
     onCardDismissed: (Card) -> Unit,
     onCardClick: (Card) -> Unit,
+    onFavorite: (Card) -> Unit,
+    onBan: (Card) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val view = LocalView.current
@@ -542,7 +550,7 @@ fun DismissableCard(
             }
         }
     ) {
-        CardView(card, onCardClick)
+        CardView(card, onCardClick, onFavorite = { onFavorite(card) }, onBan = { onBan(card) } )
     }
 }
 
@@ -599,8 +607,10 @@ fun CardView(
                 )
             }
     ) {
-        Card(modifier = Modifier.fillMaxSize(),
-        shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)) {
+        Card(
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+        ) {
             Row {
                 ColoredBar(card.getColorByTypes())
                 CardImage(card)

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.util.LinkedHashMap
 
 enum class KingdomUiState {
     KINGDOM_LIST,
@@ -526,6 +527,23 @@ class KingdomViewModel @Inject constructor(
 
             // Update database
             cardDao.toggleCardFavorite(card.id, newIsFavoriteState)
+
+            // TODO Dunno how I feel about this
+            // Update all card maps in the kingdom
+            _kingdom.value = _kingdom.value.copy(
+                randomCards = updateCardMap(_kingdom.value.randomCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
+                basicCards = updateCardMap(_kingdom.value.basicCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
+                dependentCards = updateCardMap(_kingdom.value.dependentCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
+                startingCards = updateCardMap(_kingdom.value.startingCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
+                landscapeCards = updateCardMap(_kingdom.value.landscapeCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) }
+            )
+
+            // Update selectedCard to maintain reference equality
+            if (_selectedCard.value?.id == card.id) {
+                _selectedCard.value = _kingdom.value.getAllCards().find { it.id == card.id }
+            }
+
+            Log.d("KingdomViewModel", "Toggled card ${card.name} to favorite $newIsFavoriteState")
         }
     }
 
@@ -535,6 +553,39 @@ class KingdomViewModel @Inject constructor(
 
             // Update database
             cardDao.toggleCardEnabled(card.id, newIsEnabledState)
+
+            // Update all card maps in the kingdom
+            _kingdom.value = _kingdom.value.copy(
+                randomCards = updateCardMap(_kingdom.value.randomCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
+                basicCards = updateCardMap(_kingdom.value.basicCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
+                dependentCards = updateCardMap(_kingdom.value.dependentCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
+                startingCards = updateCardMap(_kingdom.value.startingCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
+                landscapeCards = updateCardMap(_kingdom.value.landscapeCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) }
+            )
+
+            // Update selectedCard to maintain reference equality
+            if (_selectedCard.value?.id == card.id) {
+                _selectedCard.value = _kingdom.value.getAllCards().find { it.id == card.id }
+            }
+
+            Log.d("KingdomViewModel", "Toggled card ${card.name} to enabled $newIsEnabledState")
         }
+    }
+
+    // Helper function to update a card in a LinkedHashMap
+    private fun updateCardMap(
+        map: LinkedHashMap<Card, Int>,
+        cardId: Int,
+        update: (Card) -> Card
+    ): LinkedHashMap<Card, Int> {
+        val newMap = linkedMapOf<Card, Int>()
+        map.forEach { (card, amount) ->
+            if (card.id == cardId) {
+                newMap[update(card)] = amount
+            } else {
+                newMap[card] = amount
+            }
+        }
+        return newMap
     }
 }

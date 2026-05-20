@@ -249,8 +249,11 @@ fun LibraryScreen(
                             CardView(
                                 card = item.card,
                                 onCardClick = { viewModel.selectCard(item.card) },
+                                enabled = item.card.isEnabled,
                                 showIcon = true,
-                                onToggleEnable = { viewModel.toggleCardEnabled(item.card) }
+                                onToggleEnable = { viewModel.toggleCardEnabled(item.card) },
+                                onFavorite = { viewModel.toggleCardFavorite(item.card) },
+                                onBan = { viewModel.toggleCardEnabled(item.card) }
                             )
                         }
 

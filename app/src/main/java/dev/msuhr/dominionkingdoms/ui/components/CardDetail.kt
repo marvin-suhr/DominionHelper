@@ -1,6 +1,7 @@
 package dev.msuhr.dominionkingdoms.ui.components
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,36 +10,55 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import dev.msuhr.dominionkingdoms.model.Card
-import dev.msuhr.dominionkingdoms.utils.findIndexOfReference
 import dev.msuhr.dominionkingdoms.utils.getDrawableId
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -61,11 +81,9 @@ fun CardDetailPager(
         return
     }
 
-    val initialIndex = findIndexOfReference(cardList, initialCard)
-
-    Log.i("CardDetailPager", "Initialized Pager with ${cardList.joinToString (", ") { if (it.name == "Village")  it.toString() else "" }}")
-    Log.i("CardDetailPager", "Initial card: ${initialCard}")
-    Log.i("CardDetailPager", "Initial index: $initialIndex")
+    val initialIndex = cardList.indexOf(initialCard)
+    // I think there was a point to using reference equality here
+    //val initialIndex = findIndexOfReference(cardList, initialCard)
 
     val pagerState =
         rememberPagerState(initialPage = initialIndex, pageCount = { cardList.size })
@@ -121,108 +139,190 @@ fun CardDetail(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(30f), // TODO is there another way other than weight?
+            contentAlignment = Alignment.Center
         ) {
             AsyncImage(
                 model = drawableId,
                 contentDescription = "Card Image",
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxHeight()
                     .clip(RoundedCornerShape(16.dp))
                     .clickable {
-                        Log.d("CardDetail", "CardDetail Column clicked!") // For debugging
                         onClick()
-                    },
-                contentScale = ContentScale.FillWidth
+                    }
             )
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
+        val interceptor = rememberHorizontalScrollInterception()
+
+        // Row of scrollable card categories
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(32.dp) // Chip height
+                .horizontalFadingEdges(fadeWidth = 16.dp)
+                .nestedScroll(interceptor),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            // This the only way I can get it to look the way I want
+            item { Spacer(modifier = Modifier.width(0.dp)) }
+            items(card.categories) { category ->
+                CategoryChip(category.displayName)
+            }
+            item { Spacer(modifier = Modifier.width(0.dp)) }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Second Row: (Un)favorite and (Un)ban buttons
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(
-                onClick = { onFavorite(card) },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (card.isFavorite) {
-                        MaterialTheme.colorScheme.secondary
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                )
-            ) {
-                Icon(
-                    imageVector = if (card.isFavorite) {
-                        Icons.Outlined.Star
-                    } else {
-                        Icons.Filled.Star
-                    },
-                    contentDescription = if (card.isFavorite) "Unfavorite" else "Favorite" + " this card",
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.padding(start = 4.dp))
-                Text(if (card.isFavorite) "Unfavorite" else "Favorite")
-            }
-
-            Button(
-                onClick = { onBan(card) },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (card.isEnabled) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.secondary
-                    }
-                ),
-                enabled = card.supply
-            ) {
-                Icon(
-                    imageVector = if (card.isEnabled) {
-                        Icons.Filled.Block
-                    } else {
-                        Icons.Filled.Check
-                    },
-                    contentDescription = if (card.isEnabled) "Ban" else "Unban" + " this card",
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.padding(start = 4.dp))
-                Text(if (card.isEnabled) "Ban" else "Unban")
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            card.categories.forEach { category ->
-                CategoryBubble(category.displayName)
+
+            // Favorite toggle
+            if (card.isFavorite) {
+                Button(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFavorite(card) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFD54F), // TODO: Light mode colors
+                        contentColor = Color(0xFF121212)
+                    )
+                ) {
+                    Icon(Icons.Filled.Star, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Unfavorite")
+                }
+            } else {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onFavorite(card) },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xB3FFFFFF)
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFF424242))
+                ) {
+                    Icon(Icons.Outlined.StarBorder, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Favorite")
+                }
+            }
+
+            // Ban toggle
+            if (!card.isEnabled) {
+                Button(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onBan(card) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE57373), // TODO: Light mode colors
+                        contentColor = Color(0xFF121212)
+                    )
+                ) {
+                    Icon(Icons.Filled.Block, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Unban")
+                }
+            } else {
+                OutlinedButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onBan(card) },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xB3FFFFFF)
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFF424242))
+                ) {
+                    Icon(Icons.Outlined.Block, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ban")
+                }
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+// So the card category list scroll doesn't carry over to the pager
+@Composable
+fun rememberHorizontalScrollInterception(): NestedScrollConnection {
+    return remember {
+        object : NestedScrollConnection {
+            // Intercept dragging/scrolling when boundaries are hit
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                // Return 'available' to pretend we consumed all leftover horizontal scroll
+                return Offset(x = available.x, y = 0f)
+            }
+
+            // Intercept rapid flicking/flinging when boundaries are hit
+            override suspend fun onPostFling(
+                consumed: Velocity,
+                available: Velocity
+            ): Velocity {
+                // Return 'available' to pretend we consumed all leftover horizontal kinetic energy
+                return Velocity(x = available.x, y = 0f)
+            }
+        }
     }
 }
 
 @Composable
-fun CategoryBubble(categoryName: String) {
-    Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.padding(horizontal = 6.dp)
-    ) {
-        Text(
-            text = categoryName,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+fun CategoryChip(categoryName: String, modifier: Modifier = Modifier) {
+    AssistChip(
+        modifier = modifier,
+        onClick = { /* Optional: Handle click if categories filter the library */ },
+        label = {
+            Text(
+                text = categoryName,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            labelColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        border = null // Removes the default outline border so it looks like a clean solid badge
+    )
+}
+
+// Fading edges for scrolling chips
+fun Modifier.horizontalFadingEdges(fadeWidth: Dp = 16.dp): Modifier = this
+    // 1. Enforce a Layer Strategy to isolate transparency blending
+    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+    .drawWithContent {
+        drawContent() // Render the underlying chips first
+
+        val widthPx = fadeWidth.toPx()
+
+        // 2. Fade at the left edge (Start)
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(Color.Transparent, Color.Black),
+                startX = 0f,
+                endX = widthPx
+            ),
+            blendMode = BlendMode.DstIn
+        )
+
+        // 3. Fade at the right edge (End)
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(Color.Black, Color.Transparent),
+                startX = size.width - widthPx,
+                endX = size.width
+            ),
+            blendMode = BlendMode.DstIn
         )
     }
-}

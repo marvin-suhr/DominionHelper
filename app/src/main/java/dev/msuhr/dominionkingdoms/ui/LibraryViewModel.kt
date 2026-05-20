@@ -540,8 +540,7 @@ class LibraryViewModel @Inject constructor(
 
     fun clearSelectedCard() {
         _selectedCard.value = null
-        // TODO I'd rather not have this here
-        switchUiStateTo(LibraryUiState.EXPANSION_CARDS)
+        switchUiStateTo(lastState)
         Log.d("LibraryViewModel", "Cleared selected card")
     }
 
@@ -681,13 +680,18 @@ class LibraryViewModel @Inject constructor(
             // Update database
             cardDao.toggleCardFavorite(card.id, newIsFavoriteState)
 
-            // Update object
+            // Update object and selectedCard reference
             _cardsToShow.value = _cardsToShow.value.map { c ->
                 if (c.id == card.id) {
                     c.copy(isFavorite = newIsFavoriteState)
                 } else {
                     c
                 }
+            }
+
+            // Update selectedCard to maintain reference equality
+            if (_selectedCard.value?.id == card.id) {
+                _selectedCard.value = _cardsToShow.value.find { it.id == card.id }
             }
 
             Log.d("LibraryViewModel", "Toggled card ${card.name} to favorite $newIsFavoriteState")
@@ -709,6 +713,11 @@ class LibraryViewModel @Inject constructor(
                 } else {
                     c
                 }
+            }
+
+            // Update selectedCard to maintain reference equality
+            if (_selectedCard.value?.id == card.id) {
+                _selectedCard.value = _cardsToShow.value.find { it.id == card.id }
             }
 
             // TODO does this make sense? When SortType == ENABLED, changing cards makes them jump

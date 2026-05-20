@@ -1,26 +1,39 @@
 FOR RELEASE:
-Test favorite / ban
 sort type favorite?
 remove unban "+"?
 banning doesnt work in search results
 
 CORNUCOPIA AND GUILDS?? broken
+landscape detail view fix
+
+Adding mat to base game shows it as a landscape card
+
+Mats: + icons
+Island / Pirate ship / Native Village (Seaside
+Trade Route (Prosperity 1st)
+Victory token mat (Prosperity 1st)
+Tavern mat (Adventures)
+Coffers mat (Cornucopia & Guilds)
+Coffers / Villagers mat (Renaissance)
+Exile mat (Menagerie)
+Favors mat (Allies)
+
+Tokens:
+Victory tokens
+Coin tokens
+Embargo tokens
+Adventures tokens
+Debt tokens
+Wooden cubes
+Sun tokens
 
 1 message for version code 4
 Warning
 This App Bundle contains native code, and you've not uploaded debug symbols. We recommend you upload a symbol file to make your crashes and ANRs easier to analyze and debug. Learn More
 
-Trash mat etc icon -> Maybe add placeholders cards to the set its from?
 dynamic color style default off
 top bar color
 
-
-
-Tokens for additional material
-
-long press tutorial
-
-topappbar for card detail?
 
 return to "home" when tapping nav bar icon while in submenu
 

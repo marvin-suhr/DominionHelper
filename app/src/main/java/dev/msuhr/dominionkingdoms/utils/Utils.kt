@@ -44,10 +44,10 @@ fun isPercentChance(percentChance: Double): Boolean {
     return Random.nextDouble(0.0, 100.0) < percentChance
 }
 
-// Find the index of a specific reference in a list (even when cards are equal)
+// Find the index of a specific card in a list by id (handles different object instances)
 fun findIndexOfReference(list: List<Any>, target: Card): Int {
     for ((index, item) in list.withIndex()) {
-        if (item === target) return index
+        if (item is Card && item === target) return index
     }
     return -1
 }
