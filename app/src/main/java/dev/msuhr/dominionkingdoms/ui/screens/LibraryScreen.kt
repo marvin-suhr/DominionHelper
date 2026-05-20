@@ -286,7 +286,7 @@ fun LibraryScreen(
 
         // Show cards within the selected expansion
         LibraryUiState.EXPANSION_CARDS -> {
-            Log.i("LibraryScreen", "View expansion cards: ${selectedExpansion?.name}")
+            Log.i("LibraryScreen", "View expansion cards: ${selectedExpansion?.name} (${cardsToShow.size})")
             LibraryCardList(
                 cardList = cardsToShow,
                 sortType = sortType,
@@ -354,7 +354,9 @@ fun LibraryScreen(
                 initialCard = selectedCard!!,
                 onClick = { viewModel.clearSelectedCard() },
                 onPageChanged = { viewModel.selectCard(it) },
-                paddingValues = calculatePadding(innerPadding)
+                paddingValues = calculatePadding(innerPadding),
+                onFavorite = { viewModel.toggleCardFavorite(it) },
+                onBan = { viewModel.toggleCardEnabled(it) }
             )
         }
     }

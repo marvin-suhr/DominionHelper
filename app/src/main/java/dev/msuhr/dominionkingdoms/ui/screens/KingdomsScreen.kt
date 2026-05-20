@@ -123,7 +123,9 @@ fun KingdomsScreen(
                 initialCard = selectedCard!!,
                 onClick = { viewModel.clearSelectedCard() },
                 onPageChanged = { viewModel.selectCard(it) },
-                paddingValues = calculatePadding(innerPadding)
+                paddingValues = calculatePadding(innerPadding),
+                onFavorite = { viewModel.toggleCardFavorite(it) },
+                onBan = { viewModel.toggleCardEnabled(it) }
             )
         }
     }

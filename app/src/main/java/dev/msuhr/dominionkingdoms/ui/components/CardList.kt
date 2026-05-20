@@ -78,6 +78,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle.Companion.Italic
 import androidx.compose.ui.text.style.TextAlign
@@ -121,7 +123,6 @@ fun LibraryCardList(
     paddingValues: PaddingValues,
     onSortTypeSelected: (LibraryViewModel.SortType) -> Unit = {}
 ) {
-    Log.i("CardList", "${cardList.size} cards")
     var showSortDialog by remember { mutableStateOf(false) }
 
     val supplyCards = remember(cardList) {
@@ -500,10 +501,13 @@ fun DismissableCard(
     onCardClick: (Card) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val view = LocalView.current
+
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { dismissValue ->
             val dismissed = dismissValue != SwipeToDismissBoxValue.Settled
             if (dismissed) {
+                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 onCardDismissed(card)
             }
             dismissed
@@ -574,6 +578,7 @@ fun CardView(
 ) {
     var showPopupMenu by remember { mutableStateOf(false) }
     var touchOffset by remember { mutableStateOf(Offset.Zero) } // Store touch coordinates
+    val view = LocalView.current
 
     Box(
         modifier = Modifier
@@ -587,6 +592,7 @@ fun CardView(
                         if (enabled) onCardClick(card)
                     },
                     onLongPress = { offset ->
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         touchOffset = offset
                         showPopupMenu = true
                     }

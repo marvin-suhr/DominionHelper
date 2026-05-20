@@ -30,3 +30,8 @@
 
 # Keep Enums (Set, Type, Category) from being renamed
 -keepclassmembers enum dev.msuhr.dominionkingdoms.model.** { *; }
+
+# Keep TypeAdapters to ensure they work properly
+-keep class dev.msuhr.dominionkingdoms.model.CategoryTypeAdapter { *; }
+-keep class dev.msuhr.dominionkingdoms.model.SetTypeAdapter { *; }
+-keep class dev.msuhr.dominionkingdoms.model.TypeTypeAdapter { *; }

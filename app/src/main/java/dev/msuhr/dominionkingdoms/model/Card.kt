@@ -225,6 +225,17 @@ class CategoryTypeAdapter : TypeAdapter<Category>() {
             return null
         }
         val value = reader.nextString()
-        return Category.valueOf(value.uppercase()) // Convert from string to Category enum
+
+        // Match by displayName (case-insensitive)
+        val matchedCategory = Category.entries.find { it.name.equals(value, ignoreCase = true) }
+
+        if (matchedCategory == null) {
+            val errorMsg = "CategoryTypeAdapter: No matching Category enum found for: '$value'\n" +
+                    "Available categories: ${Category.entries.joinToString(", ") { it.name }}"
+            Log.e("CategoryTypeAdapter", errorMsg)
+            throw RuntimeException(errorMsg)
+        }
+
+        return matchedCategory
     }
 }

@@ -103,30 +103,36 @@ enum class Category(val displayName: String) {
     DECK_INSPECTOR("Deck Inspector"),
     TRASH_FOR_BENEFIT("Trash for Benefit"),
     HANDSIZE_ATTACK("Handsize Attack"),
+
     // ^done
+    // v 2. Runde
+
+    GAINER("Gainer"),
+    DRAW_TO_X("Draw to X"),
+    JUNKER("Junker"),
+    DECK_ORDER_ATTACK("Deck Order Attack"),
+    TRASHING_ATTACK("Trashing Attack"),
+    PEDDLER_VARIANT("Peddler Variant"),
+    TERMINAL_SILVER("Terminal Silver"),
+    SIFTER("Sifter"),
+
+
     DIGGING("Digging"),
     DISCARD("Discard"), // For benefit
-    SIFTERS("Sifter"), // ?
     COST_REDUCTION("Cost Reduction"),
     DISAPPEARING_MONEY("Disappearing Money"),
-    PEDDLER("Peddler"),
-    TERMINAL_SILVER("Terminal Silver"), // ?
     VIRTUAL_COIN("Virtual Coin"),
     VIRTUAL_BUY("Virtual Buy"), // ?
     ATTACK_IMMUNITY("Attack Immunity"),
     DECK_INSPECTION("Deck Inspection"),
-    DECK_ORDER_ATTACK("Deck Order Attack"),
-    JUNKING_ATTACK("Junking Attack"),
-    TRASHING_ATTACK("Trashing Attack"),
     TURN_WORSENING_ATTACK("Turn Worsening Attack"), // ?
     DURATION_DRAW("Duration Draw"),
     COMMAND_VARIANT("Command Variant"),
-    GAINER("Gainer"),
     NON_ATTACK_INTERACTION("Non-attack Interaction"),
     ONE_SHOT("One-shot"),
     REMODELER("Remodeler"),
     SPLIT_PILE("Split Pile"),
-    TOP_DECKER("Top Deckecker"),
+    TOP_DECKER("Top Decker"),
     VANILLA("Vanilla"), // ?
     EXTRA_TURN("Extra Turn") // ?
 }

@@ -41,7 +41,8 @@ class KingdomViewModel @Inject constructor(
     private val expansionDao: ExpansionDao,
     private val kingdomGenerator: KingdomGenerator,
     private val cardDependencyResolver: CardDependencyResolver,
-    private val userPrefsRepository: UserPrefsRepository
+    private val userPrefsRepository: UserPrefsRepository,
+    private val cardDao: dev.msuhr.dominionkingdoms.data.CardDao
 ) : ViewModel(), ScreenViewModel {
 
     enum class SortType(val text: String) {
@@ -517,5 +518,23 @@ class KingdomViewModel @Inject constructor(
         // Reset the new kingdom flag when navigating back
         // The kingdom is already saved continuously after each veto
         _isNewKingdom.value = false
+    }
+
+    fun toggleCardFavorite(card: Card) {
+        viewModelScope.launch {
+            val newIsFavoriteState = !card.isFavorite
+
+            // Update database
+            cardDao.toggleCardFavorite(card.id, newIsFavoriteState)
+        }
+    }
+
+    fun toggleCardEnabled(card: Card) {
+        viewModelScope.launch {
+            val newIsEnabledState = !card.isEnabled
+
+            // Update database
+            cardDao.toggleCardEnabled(card.id, newIsEnabledState)
+        }
     }
 }

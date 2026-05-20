@@ -31,7 +31,9 @@
     "image_name": "artisan",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Base_2E"
@@ -51,7 +53,9 @@
     "image_name": "bandit",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Base_2E"
@@ -72,7 +76,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -93,7 +98,9 @@
     "image_name": "cellar",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Base_1E",
@@ -113,7 +120,9 @@
     "image_name": "chancellor",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Base_1E"
@@ -285,7 +294,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -307,7 +317,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -329,7 +340,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -351,7 +363,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -416,7 +429,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Trasher"
+      "Trasher",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -437,7 +451,9 @@
     "image_name": "poacher",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Base_2E"
@@ -479,7 +495,8 @@
     "categories": [
       "Cantrip",
       "Trasher",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -524,7 +541,9 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Deck_order_attack",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -545,7 +564,9 @@
     "image_name": "thief",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Base_1E"
@@ -586,7 +607,9 @@
     "image_name": "vassal",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Base_2E"
@@ -652,7 +675,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -672,7 +696,9 @@
     "image_name": "workshop",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Base_1E",
@@ -876,7 +902,10 @@
     "image_name": "conspirator",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant",
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Intrigue_1E",
@@ -960,7 +989,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -1025,7 +1055,9 @@
     "image_name": "ironworks",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Intrigue_1E",
@@ -1069,7 +1101,9 @@
     "categories": [
       "Terminal_draw",
       "Curser",
-      "Trasher"
+      "Trasher",
+      "Junker",
+      "Trashing_attack"
     ],
     "potion": false,
     "sets": [
@@ -1093,7 +1127,8 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Alt_VP"
+      "Alt_VP",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -1137,7 +1172,10 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Draw_to_x",
+      "Deck_order_attack",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -1251,7 +1289,9 @@
     "image_name": "saboteur",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Intrigue_1E"
@@ -1312,7 +1352,9 @@
     "image_name": "secretpassage",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Intrigue_2E"
@@ -1355,7 +1397,8 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Trasher"
+      "Trasher",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -1378,7 +1421,10 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Junker",
+      "Trashing_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -1513,7 +1559,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Junker"
     ],
     "potion": false,
     "sets": [
@@ -1556,7 +1603,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Village"
+      "Village",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -1580,7 +1628,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -1626,7 +1675,10 @@
     "image_name": "corsair",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack",
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Seaside_2E"
@@ -1647,7 +1699,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -1669,7 +1722,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -1734,7 +1788,8 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Handsize_attack"
+      "Handsize_attack",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -1823,7 +1878,8 @@
     "debt": 0,
     "categories": [
       "Trasher",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -1845,7 +1901,9 @@
     "image_name": "merchantship",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Seaside_1E",
@@ -1908,7 +1966,9 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Terminal_silver",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -1972,7 +2032,9 @@
     "image_name": "pirate",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Seaside_2E"
@@ -1992,7 +2054,9 @@
     "image_name": "pirateship",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Seaside_1E"
@@ -2080,7 +2144,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -2104,7 +2169,8 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Curser"
+      "Curser",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -2124,7 +2190,9 @@
     "image_name": "smugglers",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Seaside_1E",
@@ -2209,7 +2277,9 @@
     "image_name": "treasury",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Seaside_1E",
@@ -2229,7 +2299,9 @@
     "image_name": "warehouse",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Seaside_1E",
@@ -2444,7 +2516,9 @@
     "categories": [
       "Cantrip",
       "Nonterminal_draw",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Deck_order_attack",
+      "Sifter"
     ],
     "potion": true,
     "sets": [
@@ -2486,7 +2560,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Village"
+      "Village",
+      "Gainer"
     ],
     "potion": true,
     "sets": [
@@ -2546,7 +2621,9 @@
     "image_name": "anvil",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Prosperity_2E"
@@ -2658,7 +2735,9 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Deck_order_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -2742,7 +2821,8 @@
     "debt": 0,
     "categories": [
       "Trasher",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -2808,7 +2888,8 @@
     "categories": [
       "Alt_VP",
       "Plusbuy",
-      "Handsize_attack"
+      "Handsize_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -2829,7 +2910,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -2979,7 +3061,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Alt_VP"
+      "Alt_VP",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -3002,7 +3085,9 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Junker",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -3022,7 +3107,9 @@
     "image_name": "peddler",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Prosperity_1E",
@@ -3064,7 +3151,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -3104,7 +3192,9 @@
     "image_name": "talisman",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Prosperity_1E"
@@ -3208,7 +3298,9 @@
     "image_name": "warchest",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Prosperity_2E"
@@ -3230,7 +3322,8 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Trasher"
+      "Trasher",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -3336,7 +3429,9 @@
     "image_name": "baker",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Guilds_1E",
@@ -3527,7 +3622,9 @@
     "image_name": "ferryman",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Cornucopia_Guilds_2E"
@@ -3569,7 +3666,10 @@
     "image_name": "fortuneteller",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Deck_order_attack",
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Cornucopia_1E"
@@ -3654,7 +3754,9 @@
     "image_name": "hornofplenty",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Cornucopia_1E",
@@ -3741,7 +3843,10 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Gainer",
+      "Junker",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -3763,7 +3868,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -3784,7 +3890,9 @@
     "image_name": "joust",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Cornucopia_Guilds_2E"
@@ -3912,7 +4020,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -3934,7 +4043,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -3997,7 +4107,9 @@
     "image_name": "tournament",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Cornucopia_1E"
@@ -4018,7 +4130,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4084,7 +4197,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -4261,7 +4375,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -4283,7 +4398,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -4346,7 +4462,8 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4433,7 +4550,9 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Terminal_silver",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4454,7 +4573,9 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Junker",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4519,7 +4640,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -4539,7 +4661,10 @@
     "image_name": "haggler",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer",
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Hinterlands_1E",
@@ -4560,7 +4685,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -4603,7 +4729,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Village"
+      "Village",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4627,7 +4754,9 @@
     "categories": [
       "Terminal_draw",
       "Trasher",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Draw_to_x",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4671,7 +4800,8 @@
     "categories": [
       "Terminal_draw",
       "Plusbuy",
-      "Handsize_attack"
+      "Handsize_attack",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -4693,7 +4823,10 @@
     "image_name": "noblebrigand",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Junker",
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Hinterlands_1E"
@@ -4713,7 +4846,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -4734,7 +4868,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -4754,7 +4889,10 @@
     "image_name": "oasis",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant",
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Hinterlands_1E",
@@ -4777,7 +4915,9 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Deck_order_attack",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4886,7 +5026,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Nonterminal_draw"
+      "Nonterminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -4976,7 +5117,9 @@
     "image_name": "weaver",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Hinterlands_2E"
@@ -4996,7 +5139,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -5019,7 +5163,8 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Curser"
+      "Curser",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -5060,7 +5205,9 @@
     "image_name": "armory",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Dark_Ages"
@@ -5141,7 +5288,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -5209,7 +5357,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Junker"
     ],
     "potion": false,
     "sets": [
@@ -5299,7 +5448,9 @@
     "image_name": "damenatalie",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Dark_Ages"
@@ -5320,7 +5471,9 @@
     "image_name": "damesylvia",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Dark_Ages"
@@ -5445,7 +5598,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Trasher"
+      "Trasher",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -5488,7 +5642,9 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Peddler_variant",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -5509,7 +5665,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Trasher"
+      "Trasher",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -5531,7 +5688,9 @@
     "image_name": "marauder",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Junker"
+    ],
     "potion": false,
     "sets": [
       "Dark_Ages"
@@ -5574,7 +5733,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -5698,7 +5858,10 @@
     "image_name": "rogue",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack",
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Dark_Ages"
@@ -5738,7 +5901,9 @@
     "image_name": "scavenger",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Dark_Ages"
@@ -5893,7 +6058,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -5961,7 +6127,8 @@
     "debt": 0,
     "categories": [
       "Village",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -6065,7 +6232,8 @@
     "basic": true,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -6130,7 +6298,8 @@
     "categories": [
       "Terminal_draw",
       "Trasher",
-      "Handsize_attack"
+      "Handsize_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -6231,7 +6400,10 @@
     "image_name": "artificer",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer",
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Adventures"
@@ -6276,7 +6448,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -6342,7 +6515,9 @@
     "image_name": "dungeon",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Adventures"
@@ -6362,7 +6537,9 @@
     "image_name": "duplicate",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Adventures"
@@ -6405,7 +6582,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Trashing_attack"
     ],
     "potion": false,
     "sets": [
@@ -6427,7 +6605,9 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Draw_to_x",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -6450,7 +6630,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -6537,7 +6718,9 @@
     "debt": 0,
     "categories": [
       "Curser",
-      "Plusbuy"
+      "Plusbuy",
+      "Junker",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -6879,7 +7062,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Throneroom_variant"
+      "Throneroom_variant",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -6900,7 +7084,9 @@
     "image_name": "fugitive",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Adventures"
@@ -6920,7 +7106,9 @@
     "image_name": "hero",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Adventures"
@@ -7008,7 +7196,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Trashing_attack"
     ],
     "potion": false,
     "sets": [
@@ -7327,7 +7516,8 @@
     "debt": 0,
     "categories": [
       "Plusbuy",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -7541,7 +7731,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Alt_VP"
+      "Alt_VP",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -7562,7 +7753,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -7649,7 +7841,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Alt_VP"
+      "Alt_VP",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -7731,7 +7924,9 @@
     "image_name": "engineer",
     "basic": false,
     "debt": 4,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Empires"
@@ -7795,7 +7990,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -7968,7 +8164,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -8114,7 +8311,8 @@
     "basic": false,
     "debt": 8,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -8158,7 +8356,8 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Nonterminal_draw"
+      "Nonterminal_draw",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -8332,7 +8531,9 @@
     "image_name": "annex",
     "basic": false,
     "debt": 8,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Empires"
@@ -8979,7 +9180,9 @@
     "image_name": "bard",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -9062,7 +9265,9 @@
     "image_name": "cobbler",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -9125,7 +9330,8 @@
     "debt": 0,
     "categories": [
       "Nonterminal_draw",
-      "Village"
+      "Village",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -9167,7 +9373,9 @@
     "image_name": "devilsworkshop",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -9395,7 +9603,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -9526,7 +9735,9 @@
     "image_name": "shepherd",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -9570,7 +9781,9 @@
     "image_name": "tormentor",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -9633,7 +9846,9 @@
     "image_name": "vampire",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -9979,7 +10194,8 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -9999,7 +10215,9 @@
     "image_name": "theearthsgift",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -10175,7 +10393,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -10214,7 +10433,9 @@
     "image_name": "thewindsgift",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -10233,7 +10454,9 @@
     "image_name": "badomens",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Deck_order_attack"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -10290,7 +10513,9 @@
     "image_name": "famine",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Deck_order_attack"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -10330,7 +10555,10 @@
     "image_name": "greed",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Junker",
+      "Deck_order_attack"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -10350,7 +10578,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Deck_order_attack"
     ],
     "potion": false,
     "sets": [
@@ -10370,7 +10599,10 @@
     "image_name": "locusts",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Junker",
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -10448,7 +10680,9 @@
     "image_name": "war",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Nocturne"
@@ -10582,7 +10816,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -10603,7 +10838,9 @@
     "image_name": "cargoship",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -10665,7 +10902,9 @@
     "image_name": "flagbearer",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -10707,7 +10946,9 @@
     "image_name": "improve",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -10726,7 +10967,9 @@
     "image_name": "inventor",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -10831,7 +11074,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Trasher"
+      "Trasher",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -10917,7 +11161,10 @@
     "image_name": "scholar",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Draw_to_x",
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -10936,7 +11183,9 @@
     "image_name": "sculptor",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11222,7 +11471,9 @@
     "image_name": "croprotation",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11418,7 +11669,9 @@
     "image_name": "silos",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11677,7 +11930,9 @@
     "image_name": "cardinal",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -11780,7 +12035,9 @@
     "image_name": "falconer",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -11799,7 +12056,9 @@
     "image_name": "fisherman",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -11860,7 +12119,9 @@
     "image_name": "groom",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -11901,7 +12162,9 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Village"
+      "Village",
+      "Draw_to_x",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -11921,7 +12184,10 @@
     "image_name": "kiln",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer",
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -12468,7 +12734,8 @@
     "debt": 0,
     "categories": [
       "Plusbuy",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -12722,7 +12989,10 @@
     "image_name": "wayofthemole",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Draw_to_x",
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -12841,7 +13111,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -12880,7 +13151,9 @@
     "image_name": "wayoftherat",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -13019,7 +13292,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -13061,7 +13335,10 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Junker",
+      "Trashing_attack",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -13129,7 +13406,8 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Terminal_draw"
+      "Terminal_draw",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -13174,7 +13452,9 @@
     "debt": 0,
     "categories": [
       "Nonterminal_draw",
-      "Village"
+      "Village",
+      "Peddler_variant",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -13194,7 +13474,9 @@
     "image_name": "carpenter",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -13235,7 +13517,9 @@
     "image_name": "conjurer",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -13275,7 +13559,9 @@
     "image_name": "courier",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -13405,7 +13691,9 @@
     "image_name": "garrison",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -13491,7 +13779,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -13512,7 +13801,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Nonterminal_draw"
+      "Nonterminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -13534,7 +13824,9 @@
     "image_name": "importer",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -13554,7 +13846,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -13598,7 +13891,8 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Plusbuy"
+      "Plusbuy",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -13641,7 +13935,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -13704,7 +13999,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -13792,7 +14088,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -13861,7 +14158,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Throneroom_variant"
+      "Throneroom_variant",
+      "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -13930,7 +14228,9 @@
     "image_name": "sunkentreasure",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -13991,7 +14291,9 @@
     "image_name": "tent",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -14034,7 +14336,8 @@
     "debt": 0,
     "categories": [
       "Village",
-      "Plusbuy"
+      "Plusbuy",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -14056,7 +14359,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -14182,7 +14486,9 @@
     "image_name": "architectsguild",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -14222,7 +14528,9 @@
     "image_name": "cavedwellers",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -14298,7 +14606,9 @@
     "image_name": "craftersguild",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -14317,7 +14627,10 @@
     "image_name": "desertguides",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Draw_to_x",
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -14355,7 +14668,9 @@
     "image_name": "fellowshipofscribes",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Draw_to_x"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -14375,7 +14690,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -14530,7 +14846,9 @@
     "image_name": "orderofmasons",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Allies"
@@ -14675,7 +14993,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -14824,7 +15143,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Throneroom_variant"
+      "Throneroom_variant",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -14847,7 +15167,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Throneroom_variant"
+      "Throneroom_variant",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -14868,7 +15189,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -14932,7 +15254,9 @@
     "image_name": "grotto",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Sifter"
+    ],
     "potion": false,
     "sets": [
       "Plunder"
@@ -14952,7 +15276,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Village"
+      "Village",
+      "Peddler_variant"
     ],
     "potion": false,
     "sets": [
@@ -15060,7 +15385,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -15185,7 +15511,9 @@
     "image_name": "quartermaster",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Plunder"
@@ -15249,7 +15577,9 @@
     "image_name": "search",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Plunder"
@@ -15311,7 +15641,9 @@
     "image_name": "silvermine",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Plunder"
@@ -15333,7 +15665,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -15416,7 +15749,9 @@
     "image_name": "tools",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Plunder"
@@ -15566,7 +15901,9 @@
     "image_name": "hammer",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Plunder"
@@ -15698,7 +16035,8 @@
     "debt": 0,
     "categories": [
       "Plusbuy",
-      "Deck_Inspector"
+      "Deck_Inspector",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -15970,7 +16308,8 @@
     "debt": 0,
     "categories": [
       "Trasher",
-      "Handsize_attack"
+      "Handsize_attack",
+      "Trashing_attack"
     ],
     "potion": false,
     "sets": [
@@ -16366,7 +16705,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Nonterminal_draw"
+      "Nonterminal_draw",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -16407,7 +16747,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Cantrip"
+      "Cantrip",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -16489,7 +16830,9 @@
     "image_name": "craftsman",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Gainer"
+    ],
     "potion": false,
     "sets": [
       "Rising_Sun"
@@ -16601,7 +16944,8 @@
     "debt": 0,
     "categories": [
       "Curser",
-      "Village"
+      "Village",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -16646,7 +16990,8 @@
     "debt": 5,
     "categories": [
       "Terminal_draw",
-      "Trasher"
+      "Trasher",
+      "Terminal_silver"
     ],
     "potion": false,
     "sets": [
@@ -16801,7 +17146,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw",
+      "Draw_to_x"
     ],
     "potion": false,
     "sets": [
@@ -16844,7 +17190,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Village"
+      "Village",
+      "Sifter"
     ],
     "potion": false,
     "sets": [
@@ -16931,7 +17278,9 @@
     "image_name": "teahouse",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Peddler_variant"
+    ],
     "potion": false,
     "sets": [
       "Rising_Sun"
@@ -17186,7 +17535,9 @@
     "image_name": "bureaucracy",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Junker"
+    ],
     "potion": false,
     "sets": [
       "Rising_Sun"
@@ -17462,7 +17813,9 @@
     "image_name": "blackmarket",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_silver"
+    ],
     "potion": false,
     "sets": [
       "Promo"
@@ -17565,7 +17918,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Nonterminal_draw"
+      "Nonterminal_draw",
+      "Junker"
     ],
     "potion": false,
     "sets": [
@@ -17732,7 +18086,9 @@
     "image_name": "knights",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Trashing_attack"
+    ],
     "potion": false,
     "sets": [
       "Dark_Ages"
