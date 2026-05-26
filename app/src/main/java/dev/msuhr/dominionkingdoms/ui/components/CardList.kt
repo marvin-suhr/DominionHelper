@@ -384,7 +384,7 @@ fun KingdomCardList(
             key = { card -> card.id }
         ) { card ->
             if (isDismissEnabled)
-                DismissableCard(card, onCardDismissed, onCardClick, onFavorite, onBan, Modifier.animateItem())
+                DismissableCard(card, onCardDismissed, onCardClick, card.isEnabled, onFavorite, onBan, Modifier.animateItem())
             else {
                 CardView(
                     card,
@@ -408,7 +408,7 @@ fun KingdomCardList(
                 key = { card -> card.id }
             ) { card ->
                 if (isDismissEnabled)
-                    DismissableCard(card, onCardDismissed, onCardClick, onFavorite, onBan, Modifier.animateItem())
+                    DismissableCard(card, onCardDismissed, onCardClick, card.isEnabled, onFavorite, onBan, Modifier.animateItem())
                 else {
                     CardView(
                         card,
@@ -505,6 +505,7 @@ fun DismissableCard(
     card: Card,
     onCardDismissed: (Card) -> Unit,
     onCardClick: (Card) -> Unit,
+    isEnabled: Boolean = true,
     onFavorite: (Card) -> Unit,
     onBan: (Card) -> Unit,
     modifier: Modifier = Modifier
@@ -550,7 +551,7 @@ fun DismissableCard(
             }
         }
     ) {
-        CardView(card, onCardClick, onFavorite = { onFavorite(card) }, onBan = { onBan(card) } )
+        CardView(card, onCardClick, isEnabled, onFavorite = { onFavorite(card) }, onBan = { onBan(card) } )
     }
 }
 
@@ -597,7 +598,7 @@ fun CardView(
             .pointerInput(card, onCardClick) {
                 detectTapGestures(
                     onTap = {
-                        if (enabled) onCardClick(card)
+                        onCardClick(card)
                     },
                     onLongPress = { offset ->
                         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
@@ -982,13 +983,15 @@ fun CardIcon(imageId: Int, setName: String) {
         modifier = Modifier
             .aspectRatio(1f)
     ) {
-        AsyncImage(
-            model = imageId,
-            contentDescription = "$setName icon",
-            modifier = Modifier
-                .size(Constants.ICON_SIZE),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-        )
+        if (imageId != 0) {
+            AsyncImage(
+                model = imageId,
+                contentDescription = "$setName icon",
+                modifier = Modifier
+                    .size(Constants.ICON_SIZE),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+            )
+        }
     }
 }
 

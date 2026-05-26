@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Castle
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.filled.WebStories
 import androidx.compose.material.icons.outlined.Castle
-import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.WebStories
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -57,8 +57,8 @@ val bottomNavItems = listOf(
     BottomNavItem(
         label = "Library",
         // TODO Decide on icon
-        selectedIcon = Icons.Filled.Style,//Icons.Filled.WebStories,//Icons.Filled.LibraryBooks,
-        unselectedIcon = Icons.Outlined.Collections,//Icons.Outlined.WebStories,//Icons.Outlined.LibraryBooks,
+        selectedIcon = Icons.Filled.WebStories,//Icons.Filled.Style,//Icons.Filled.LibraryBooks,
+        unselectedIcon = Icons.Outlined.WebStories,//Icons.Outlined.Collections,//Icons.Outlined.LibraryBooks,
         screenRoute = CurrentScreen.Library.route
     ),
     BottomNavItem(

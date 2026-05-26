@@ -1,9 +1,43 @@
-FOR RELEASE:
-sort type favorite?
-remove unban "+"?
-banning doesnt work in search results
+RELEASE ISSUES
+- Center landscape card option
+- Center no kingdoms generated yet (big ui text)
+- add colony / platinum count
+- android 12:status bar cyan and bottom bar white
 
-CORNUCOPIA AND GUILDS?? broken
+Can't reroll after banning in kingdom view
+Show manage at the top in expansion view?
+Choose landscvapes independently from normal cards (different expansions) option
+ensure 2 cost etc
+5-6 players
+dominion wiki link (dominionstrategy.com)
+VP counter
+veto toast
+recommended sets
+prosperity dark ages: set%, % per card
+
+FOR RELEASE PRIO
+light mode text on buttons(?)
+
+Expansions for random cards is only respected when random mode is set to even amounts
+
+search for can rip results in cantrip
+
+rename Base to Dominion
+
+make search not show split pile "main card"?
+
+sort type favorite?
+remove unban "+"? nur in blacklisted cards zeigen
+
+bei expansions: kartenzahl portrait / landscape
+Show Name / year of second edition if owned
+card types: include / limit / exclude
+do not use... (landscape)
+veto vs pick + reroll
+more compact view
+andere sprachen? db prep / migration
+Custom build kingdom
+
 landscape detail view fix
 
 Adding mat to base game shows it as a landscape card
@@ -31,15 +65,14 @@ Sun tokens
 Warning
 This App Bundle contains native code, and you've not uploaded debug symbols. We recommend you upload a symbol file to make your crashes and ANRs easier to analyze and debug. Learn More
 
-dynamic color style default off
-top bar color
+
 
 
 return to "home" when tapping nav bar icon while in submenu
 
 long press ripples??
 
-fehlende Kartentypen hinzufügen
+fehlende Kartenkategorien hinzufügen
 
 Instead of hiding veto mode, just show as disabled?
 
@@ -58,27 +91,10 @@ I think logic says that you can generate a kingdom if at least 1 expansion is ow
  - does promo count? - yes
  - does it take banned cards into account? - no - less than 10 cards is possible
 
------
-
-
-NEW
-Expansions for random cards is only respected when random mode is set to even amounts
-Blacklisted cards UI
-
-
-
-ProGuard/R8 (for Release Builds):
-•The Firebase Crashlytics plugin automatically adds the necessary ProGuard/R8 rules to keep Crashlytics symbols.
-•However, to get deobfuscated crash reports, you need to ensure that symbolication files (mapping files) are uploaded.
-•The com.google.firebase.crashlytics plugin handles uploading these mapping files automatically for release builds if you have minifyEnabled true and Crashlytics configured.
-•Make sure you don't explicitly add firebase-crashlytics-ndk unless you need NDK crash reporting, as it might interfere with Java/Kotlin symbol uploading if not configured correctly.
-
 ------------------------------
 
 UI bounds pass
 
-"Unnamed kingdom (x)"
-Expansion list: portrait / landscape amount
 
 TODO NEXT:
 LinkedHashSets?
@@ -97,7 +113,6 @@ LinkedHashSets?
 
 - Skeleton while loading kingdom?
 - Rethink sorting? Maybe always split by categories, then by name / cost
-- Nothing happens when clicking an edition
 - Landscape cards color bar
 
 - Make complex routes to link to speciofic kingdoms? kingdoms://kingdom/1,2,3,4 ... list of card IDs

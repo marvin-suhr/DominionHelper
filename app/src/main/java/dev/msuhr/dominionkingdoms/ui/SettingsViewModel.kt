@@ -106,7 +106,7 @@ enum class DarkAgesMode(val displayName: String) {
 
 enum class ProsperityMode(val displayName: String) {
     TEN_PERCENT_PER_CARD("10% per Prosperity card"),
-    IF_PRESENT("When at least 1 card is present"),
+    IF_PRESENT("When at least one card is present"),
     NEVER("Never")
     // ALWAYS_IF_PROSPERITY_OWNED ??
 }
@@ -187,7 +187,7 @@ class SettingsViewModel @Inject constructor(
                 // where dynamic colors are available
                 SettingItem.SwitchSetting(
                     title = "Dynamic color",
-                    description = "Use colors from the system style",
+                    description = "Use colors from system style",
                     isChecked = useSystemTheme,
                     onCheckedChange = { setUseSystemTheme(it) }
                 ).takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.S },
@@ -266,7 +266,7 @@ Don't reroll: just remove cards until there's only 10 left."""
                 // Expansions Section
                 SettingItem.SectionHeader("Dark Ages and Prosperity cards"),
                 SettingItem.ChoiceSetting(
-                    title = "Dark Ages starter cards",
+                    title = "Dark Ages Shelters",
                     selectedOption = currentDarkAgesMode,
                     allOptions = DarkAgesMode.entries.toList(),
                     optionDisplayFormatter = { it.displayName },

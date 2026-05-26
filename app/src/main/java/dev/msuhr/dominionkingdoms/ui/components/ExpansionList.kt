@@ -1,21 +1,23 @@
 package dev.msuhr.dominionkingdoms.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.VisibilityOff
@@ -28,7 +30,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -50,9 +55,8 @@ import dev.msuhr.dominionkingdoms.utils.getDrawableId
 fun ExpansionListItem(
     expansion: ExpansionWithEditions,
     onClick: () -> Unit, // Click on the whole item goes to detail
-    onOwnershipToggle: () -> Unit, // Callback for single edition toggle click
-    hasMultipleEditions: Boolean,
-    onToggleExpansion: () -> Unit // Callback for clicking the arrow
+    onOwnershipToggle: () -> Unit, // Callback for ownership toggle click
+    hasMultipleEditions: Boolean
 ) {
     Card(
         modifier = Modifier
@@ -77,7 +81,6 @@ fun ExpansionListItem(
             ExpansionOwnershipIcon(
                 expansion,
                 hasMultipleEditions,
-                onToggleExpansion,
                 onOwnershipToggle
             )
         }
@@ -149,48 +152,55 @@ fun ExpansionLabels(
 fun ExpansionOwnershipIcon(
     expansion: ExpansionWithEditions,
     hasMultipleEditions: Boolean,
-    onToggleExpansion: () -> Unit, // TODO Deleting this breaks toggling??
-    onOwnershipToggle: () -> Unit // Check both of these
+    onOwnershipToggle: () -> Unit
 ) {
     Surface(
         modifier = Modifier
             .fillMaxHeight()
             .aspectRatio(1f),
-        onClick = {
-            if (hasMultipleEditions) {
-                Log.i("ExpansionListItem", "Clicking multi-edition ownership toggle")
-                onOwnershipToggle()
-            } else {
-                Log.i("ExpansionListItem", "Clicking ownership icon")
-                onOwnershipToggle()
-            }
-        },
         color = Color.Transparent
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { onOwnershipToggle() }
+                    )
+                },
             contentAlignment = Alignment.Center
         ) {
             if (hasMultipleEditions) {
                 // Multi-edition expansion: show ownership state icon
                 val isFirstOwned = expansion.firstEdition?.isOwned == true
                 val isSecondOwned = expansion.secondEdition?.isOwned == true
+                val isSharedSecondEdition = expansion.secondEdition?.name == "Cornucopia & Guilds" // TODO this sucks
 
                 when {
                     isFirstOwned && isSecondOwned -> {
-                        // BOTH editions owned - show checkmark
-                        Icon(
-                            imageVector = Icons.Filled.CheckCircle,
-                            contentDescription = "Both Editions Owned",
-                            modifier = Modifier.size(Constants.ICON_SIZE),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        // BOTH editions owned - show checkmark with link indicator if shared
+                        Box {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = "Both Editions Owned",
+                                modifier = Modifier.size(Constants.ICON_SIZE),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            if (isSharedSecondEdition) {
+                                SharedEditionIndicator()
+                            }
+                        }
                     }
                     isFirstOwned -> {
                         CircleWithNumber(1)
                     }
                     isSecondOwned -> {
-                        CircleWithNumber(2)
+                        Box {
+                            CircleWithNumber(2)
+                            if (isSharedSecondEdition) {
+                                SharedEditionIndicator()
+                            }
+                        }
                     }
                     else -> {
                         // NONE owned - show empty circle
@@ -237,6 +247,23 @@ fun CircleWithNumber(number: Int) {
     }
 }
 
+@Composable
+fun SharedEditionIndicator() {
+    Icon(
+        imageVector = Icons.Filled.Link,
+        contentDescription = "Shared Edition",
+        modifier = Modifier
+            .size(12.dp)
+            .offset {
+                IntOffset(
+                    x = 16,
+                    y = (-16)
+                )
+            },
+        tint = MaterialTheme.colorScheme.tertiary
+    )
+}
+
 // TODO: Abstraction over favorite and blacklisted cards list
 @Composable
 fun FavoriteCardsListItem(
@@ -252,7 +279,8 @@ fun FavoriteCardsListItem(
                 } else {
                     Modifier
                 }
-            )
+            ),
+        shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(
             modifier = Modifier
@@ -332,7 +360,8 @@ fun BlacklistedCardsListItem(
                 } else {
                     Modifier
                 }
-            )
+            ),
+        shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(
             modifier = Modifier

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import dev.msuhr.dominionkingdoms.model.Expansion
 import dev.msuhr.dominionkingdoms.model.Set
 import kotlinx.coroutines.flow.Flow
@@ -59,4 +60,22 @@ interface ExpansionDao {
 
     @Query("SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM expansions WHERE isOwned = 1")
     fun hasAnyOwnedExpansion(): Flow<Boolean>
+
+    @Transaction
+    suspend fun updateMultiEditionOwnership(
+        expansionName: String,
+        shouldOwnFirst: Boolean,
+        shouldOwnSecond: Boolean,
+        isSharedEdition: Boolean = false
+    ) {
+        updateFirstEditionOwned(expansionName, shouldOwnFirst)
+
+        if (isSharedEdition) {
+            // For Cornucopia & Guilds 2nd edition, update by exact name
+            // The database row has name="Cornucopia & Guilds", not "Guilds" or "Cornucopia"
+            updateSecondEditionOwned("Cornucopia & Guilds", shouldOwnSecond)
+        } else {
+            updateSecondEditionOwned(expansionName, shouldOwnSecond)
+        }
+    }
 }

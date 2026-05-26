@@ -32,7 +32,7 @@ object Constants {
     const val USER_PREFERENCES_NAME = "settings_pref"
 
     // -> UserPrefsRepo?
-    val DEFAULT_RANDOM_MODE = RandomMode.FULL_RANDOM
+    val DEFAULT_RANDOM_MODE = RandomMode.EVEN_AMOUNTS
     const val DEFAULT_RANDOM_EXPANSION_AMOUNT = 2
     val DEFAULT_VETO_MODE = VetoMode.REROLL_SAME
     const val DEFAULT_NUMBER_OF_CARDS_TO_GENERATE = 10

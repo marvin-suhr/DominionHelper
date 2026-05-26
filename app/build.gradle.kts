@@ -45,7 +45,7 @@ android {
         applicationId = "dev.msuhr.dominionkingdoms"
         minSdk = 24
         targetSdk = 35
-        versionCode = 7
+        versionCode = 12
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -124,7 +124,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
     //implementation("com.google.firebase:firebase-crashlytics") // Duplicate
-    //implementation(libs.firebase.crashlytics.ndk) // Only needed for native C code??
+    //implementation(libs.firebase.crashlytics.ndk) // Only needed for native C code?? MIGHT INTERFERE WITH SYMBOL MAPPING UPLOADING
     //implementation(libs.firebase.crashlytics.ktx)
     implementation(libs.firebase.analytics)
 

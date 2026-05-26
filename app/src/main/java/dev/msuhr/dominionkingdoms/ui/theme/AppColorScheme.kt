@@ -152,7 +152,8 @@ object AppColorScheme {
 
         error = Color(0xFFFFB4AB),
         onError = Color(0xFF690005),
-        errorContainer = Color(0xFF93000A),
+        //errorContainer = Color(0xFF93000A),
+        errorContainer = Color(0xFF690005),
         onErrorContainer = Color(0xFFFFDAD6),
 
         background = Color(0xFF1C1B1F),

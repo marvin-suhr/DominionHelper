@@ -194,8 +194,8 @@ fun CardDetail(
                     modifier = Modifier.weight(1f),
                     onClick = { onFavorite(card) },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFFD54F), // TODO: Light mode colors
-                        contentColor = Color(0xFF121212)
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,//Color(0xFFFFD54F), // TODO: Light mode colors
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer//Color(0xFF121212)
                     )
                 ) {
                     Icon(Icons.Filled.Star, contentDescription = null)
@@ -207,7 +207,7 @@ fun CardDetail(
                     modifier = Modifier.weight(1f),
                     onClick = { onFavorite(card) },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xB3FFFFFF)
+                        contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
                     ),
                     border = BorderStroke(1.dp, Color(0xFF424242))
                 ) {
@@ -223,8 +223,8 @@ fun CardDetail(
                     modifier = Modifier.weight(1f),
                     onClick = { onBan(card) },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE57373), // TODO: Light mode colors
-                        contentColor = Color(0xFF121212)
+                        containerColor = MaterialTheme.colorScheme.errorContainer,//Color(0xFFE57373), // TODO: Light mode colors
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer//Color(0xFF121212)
                     )
                 ) {
                     Icon(Icons.Filled.Block, contentDescription = null)
@@ -236,7 +236,7 @@ fun CardDetail(
                     modifier = Modifier.weight(1f),
                     onClick = { onBan(card) },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xB3FFFFFF)
+                        contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
                     ),
                     border = BorderStroke(1.dp, Color(0xFF424242))
                 ) {

@@ -326,10 +326,15 @@ class LibraryViewModel @Inject constructor(
     /**
      * Get the current OwnedEdition state for an expansion with multiple editions.
      * Returns the appropriate state based on which editions are owned.
+     * Reads from the current in-memory state to ensure accuracy.
      */
     fun getOwnedEdition(expansion: ExpansionWithEditions): OwnedEdition {
-        val isFirstOwned = expansion.firstEdition?.isOwned == true
-        val isSecondOwned = expansion.secondEdition?.isOwned == true
+        // Find the current state from the in-memory list (not from the parameter)
+        val currentExpansion = _expansionsWithEditions.value.find { it.name == expansion.name }
+            ?: return OwnedEdition.NONE
+
+        val isFirstOwned = currentExpansion.firstEdition?.isOwned == true
+        val isSecondOwned = currentExpansion.secondEdition?.isOwned == true
 
         return when {
             isFirstOwned && isSecondOwned -> OwnedEdition.BOTH
@@ -340,11 +345,63 @@ class LibraryViewModel @Inject constructor(
     }
 
     /**
-     * Cycle through ownership states for an expansion with multiple editions.
-     * The cycle is: NONE → FIRST → SECOND → BOTH → NONE
-     * Updates both the database and the in-memory state.
+     * Get the current owned state for a specific expansion edition.
+     * Reads from the in-memory state to ensure freshness.
      */
-    // TODO Review
+    fun isEditionOwned(expansionName: String, edition: Int): Boolean {
+        val currentExpansion = _expansionsWithEditions.value.find { it.name == expansionName }
+            ?: return false
+
+        return when (edition) {
+            1 -> currentExpansion.firstEdition?.isOwned == true
+            2 -> currentExpansion.secondEdition?.isOwned == true
+            else -> false
+        }
+    }
+
+    /**
+     * Toggle ownership for a single-edition expansion.
+     * Updates database and in-memory state.
+     */
+    fun toggleSingleEditionOwnership(expansionName: String, edition: Int) {
+        viewModelScope.launch {
+            val currentOwned = isEditionOwned(expansionName, edition)
+            val newOwned = !currentOwned
+
+            // Update the database
+            when (edition) {
+                1 -> expansionDao.updateFirstEditionOwned(expansionName, newOwned)
+                2 -> expansionDao.updateSecondEditionOwned(expansionName, newOwned)
+                else -> throw IllegalArgumentException("Invalid edition.")
+            }
+
+            // Update the in-memory state
+            _expansionsWithEditions.value = _expansionsWithEditions.value.map {
+                if (it.name == expansionName) {
+                    when (edition) {
+                        1 -> it.copy(firstEdition = it.firstEdition?.copy(isOwned = newOwned))
+                        2 -> it.copy(secondEdition = it.secondEdition?.copy(isOwned = newOwned))
+                        else -> it
+                    }
+                } else {
+                    it
+                }
+            }
+
+            Log.i(
+                "LibraryViewModel",
+                "ToggleSingleEditionOwnership(): Toggled ${expansionName}[${edition}] from $currentOwned to $newOwned"
+            )
+        }
+    }
+
+    // TODO check this
+    /**
+     * Cycle through ownership states for multi-edition expansions.
+     * The cycle is: NONE → FIRST → SECOND → BOTH → NONE
+     * Updates database atomically and updates in-memory state.
+     * For Cornucopia & Guilds 2nd edition, both expansions share ownership.
+     */
     fun cycleMultiEditionOwnership(expansion: ExpansionWithEditions) {
         viewModelScope.launch {
             val currentOwned = getOwnedEdition(expansion)
@@ -355,28 +412,30 @@ class LibraryViewModel @Inject constructor(
                 OwnedEdition.BOTH -> OwnedEdition.NONE
             }
 
-            // Update first edition ownership
-            expansion.firstEdition?.let { first ->
-                val shouldOwnFirst = newOwned == OwnedEdition.FIRST || newOwned == OwnedEdition.BOTH
-                expansionDao.updateFirstEditionOwned(expansion.name, shouldOwnFirst)
-            }
+            val shouldOwnFirst = newOwned == OwnedEdition.FIRST || newOwned == OwnedEdition.BOTH
+            val shouldOwnSecond = newOwned == OwnedEdition.SECOND || newOwned == OwnedEdition.BOTH
+            val isSharedEdition = expansion.secondEdition?.name == "Cornucopia & Guilds"
 
-            // Update second edition ownership
-            expansion.secondEdition?.let { second ->
-                val shouldOwnSecond = newOwned == OwnedEdition.SECOND || newOwned == OwnedEdition.BOTH
-                expansionDao.updateSecondEditionOwned(expansion.name, shouldOwnSecond)
-            }
+            // Use transaction for atomic database updates
+            expansionDao.updateMultiEditionOwnership(
+                expansionName = expansion.name,
+                shouldOwnFirst = shouldOwnFirst,
+                shouldOwnSecond = shouldOwnSecond,
+                isSharedEdition = isSharedEdition
+            )
 
-            // Update the in-memory state
+            // Immediately update in-memory state to ensure UI correctness
             _expansionsWithEditions.value = _expansionsWithEditions.value.map {
                 if (it.name == expansion.name) {
+                    // Update both editions for the clicked expansion
                     it.copy(
-                        firstEdition = it.firstEdition?.copy(
-                            isOwned = newOwned == OwnedEdition.FIRST || newOwned == OwnedEdition.BOTH
-                        ),
-                        secondEdition = it.secondEdition?.copy(
-                            isOwned = newOwned == OwnedEdition.SECOND || newOwned == OwnedEdition.BOTH
-                        )
+                        firstEdition = it.firstEdition?.copy(isOwned = shouldOwnFirst),
+                        secondEdition = it.secondEdition?.copy(isOwned = shouldOwnSecond)
+                    )
+                } else if (isSharedEdition && it.secondEdition?.name == "Cornucopia & Guilds") {
+                    // ONLY update second edition for shared expansions (keep first editions independent)
+                    it.copy(
+                        secondEdition = it.secondEdition?.copy(isOwned = shouldOwnSecond)
                     )
                 } else {
                     it
@@ -598,7 +657,7 @@ class LibraryViewModel @Inject constructor(
                     stateBeforeSearch = _uiState.value
                 }
                 // Perform search
-                _cardsToShow.value = cardDao.getFilteredCards("%$newText%")
+                _cardsToShow.value = cardDao.getFilteredCards(newText)
                 _uiState.value = LibraryUiState.SEARCH_RESULTS
             }
 

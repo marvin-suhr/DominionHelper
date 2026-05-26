@@ -37,13 +37,16 @@ interface CardDao {
     )
     suspend fun getRandomSupplyCards(count: Int): List<Card>
 
+
     @Query(
         """
     SELECT * FROM cards
     WHERE name LIKE '%' || :filter || '%'
-       OR sets LIKE '%' || :filter || '%'
-       OR types LIKE '%' || :filter || '%'
        OR CAST(cost AS TEXT) LIKE '%' || :filter || '%'
+       -- Exact match boundaries for categories and types array elements
+       -- Also replaces spaces with underscores in the filter input
+       OR categories LIKE '%"' || REPLACE(UPPER(:filter), ' ', '_') || '"%'
+       OR types LIKE '%"' || REPLACE(UPPER(:filter), ' ', '_') || '"%'
     """
     )
     suspend fun getFilteredCards(filter: String): List<Card>

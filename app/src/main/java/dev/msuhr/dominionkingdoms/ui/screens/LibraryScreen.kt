@@ -439,15 +439,14 @@ private fun ExpansionListItemContent(
                 // Multi-edition: cycle through ownership states (NONE → FIRST → SECOND → BOTH → NONE)
                 viewModel.cycleMultiEditionOwnership(expansion)
             } else {
-                // Single edition: simple toggle
+                // Single edition: simple toggle using ViewModel's current state
                 val editionToToggle = expansion.firstEdition ?: expansion.secondEdition
                 editionToToggle?.let { edition ->
-                    onOwnershipToggle(edition, !edition.isOwned)
+                    viewModel.toggleSingleEditionOwnership(expansion.name, edition.edition)
                 }
             }
         },
-        hasMultipleEditions = hasMultipleEditions,
-        onToggleExpansion = { viewModel.toggleExpansion(expansion) }
+        hasMultipleEditions = hasMultipleEditions
     )
 }
 

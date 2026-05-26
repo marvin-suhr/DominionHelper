@@ -4,7 +4,7 @@ import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.ui.KingdomViewModel
 import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
 
-enum class Set (val imageId: Int = R.drawable.ic_launcher_foreground, val displayName: String = "") {
+enum class Set (val imageId: Int = 0, val displayName: String = "") {
     BASE_1E(R.drawable.set_dominion_1e, "Dominion"),
     BASE_2E(R.drawable.set_dominion_2e, "Dominion"),
     INTRIGUE_1E(R.drawable.set_intrigue_1e, "Intrigue"),
