@@ -314,12 +314,16 @@ fun FavoriteCardsListItem(
                         LocalContentColor.current
                     } else {
                         LocalContentColor.current.copy(alpha = 0.38f)
-                    }
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "$favoriteCardCount favorite cards",
                     fontSize = Constants.TEXT_SMALL,
-                    color = LocalContentColor.current.copy(alpha = 0.6f)
+                    color = LocalContentColor.current.copy(alpha = 0.6f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -395,12 +399,16 @@ fun BlacklistedCardsListItem(
                         LocalContentColor.current
                     } else {
                         LocalContentColor.current.copy(alpha = 0.38f)
-                    }
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "$disabledCardCount blacklisted cards",
                     fontSize = Constants.TEXT_SMALL,
-                    color = LocalContentColor.current.copy(alpha = 0.6f)
+                    color = LocalContentColor.current.copy(alpha = 0.6f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 

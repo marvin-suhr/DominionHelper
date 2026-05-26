@@ -102,7 +102,7 @@ fun SettingsList(
                 }
 
                 Text(
-                    text = "v$versionName-$versionCode",
+                    text = "v${versionName}_$versionCode",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
@@ -136,15 +136,19 @@ fun SwitchSettingItem(setting: SettingItem.SwitchSetting) {
     ) {
         Column(
             modifier = Modifier
-                .height(48.dp)
                 .weight(1f)
+                .defaultMinSize(minHeight = 48.dp),
+            verticalArrangement = if (setting.description != null) {
+                Arrangement.SpaceBetween
+            } else {
+                Arrangement.Center
+            }
         ) {
             Text(
                 text = setting.title,
                 style = MaterialTheme.typography.bodyLarge
             )
             if (setting.description != null) {
-                Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = setting.description,
                     style = MaterialTheme.typography.bodyMedium,
@@ -295,10 +299,13 @@ fun <E : Enum<E>> ChoiceSettingItem(setting: SettingItem.ChoiceSetting<E>) {
             .fillMaxWidth()
             .clickable { showDialog = true }
             .padding(16.dp)
-            .height(48.dp),
+            .defaultMinSize(minHeight = 48.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
             Row(
                 modifier = Modifier
                     .height(IntrinsicSize.Min) // Forces the Row to follow the Text's height
@@ -328,7 +335,6 @@ fun <E : Enum<E>> ChoiceSettingItem(setting: SettingItem.ChoiceSetting<E>) {
                     }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = setting.optionDisplayFormatter(setting.selectedOption),
                 style = MaterialTheme.typography.bodyMedium,

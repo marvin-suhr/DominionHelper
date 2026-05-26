@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,6 +76,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -102,6 +104,7 @@ import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
 import dev.msuhr.dominionkingdoms.utils.Constants
 import dev.msuhr.dominionkingdoms.utils.getDrawableId
 import dev.msuhr.dominionkingdoms.model.Set
+import dev.msuhr.dominionkingdoms.utils.ui.horizontalFadingEdges
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -375,6 +378,13 @@ fun KingdomCardList(
         verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL)
     ) {
 
+        item {
+            PlayerSelectionButtons(
+                selectedPlayers = selectedPlayers,
+                onPlayerSelected = { onPlayerCountChange(it) }
+            )
+        }
+
         // RANDOM CARDS
         item {
             CardSpacer("Supply Cards")
@@ -457,12 +467,6 @@ fun KingdomCardList(
         item {
             CardSpacer("Basic Cards")
         }
-        item {
-            PlayerSelectionButtons(
-                selectedPlayers = selectedPlayers,
-                onPlayerSelected = { onPlayerCountChange(it) }
-            )
-        }
         items(kingdom.basicCards.keys.toList()) { card ->
             CardView(card, onCardClick, enabled = card.isEnabled, showIcon = true, kingdom.basicCards[card]!!)
         }
@@ -473,13 +477,17 @@ fun KingdomCardList(
 fun PlayerSelectionButtons(selectedPlayers: Int, onPlayerSelected: (Int) -> Unit) {
     val playerCounts = listOf(2, 3, 4)
 
-    Row(
+    LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = Constants.PADDING_SMALL),
-        horizontalArrangement = Arrangement.SpaceEvenly
+            .height(40.dp) // Button height
+            .horizontalFadingEdges(fadeWidth = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        playerCounts.forEach { count ->
+        // This the only way I can get it to look the way I want
+        item { Spacer(modifier = Modifier.width(0.dp)) }
+        items(playerCounts) { count ->
             Button(
                 onClick = { onPlayerSelected(count) },
                 colors = if (selectedPlayers == count) {
@@ -497,6 +505,7 @@ fun PlayerSelectionButtons(selectedPlayers: Int, onPlayerSelected: (Int) -> Unit
                 Text("$count Players")
             }
         }
+        item { Spacer(modifier = Modifier.width(0.dp)) }
     }
 }
 

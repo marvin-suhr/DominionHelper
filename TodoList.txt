@@ -1,8 +1,15 @@
-RELEASE ISSUES
-- Center landscape card option
-- Center no kingdoms generated yet (big ui text)
-- add colony / platinum count
-- android 12:status bar cyan and bottom bar white
+Custom build kingdom
+- fab -> modal bottom sheet
+    🎲 Generate Random Kingdom: (Subtitle: "Based on your current expansion settings")
+    🛠️ Build Custom Kingdom: (Subtitle: "Hand-pick 10 cards for a specific setup")
+-
+
+Text(styling = ...
+  - MaterialTheme.typography.headlineLarge/Medium/Small
+  - MaterialTheme.typography.titleLarge/Medium/Small
+  - MaterialTheme.typography.bodyLarge/Medium/Small
+  - MaterialTheme.typography.labelLarge/Medium/Small
+
 
 Can't reroll after banning in kingdom view
 Show manage at the top in expansion view?
@@ -36,7 +43,7 @@ do not use... (landscape)
 veto vs pick + reroll
 more compact view
 andere sprachen? db prep / migration
-Custom build kingdom
+
 
 landscape detail view fix
 

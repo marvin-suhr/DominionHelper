@@ -62,6 +62,7 @@ class MainActivity : ComponentActivity() {
 
             WindowCompat.getInsetsController(window, window.decorView).apply {
                 isAppearanceLightStatusBars = !darkTheme
+                isAppearanceLightNavigationBars = !darkTheme
             }
 
             val useSystemTheme by userPrefsRepository.useSystemTheme.collectAsState(initial = true)

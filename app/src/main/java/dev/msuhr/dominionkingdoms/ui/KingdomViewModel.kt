@@ -14,6 +14,7 @@ import dev.msuhr.dominionkingdoms.model.Kingdom
 import dev.msuhr.dominionkingdoms.data.repositories.KingdomRepository
 import dev.msuhr.dominionkingdoms.utils.insertOrReplaceAtKeyPosition
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.msuhr.dominionkingdoms.model.Type
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -289,42 +290,49 @@ class KingdomViewModel @Inject constructor(
         cards: LinkedHashMap<Card, Int>,
         playerCount: Int
     ): LinkedHashMap<Card, Int> {
-        assert(playerCount in 2..4)
+        require(playerCount in 2..4) { "Invalid player count: $playerCount" }
 
         val cardAmounts = linkedMapOf<Card, Int>()
 
         cards.forEach { card, amount ->
-            val amount = when (card.name) {
-                CardNames.COPPER -> when (playerCount) {
-                    2 -> 46
-                    3 -> 39
-                    4 -> 32
-                    else -> throw IllegalArgumentException("Invalid player count: $playerCount")
+
+            val amount = if (card.types.contains(Type.VICTORY)) {
+                when (playerCount) {
+                    2 -> 8
+                    else -> 12
                 }
+            } else {
 
-                CardNames.SILVER -> 40
-                CardNames.GOLD -> 30
-                CardNames.CURSE -> when (playerCount) {
-                    2 -> 10
-                    3 -> 20
-                    4 -> 30
-                    else -> throw IllegalArgumentException("Invalid player count: $playerCount")
+                when (card.name) {
+                    CardNames.COPPER -> when (playerCount) {
+                        2 -> 46
+                        3 -> 39
+                        4 -> 32
+                        else -> error("Impossible: already validated")
+                    }
+
+                    CardNames.SILVER -> 40
+                    CardNames.GOLD -> 30
+                    CardNames.PLATINUM -> 12
+
+                    CardNames.CURSE -> when (playerCount) {
+                        2 -> 10
+                        3 -> 20
+                        4 -> 30
+                        else -> error("Impossible: already validated")
+                    }
+
+                    CardNames.RUINS_PILE -> when (playerCount) {
+                        2 -> 10
+                        3 -> 20
+                        4 -> 30
+                        else -> error("Impossible: already validated")
+                    }
+
+                    CardNames.REWARD_PILE -> if (playerCount == 2) 6 else 12
+
+                    else -> 1
                 }
-
-                CardNames.ESTATE -> if (playerCount == 2) 8 else 12
-                CardNames.DUCHY -> if (playerCount == 2) 8 else 12
-                CardNames.PROVINCE -> if (playerCount == 2) 8 else 12
-
-                CardNames.RUINS_PILE -> when (playerCount) {
-                    2 -> 10
-                    3 -> 20
-                    4 -> 30
-                    else -> throw IllegalArgumentException("Invalid player count: $playerCount")
-                }
-
-                CardNames.REWARD_PILE -> if (playerCount == 2) 6 else 12
-
-                else -> 1
             }
             cardAmounts[card] = amount
         }

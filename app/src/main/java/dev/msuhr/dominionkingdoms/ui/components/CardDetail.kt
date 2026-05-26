@@ -33,7 +33,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,24 +41,19 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.utils.getDrawableId
+import dev.msuhr.dominionkingdoms.utils.ui.horizontalFadingEdges
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 // Show a pager scrolling through a list of cards
@@ -200,7 +194,7 @@ fun CardDetail(
                 ) {
                     Icon(Icons.Filled.Star, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Unfavorite")
+                    Text("Unfavorite", maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             } else {
                 OutlinedButton(
@@ -213,7 +207,7 @@ fun CardDetail(
                 ) {
                     Icon(Icons.Outlined.StarBorder, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Favorite")
+                    Text("Favorite", maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
 
@@ -229,7 +223,7 @@ fun CardDetail(
                 ) {
                     Icon(Icons.Filled.Block, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Unban")
+                    Text("Unban", maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             } else {
                 OutlinedButton(
@@ -242,7 +236,7 @@ fun CardDetail(
                 ) {
                     Icon(Icons.Outlined.Block, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ban")
+                    Text("Ban", maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
@@ -296,33 +290,3 @@ fun CategoryChip(categoryName: String, modifier: Modifier = Modifier) {
         border = null // Removes the default outline border so it looks like a clean solid badge
     )
 }
-
-// Fading edges for scrolling chips
-fun Modifier.horizontalFadingEdges(fadeWidth: Dp = 16.dp): Modifier = this
-    // 1. Enforce a Layer Strategy to isolate transparency blending
-    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-    .drawWithContent {
-        drawContent() // Render the underlying chips first
-
-        val widthPx = fadeWidth.toPx()
-
-        // 2. Fade at the left edge (Start)
-        drawRect(
-            brush = Brush.horizontalGradient(
-                colors = listOf(Color.Transparent, Color.Black),
-                startX = 0f,
-                endX = widthPx
-            ),
-            blendMode = BlendMode.DstIn
-        )
-
-        // 3. Fade at the right edge (End)
-        drawRect(
-            brush = Brush.horizontalGradient(
-                colors = listOf(Color.Black, Color.Transparent),
-                startX = size.width - widthPx,
-                endX = size.width
-            ),
-            blendMode = BlendMode.DstIn
-        )
-    }

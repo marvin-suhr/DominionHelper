@@ -15,6 +15,7 @@ object CardNames {
     const val COPPER = "Copper"
     const val SILVER = "Silver"
     const val GOLD = "Gold"
+    const val PLATINUM = "Platinum"
     const val ESTATE = "Estate"
     const val DUCHY = "Duchy"
     const val PROVINCE = "Province"
