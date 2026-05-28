@@ -1,3 +1,8 @@
+- Don't display version on single edition expansions
+
+- Give possibility to randomly add promo cards if owned
+
+- Automatically sort cards after generating
 
 Custom build kingdom
 - fab -> modal bottom sheet

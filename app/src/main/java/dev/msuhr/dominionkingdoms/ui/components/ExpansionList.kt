@@ -174,7 +174,7 @@ fun ExpansionOwnershipIcon(
 ) {
     Box(
         modifier = Modifier
-            .size(Constants.ICON_SIZE)
+            .size(Constants.CHECKMARK_SIZE)
             .clickable(
                 onClick = { onOwnershipToggle() }
             ),

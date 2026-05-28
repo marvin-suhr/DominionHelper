@@ -604,7 +604,7 @@ fun CardView(
 
     Box(
         modifier = Modifier
-            .height(Constants.CARD_HEIGHT)
+            .height(Constants.CARD_HEIGHT_CARDS)
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.6f)
             .indication(interactionSource, LocalIndication.current) // Ripple
@@ -680,7 +680,7 @@ fun CardContextMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
         // offset centers the menu on the touch point
-        offset = DpOffset(xOffset, yOffset - Constants.CARD_HEIGHT)
+        offset = DpOffset(xOffset, yOffset - Constants.CARD_HEIGHT_CARDS)
     ) {
         DropdownMenuItem(
             text = { Text(if (isFavorite) "Unfavorite Card" else "Favorite Card") },
