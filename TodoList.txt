@@ -1,3 +1,4 @@
+
 Custom build kingdom
 - fab -> modal bottom sheet
     🎲 Generate Random Kingdom: (Subtitle: "Based on your current expansion settings")
@@ -13,7 +14,7 @@ Text(styling = ...
 
 Can't reroll after banning in kingdom view
 Show manage at the top in expansion view?
-Choose landscvapes independently from normal cards (different expansions) option
+Choose landscapes independently from normal cards (different expansions) option
 ensure 2 cost etc
 5-6 players
 dominion wiki link (dominionstrategy.com)
@@ -76,8 +77,6 @@ This App Bundle contains native code, and you've not uploaded debug symbols. We 
 
 
 return to "home" when tapping nav bar icon while in submenu
-
-long press ripples??
 
 fehlende Kartenkategorien hinzufügen
 

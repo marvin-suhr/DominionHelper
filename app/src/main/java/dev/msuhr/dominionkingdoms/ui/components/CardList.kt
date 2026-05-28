@@ -76,12 +76,15 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import android.view.HapticFeedbackConstants
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle.Companion.Italic
 import androidx.compose.ui.text.style.TextAlign
@@ -594,6 +597,7 @@ fun CardView(
     onFavorite: () -> Unit = { },
     onBan: () -> Unit = { }
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     var showPopupMenu by remember { mutableStateOf(false) }
     var touchOffset by remember { mutableStateOf(Offset.Zero) } // Store touch coordinates
     val view = LocalView.current
@@ -603,9 +607,16 @@ fun CardView(
             .height(Constants.CARD_HEIGHT)
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.6f)
+            .indication(interactionSource, LocalIndication.current) // Ripple
             // Use pointerInput to distinguish between Tap and LongPress
             .pointerInput(card, onCardClick) {
                 detectTapGestures(
+                    onPress = { offset ->
+                        val press = PressInteraction.Press(offset)
+                        interactionSource.emit(press)
+                        tryAwaitRelease()
+                        interactionSource.emit(PressInteraction.Release(press))
+                    },
                     onTap = {
                         onCardClick(card)
                     },

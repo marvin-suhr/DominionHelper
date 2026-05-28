@@ -28,3 +28,4 @@ local.properties
 /images_pre_conversion
 /app/google-services.json
 /app/release
+/gradle/gradle-daemon-jvm.properties

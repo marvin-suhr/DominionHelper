@@ -33,7 +33,7 @@ fun SearchBar(
             .padding(horizontal = 8.dp, vertical = 4.dp),
         placeholder = {
             Text(
-                "Search Cards",
+                "Search cards, types, categories",
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 fontSize = 16.sp
             )

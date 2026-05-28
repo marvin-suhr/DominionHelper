@@ -1,7 +1,7 @@
 package dev.msuhr.dominionkingdoms.ui.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Box
@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -25,15 +27,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -60,12 +59,17 @@ fun ExpansionListItem(
 ) {
     Card(
         modifier = Modifier
-            .height(Constants.CARD_HEIGHT)
+            .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = Constants.CARD_HEIGHT)
+                .padding(horizontal = 16.dp, vertical = 12.dp), // Inner padding
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // Expansion image
             ExpansionImage(expansion)
@@ -74,7 +78,6 @@ fun ExpansionListItem(
             ExpansionLabels(
                 expansion, Modifier
                     .weight(1f)
-                    .align(Alignment.CenterVertically)
             )
 
             // Ownership toggle
@@ -109,8 +112,7 @@ fun ExpansionImage(expansion: ExpansionWithEditions) {
         model = drawableId,
         contentDescription = "${expansion.name} Expansion Image",
         modifier = Modifier
-            .aspectRatio(1f)
-            .padding(Constants.PADDING_MEDIUM),
+            .size(Constants.ICON_SIZE),
         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
     )
 }
@@ -120,8 +122,16 @@ fun ExpansionLabels(
     expansion: ExpansionWithEditions,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.padding(Constants.PADDING_SMALL)
+    val ownedText= when {
+        expansion.firstEdition?.isOwned == true && expansion.secondEdition?.isOwned == true -> "Both editions"
+        expansion.firstEdition?.isOwned == true -> "First edition"
+        expansion.secondEdition?.isOwned == true -> "Second edition"
+        else -> "Not owned"
+    }
+
+
+    Column (
+        modifier = modifier
     ) {
         Text(
             text = buildAnnotatedString {
@@ -129,7 +139,7 @@ fun ExpansionLabels(
                     append(expansion.name)
                 }
                 withStyle(SpanStyle(fontSize = Constants.TEXT_SMALL, fontStyle = FontStyle.Italic)) {
-                    append(" (${expansion.firstEdition?.year})")
+                    append(" ($ownedText)")
                 }
             },
             maxLines = 1,
@@ -137,6 +147,14 @@ fun ExpansionLabels(
             fontSize = Constants.CARD_NAME_FONT_SIZE,
             color = MaterialTheme.colorScheme.onSurface
         )
+        /*Text(
+            text = expansion.name + " ($ownedText)",
+            style = MaterialTheme.typography.headlineSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            //fontSize = Constants.CARD_NAME_FONT_SIZE,
+            //color = MaterialTheme.colorScheme.onSurface
+        )*/
 
         Text(
             text = expansion.firstEdition?.size?.text + " expansion",
@@ -154,74 +172,65 @@ fun ExpansionOwnershipIcon(
     hasMultipleEditions: Boolean,
     onOwnershipToggle: () -> Unit
 ) {
-    Surface(
+    Box(
         modifier = Modifier
-            .fillMaxHeight()
-            .aspectRatio(1f),
-        color = Color.Transparent
+            .size(Constants.ICON_SIZE)
+            .clickable(
+                onClick = { onOwnershipToggle() }
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { onOwnershipToggle() }
-                    )
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            if (hasMultipleEditions) {
-                // Multi-edition expansion: show ownership state icon
-                val isFirstOwned = expansion.firstEdition?.isOwned == true
-                val isSecondOwned = expansion.secondEdition?.isOwned == true
-                val isSharedSecondEdition = expansion.secondEdition?.name == "Cornucopia & Guilds" // TODO this sucks
+        if (hasMultipleEditions) {
+            // Multi-edition expansion: show ownership state icon
+            val isFirstOwned = expansion.firstEdition?.isOwned == true
+            val isSecondOwned = expansion.secondEdition?.isOwned == true
+            val isSharedSecondEdition = expansion.secondEdition?.name == "Cornucopia & Guilds" // TODO this sucks
 
-                when {
-                    isFirstOwned && isSecondOwned -> {
-                        // BOTH editions owned - show checkmark with link indicator if shared
-                        Box {
-                            Icon(
-                                imageVector = Icons.Filled.CheckCircle,
-                                contentDescription = "Both Editions Owned",
-                                modifier = Modifier.size(Constants.ICON_SIZE),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            if (isSharedSecondEdition) {
-                                SharedEditionIndicator()
-                            }
-                        }
-                    }
-                    isFirstOwned -> {
-                        CircleWithNumber(1)
-                    }
-                    isSecondOwned -> {
-                        Box {
-                            CircleWithNumber(2)
-                            if (isSharedSecondEdition) {
-                                SharedEditionIndicator()
-                            }
-                        }
-                    }
-                    else -> {
-                        // NONE owned - show empty circle
+            when {
+                isFirstOwned && isSecondOwned -> {
+                    // BOTH editions owned - show checkmark with link indicator if shared
+                    Box {
                         Icon(
-                            imageVector = Icons.Outlined.Circle,
-                            contentDescription = "Unowned",
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = "Both Editions Owned",
                             modifier = Modifier.size(Constants.ICON_SIZE),
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.primary
                         )
+                        if (isSharedSecondEdition) {
+                            SharedEditionIndicator()
+                        }
                     }
                 }
-            } else {
-                // Single edition expansion
-                val isOwned = expansion.firstEdition?.isOwned == true || expansion.secondEdition?.isOwned == true
-                Icon(
-                    imageVector = if (isOwned) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                    contentDescription = if (isOwned) "Owned" else "Unowned",
-                    modifier = Modifier.size(Constants.ICON_SIZE),
-                    tint = if (isOwned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                isFirstOwned -> {
+                    CircleWithNumber(1)
+                }
+                isSecondOwned -> {
+                    Box {
+                        CircleWithNumber(2)
+                        if (isSharedSecondEdition) {
+                            SharedEditionIndicator()
+                        }
+                    }
+                }
+                else -> {
+                    // NONE owned - show empty circle
+                    Icon(
+                        imageVector = Icons.Outlined.Circle,
+                        contentDescription = "Unowned",
+                        modifier = Modifier.size(Constants.ICON_SIZE),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
+        } else {
+            // Single edition expansion
+            val isOwned = expansion.firstEdition?.isOwned == true || expansion.secondEdition?.isOwned == true
+            Icon(
+                imageVector = if (isOwned) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
+                contentDescription = if (isOwned) "Owned" else "Unowned",
+                modifier = Modifier.size(Constants.ICON_SIZE),
+                tint = if (isOwned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
