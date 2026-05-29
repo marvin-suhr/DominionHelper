@@ -18,6 +18,7 @@ data class GenerationRule(
     val id: String,
     val name: String,
     val option: RuleOption = RuleOption.ALLOW,
+    val imageName: String = "set_rising_sun", // TODO PLACEHOLDER
     val condition: (Card) -> Boolean
 )
 

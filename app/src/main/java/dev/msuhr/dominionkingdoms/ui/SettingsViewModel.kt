@@ -49,7 +49,8 @@ sealed class SettingItem {
         val allOptions: List<E>,
         val optionDisplayFormatter: (E) -> String,
         val onOptionSelected: (E) -> Unit,
-        val description: String? = null // Optional description for info button
+        val description: String? = null, // Optional description for info button
+        val imageName: String = "" // Optional leading icon name
     ) : SettingItem() {
         override fun toString(): String = "ChoiceSetting(title='$title', selectedOption=$selectedOption)"
     }
@@ -386,7 +387,8 @@ Don't reroll: just remove cards until there's only 10 left."""
                         option.name.lowercase().replace("_", " ")
                             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                     },
-                    onOptionSelected = { setRuleOption(rule.id, it) }
+                    onOptionSelected = { setRuleOption(rule.id, it) },
+                    imageName = rule.imageName
                 )
             )
         }

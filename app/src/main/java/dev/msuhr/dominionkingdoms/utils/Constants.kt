@@ -17,6 +17,7 @@ object Constants {
     val PADDING_MINI = 4.dp
     val PADDING_SMALL = 8.dp
     val PADDING_MEDIUM = 16.dp
+    val SETTING_ICON_SIZE = 30.dp
     val ICON_SIZE = 40.dp
     val CHECKMARK_SIZE = 30.dp
     // 72 or 88 would be preferable. 80 is used so that the dimensions of card artworks fit well
