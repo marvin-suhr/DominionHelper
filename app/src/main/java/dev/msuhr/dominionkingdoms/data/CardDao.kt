@@ -42,7 +42,8 @@ interface CardDao {
         """
     SELECT * FROM cards
     WHERE name LIKE '%' || :filter || '%'
-       OR CAST(cost AS TEXT) LIKE '%' || :filter || '%'
+       OR CAST(cost AS TEXT) = :filter -- Exact mtch on cost
+       OR CAST(debt AS TEXT) = :filter
        -- Exact match boundaries for categories and types array elements
        -- Also replaces spaces with underscores in the filter input
        OR categories LIKE '%"' || REPLACE(UPPER(:filter), ' ', '_') || '"%'
@@ -73,9 +74,21 @@ interface CardDao {
         WHERE sets LIKE '%' || :id || '%'
         AND c.landscape = 1
         AND c.isEnabled = 1
+        AND c.supply = 1
+        ORDER BY RANDOM()
         """
     )
-    suspend fun getLandscapesByExpansion(id: String): List<Card>
+    suspend fun getSupplyLandscapesByExpansion(id: String): List<Card>
+
+    @Query(
+        """
+        SELECT * FROM cards AS c
+        WHERE sets LIKE '%' || :id || '%'
+        AND c.isEnabled = 1
+        AND (c.types LIKE '%"ALLY"%' OR c.types LIKE '%"PROPHECY"%')
+        """
+    )
+    suspend fun getSpecialLandscapesByExpansion(id: String): List<Card>
 
     @Query("SELECT * FROM cards ORDER BY RANDOM() LIMIT :amount")
     suspend fun getRandomCards(amount: Int): List<Card>
@@ -146,11 +159,24 @@ interface CardDao {
         AND c.isEnabled = 1
         AND c.landscape = 1
         AND c.basic = 0
-        AND c.supply = 1 -- TODO Huh, are landscape cards considered in the supply?
+        AND c.supply = 1
         ORDER BY RANDOM()
     """
     )
-    suspend fun getEnabledOwnedLandscapes(): List<Card>
+    suspend fun getEnabledOwnedSupplyLandscapes(): List<Card>
+
+    @Query(
+        """
+        SELECT c.* FROM cards AS c
+        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        WHERE e.isOwned
+        AND c.isEnabled = 1
+        AND c.landscape = 1
+        AND c.basic = 0
+        AND (c.types LIKE '%"ALLY"%' OR c.types LIKE '%"PROPHECY"%')
+    """
+    )
+    suspend fun getEnabledOwnedSpecialLandscapes(): List<Card>
 
     @Query(
         """

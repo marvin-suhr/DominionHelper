@@ -1,18 +1,27 @@
+Option to randomize if landscapes are picked
+
+Search for overpay and potion
+
+- Issue: when we require 2 landscapes, even if only 1 is generated, the kingdom passes.
+-> Also, it might be weird that landscapes are a HARD requirement
+
+- Traits need to apply to a card
+
 - Settings: save scroll state
 
-- Don't display version on single edition expansions
+- Don't display version on single edition expansions -> Display that in the second line in general
 
 - Give possibility to randomly add promo cards if owned
 
 - Automatically sort cards after generating
 
-- Allow generating more landscapes. Add guardrails? No more than 6 when useDifferentCategories == true
+- Allow generating more landscapes. Add guardrails? No more than 5 when useDifferentCategories == true
 
 Custom build kingdom
 - fab -> modal bottom sheet
     🎲 Generate Random Kingdom: (Subtitle: "Based on your current expansion settings")
     🛠️ Build Custom Kingdom: (Subtitle: "Hand-pick 10 cards for a specific setup")
--
+- recommended sets
 
 Text(styling = ...
   - MaterialTheme.typography.headlineLarge/Medium/Small
@@ -24,15 +33,12 @@ Text(styling = ...
 Can't reroll after banning in kingdom view
 Show manage at the top in expansion view?
 Choose landscapes independently from normal cards (different expansions) option
-ensure 2 cost etc
 5-6 players
 dominion wiki link (dominionstrategy.com)
 VP counter
 veto toast
-recommended sets
 prosperity dark ages: set%, % per card
 
-FOR RELEASE PRIO
 light mode text on buttons(?)
 
 Expansions for random cards is only respected when random mode is set to even amounts
@@ -41,21 +47,17 @@ search for can rip results in cantrip
 
 rename Base to Dominion
 
-make search not show split pile "main card"?
-
 sort type favorite?
 remove unban "+"? nur in blacklisted cards zeigen
 
 bei expansions: kartenzahl portrait / landscape
 Show Name / year of second edition if owned
-card types: include / limit / exclude
-do not use... (landscape)
 veto vs pick + reroll
 more compact view
 andere sprachen? db prep / migration
 
 
-landscape detail view fix
+landscape detail view no rounded corners
 
 Adding mat to base game shows it as a landscape card
 
@@ -92,10 +94,8 @@ fehlende Kartenkategorien hinzufügen
 Instead of hiding veto mode, just show as disabled?
 
 disable veto after switching screen when a kingdom has been generated -> set new to false
-option settings kann man manchmal nicht ändern? ???
 
 when selecting a different expansion, the expansion card list state doesnt reset
-attack cards etc in settings
 
 Split piles:
 Actual split pile cards have supply set to false. This means they will not be randomized
@@ -114,11 +114,6 @@ UI bounds pass
 TODO NEXT:
 LinkedHashSets?
 
-- Search "1" finds BASE_1E, rethink search in general
-    (when to stop viewing expansions)
-
-    In search: Arrow back vs cross
-    Dismiss Snackbar when switching Screens
 
     sort kingdom list items by cost like in app
 
@@ -143,13 +138,11 @@ GENERATION
 
 SETTINGS
 
-- Allow promo cards randomly
 - Allow generating same type of landscape cards twice (never 2 prophecies / allies?)
 - Only pick landscapes when they were drawn randomly
 - Landscapes to generate setting? Quick way to disable all landscape types
 - Don’t generate any landscape / prefer physical
 - Allow pulling landscapes from expansions that are owned but not selected?
-- Constraint settings: include 2 / 3 cost, attack, attack when reaction, etc
 - Show expansion icon / toggle button in search
 
 UI
@@ -157,7 +150,6 @@ UI
 -> Oben durchsichtige / moderne bar (flexible navigation bar)
 - Invisible top bar / only when header is relevant? (See Auth app)
 - Search pill
-- M3 hierarchical list items
 
 ---
 ---

@@ -124,7 +124,6 @@ enum class Category(val displayName: String) {
     VIRTUAL_COIN("Virtual Coin"),
     VIRTUAL_BUY("Virtual Buy"), // ?
     ATTACK_IMMUNITY("Attack Immunity"),
-    DECK_INSPECTION("Deck Inspection"),
     TURN_WORSENING_ATTACK("Turn Worsening Attack"), // ?
     DURATION_DRAW("Duration Draw"),
     COMMAND_VARIANT("Command Variant"),

@@ -14478,7 +14478,7 @@
   {
     "name": "Architects' Guild",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14499,7 +14499,7 @@
   {
     "name": "Band of Nomads",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14520,7 +14520,7 @@
   {
     "name": "Cave Dwellers",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14541,7 +14541,7 @@
   {
     "name": "Circle of Witches",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14560,7 +14560,7 @@
   {
     "name": "City-state",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14579,7 +14579,7 @@
   {
     "name": "Coastal Haven",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14598,7 +14598,7 @@
   {
     "name": "Crafters' Guild",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14619,7 +14619,7 @@
   {
     "name": "Desert Guides",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14641,7 +14641,7 @@
   {
     "name": "Family of Inventors",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14660,7 +14660,7 @@
   {
     "name": "Fellowship of Scribes",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14681,7 +14681,7 @@
   {
     "name": "Forest Dwellers",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14703,7 +14703,7 @@
   {
     "name": "Gang of Pickpockets",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14722,7 +14722,7 @@
   {
     "name": "Island Folk",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14741,7 +14741,7 @@
   {
     "name": "League of Bankers",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14760,7 +14760,7 @@
   {
     "name": "League of Shopkeepers",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14781,7 +14781,7 @@
   {
     "name": "Market Towns",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14800,7 +14800,7 @@
   {
     "name": "Mountain Folk",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14819,7 +14819,7 @@
   {
     "name": "Order of Astrologers",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14838,7 +14838,7 @@
   {
     "name": "Order of Masons",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14859,7 +14859,7 @@
   {
     "name": "Peaceful Cult",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14880,7 +14880,7 @@
   {
     "name": "Plateau Shepherds",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14899,7 +14899,7 @@
   {
     "name": "Trappers' Lodge",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -14918,7 +14918,7 @@
   {
     "name": "Woodworkers' Guild",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Ally"
@@ -17489,7 +17489,7 @@
   {
     "name": "Approaching Army",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17508,7 +17508,7 @@
   {
     "name": "Biding Time",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17527,7 +17527,7 @@
   {
     "name": "Bureaucracy",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17548,7 +17548,7 @@
   {
     "name": "Divine Wind",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17567,7 +17567,7 @@
   {
     "name": "Enlightenment",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17586,7 +17586,7 @@
   {
     "name": "Flourishing Trade",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17607,7 +17607,7 @@
   {
     "name": "Good Harvest",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17628,7 +17628,7 @@
   {
     "name": "Great Leader",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17647,7 +17647,7 @@
   {
     "name": "Growth",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17666,7 +17666,7 @@
   {
     "name": "Harsh Winter",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17685,7 +17685,7 @@
   {
     "name": "Kind Emperor",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17704,7 +17704,7 @@
   {
     "name": "Panic",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17725,7 +17725,7 @@
   {
     "name": "Progress",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17744,7 +17744,7 @@
   {
     "name": "Rapid Expansion",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
@@ -17763,7 +17763,7 @@
   {
     "name": "Sickness",
     "cost": null,
-    "supply": true,
+    "supply": false,
     "landscape": true,
     "types": [
       "Prophecy"
