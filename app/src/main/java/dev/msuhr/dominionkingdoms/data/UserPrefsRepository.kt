@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import dev.msuhr.dominionkingdoms.model.*
 import dev.msuhr.dominionkingdoms.ui.DarkAgesMode
 import dev.msuhr.dominionkingdoms.ui.ProsperityMode
 import dev.msuhr.dominionkingdoms.ui.RandomMode
@@ -29,16 +32,19 @@ object UserPreferencesKeys {
     val ALLOW_VETOING = booleanPreferencesKey("allow_vetoing_preference")
     val NUMBER_OF_CARDS_TO_GENERATE = intPreferencesKey("number_of_cards_to_generate_preference")
 
-    val LANDSCAPE_CATEGORIES = intPreferencesKey("landscape_categories_preference")
+    val LANDSCAPE_COUNT = intPreferencesKey("landscape_categories_preference")
     val LANDSCAPE_DIFFERENT_CATEGORIES = booleanPreferencesKey("landscape_different_categories_preference")
 
     val DARK_AGES_STARTER_CARDS = stringPreferencesKey("dark_ages_starter_preference")
     val PROSPERITY_BASIC_CARDS = stringPreferencesKey("prosperity_basic_preference")
+
+    val GENERATION_RULES = stringPreferencesKey("generation_rules")
 }
 
 @Singleton
 class UserPrefsRepository @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val gson: Gson
 ) {
 
     // Dark mode: null means use system default, true = dark, false = light
@@ -140,14 +146,14 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Landscape categories
-    val landscapeCategories: Flow<Int> = context.dataStore.data
+    val landscapeCount: Flow<Int> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferencesKeys.LANDSCAPE_CATEGORIES] ?: Constants.DEFAULT_LANDSCAPE_CATEGORIES
+            preferences[UserPreferencesKeys.LANDSCAPE_COUNT] ?: Constants.DEFAULT_LANDSCAPE_COUNT
         }
 
-    suspend fun setLandscapeCategories(amount: Int) {
+    suspend fun setLandscapeCount(amount: Int) {
         context.dataStore.edit { settings ->
-            settings[UserPreferencesKeys.LANDSCAPE_CATEGORIES] = amount
+            settings[UserPreferencesKeys.LANDSCAPE_COUNT] = amount
         }
     }
 
@@ -194,6 +200,32 @@ class UserPrefsRepository @Inject constructor(
     suspend fun setProsperityBasicCardsMode(newMode: ProsperityMode) {
         context.dataStore.edit { settings ->
             settings[UserPreferencesKeys.PROSPERITY_BASIC_CARDS] = newMode.name
+        }
+    }
+
+    // Generation Rules (stored as Map<String, RuleOption> serialized to JSON via Gson)
+    val activeRules: Flow<Map<String, RuleOption>> = context.dataStore.data
+        .map { preferences ->
+            val jsonString = preferences[UserPreferencesKeys.GENERATION_RULES] ?: "{}"
+            try {
+                val type = object : TypeToken<Map<String, RuleOption>>() {}.type
+                gson.fromJson<Map<String, RuleOption>>(jsonString, type) ?: emptyMap()
+            } catch (e: Exception) {
+                emptyMap()
+            }
+        }
+
+    suspend fun setRuleOption(ruleId: String, option: RuleOption) {
+        context.dataStore.edit { settings ->
+            val currentJson = settings[UserPreferencesKeys.GENERATION_RULES] ?: "{}"
+            val type = object : TypeToken<Map<String, RuleOption>>() {}.type
+            val currentMap: MutableMap<String, RuleOption> = try {
+                gson.fromJson<Map<String, RuleOption>>(currentJson, type)?.toMutableMap() ?: mutableMapOf()
+            } catch (e: Exception) {
+                mutableMapOf()
+            }
+            currentMap[ruleId] = option
+            settings[UserPreferencesKeys.GENERATION_RULES] = gson.toJson(currentMap)
         }
     }
 }

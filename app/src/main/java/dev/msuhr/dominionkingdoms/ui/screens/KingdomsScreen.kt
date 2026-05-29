@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,6 +50,14 @@ fun KingdomsScreen(
         "MainActivity",
         "Kingdom Screen Content. UI State: ${viewModel.uiState.collectAsState().value}"
     )
+
+    // Clear snackbar and error when leaving the screen
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearError()
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.scrollToTopEvent.collect {

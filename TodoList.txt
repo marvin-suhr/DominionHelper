@@ -1,8 +1,12 @@
+- Settings: save scroll state
+
 - Don't display version on single edition expansions
 
 - Give possibility to randomly add promo cards if owned
 
 - Automatically sort cards after generating
+
+- Allow generating more landscapes. Add guardrails? No more than 6 when useDifferentCategories == true
 
 Custom build kingdom
 - fab -> modal bottom sheet
@@ -238,3 +242,8 @@ TODO LOW PRIO
 - Font: Princeps
 - Attack, Prize -> Prize, attack (order)=? Clash, Augur, Wizard too
 - Add source card to dependent cards in library
+
+
+
+
+

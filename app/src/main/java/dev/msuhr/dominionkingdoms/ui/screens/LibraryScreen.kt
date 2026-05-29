@@ -28,6 +28,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -151,6 +152,14 @@ fun LibraryScreen(
 
     // Side effects
     LaunchedEffect(title) { onTitleChanged(title) }
+
+    // Clear snackbar and error when leaving the screen
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearError()
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.scrollToTopEvent.collect {

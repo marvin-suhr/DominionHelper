@@ -65,7 +65,8 @@ fun SettingsList(
     settings: List<SettingItem>,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
-    paddingValues: PaddingValues = PaddingValues(0.dp)
+    paddingValues: PaddingValues = PaddingValues(0.dp),
+    showVersionInfo: Boolean = true
 ) {
 
     Log.i("SettingsList", "settings: $settings")
@@ -83,31 +84,34 @@ fun SettingsList(
                 is SettingItem.NumberSetting -> NumberSettingItem(setting)
                 is SettingItem.ChoiceSetting<*> -> ChoiceSettingItem(setting)
                 is SettingItem.FeedbackSetting -> FeedbackSettingItem(setting)
+                is SettingItem.NavigationSetting -> NavigationSettingItem(setting)
             }
         }
 
-        item {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                val context = LocalContext.current
-                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                val versionName = packageInfo.versionName
-                val versionCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                    packageInfo.longVersionCode.toString()
-                } else {
-                    @Suppress("DEPRECATION")
-                    packageInfo.versionCode.toString()
-                }
+        if (showVersionInfo) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val context = LocalContext.current
+                    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                    val versionName = packageInfo.versionName
+                    val versionCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                        packageInfo.longVersionCode.toString()
+                    } else {
+                        @Suppress("DEPRECATION")
+                        packageInfo.versionCode.toString()
+                    }
 
-                Text(
-                    text = "v${versionName}_$versionCode",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 16.dp)
-                )
+                    Text(
+                        text = "v${versionName}_$versionCode",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp, vertical = 16.dp)
+                    )
+                }
             }
         }
     }
@@ -434,6 +438,40 @@ fun <E : Enum<E>> EnumSelectionDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun NavigationSettingItem(setting: SettingItem.NavigationSetting) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { setting.onClick() }
+            .padding(16.dp)
+            .defaultMinSize(minHeight = 48.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = setting.title,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (setting.description != null) {
+                Text(
+                    text = setting.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

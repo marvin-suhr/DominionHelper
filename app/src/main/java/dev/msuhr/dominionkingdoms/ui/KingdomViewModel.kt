@@ -204,15 +204,23 @@ class KingdomViewModel @Inject constructor(
                 return@launch
             }
 
-            val generatedKingdom = kingdomGenerator.generateKingdom()
+            try {
+                val generatedKingdom = kingdomGenerator.generateKingdom()
 
-            // Save the kingdom to database immediately (with its initial state)
-            kingdomRepository.saveKingdom(generatedKingdom)
+                // Save the kingdom to database immediately (with its initial state)
+                kingdomRepository.saveKingdom(generatedKingdom)
 
-            // The generator now returns a full Kingdom with all dependencies resolved
-            _kingdom.value = generatedKingdom
-            _isNewKingdom.value = true // Mark as new kingdom for UI purposes (vetoing)
-            switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
+                // The generator now returns a full Kingdom with all dependencies resolved
+                _kingdom.value = generatedKingdom
+                _isNewKingdom.value = true // Mark as new kingdom for UI purposes (vetoing)
+                switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
+            } catch (e: KingdomGenerator.GenerationException) {
+                Log.e("KingdomViewModel", "Generation failed", e)
+                triggerError(e.message ?: "Could not generate kingdom.")
+            } catch (e: Exception) {
+                Log.e("KingdomViewModel", "Unexpected error during generation", e)
+                triggerError("An unexpected error occurred.")
+            }
         }
     }
 

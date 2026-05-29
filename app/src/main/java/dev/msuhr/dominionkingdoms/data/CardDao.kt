@@ -127,7 +127,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%' -- Does this make sense?
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = 0
