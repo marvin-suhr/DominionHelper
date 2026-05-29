@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.DominionKingdoms" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/holo_blue_bright</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- For API 29+ to make nav bar translucent -->
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+    </style>
+</resources>

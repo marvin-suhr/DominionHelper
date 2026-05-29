@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Kingdoms</string>
+    <string name="database_name">dominion_kingdoms</string>
+    <string name="card_image_content_description">The %s card image</string>
+    <string name="icon_content_description">Placeholder icon</string>
+
+    <!-- Example plural resource -->
+    <plurals name="database_version">
+        <item name="1" quantity="one">1</item>
+        <item name="2" quantity="other">2</item>
+    </plurals>
+
+</resources>
