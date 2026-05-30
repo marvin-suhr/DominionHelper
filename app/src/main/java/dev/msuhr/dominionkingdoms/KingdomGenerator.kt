@@ -31,6 +31,7 @@ class KingdomGenerator @Inject constructor(
         val totalCardsToGenerate = userPrefsRepository.numberOfCardsToGenerate.first()
         val totalLandscapeCardsToGenerate = userPrefsRepository.landscapeCount.first()
         val useDifferentLandscapeCategories = userPrefsRepository.landscapeDifferentCategories.first()
+        val pickLandscapesFromAnyOwned = userPrefsRepository.pickLandscapesFromAnyOwned.first()
         val randomMode = userPrefsRepository.randomMode.first()
         val activeRulesMap = userPrefsRepository.activeRules.first()
 
@@ -59,6 +60,21 @@ class KingdomGenerator @Inject constructor(
                     totalCardsToGenerate,
                     totalLandscapeCardsToGenerate,
                     useDifferentLandscapeCategories,
+                    pickLandscapesFromAnyOwned,
+                    numberOfExpansionsToPick,
+                    activeRules
+                )
+            }
+
+            // Take random cards from a random subset of owned expansions
+            RandomMode.LIMITED_RANDOM -> {
+                val numberOfExpansionsToPick = userPrefsRepository.randomExpansionAmount.first()
+                Log.i("Kingdom Generator", "Starting generation - Limited random selected")
+                generateKingdomLimitedRandom(
+                    totalCardsToGenerate,
+                    totalLandscapeCardsToGenerate,
+                    useDifferentLandscapeCategories,
+                    pickLandscapesFromAnyOwned,
                     numberOfExpansionsToPick,
                     activeRules
                 )
@@ -71,12 +87,63 @@ class KingdomGenerator @Inject constructor(
         totalCardsToGenerate: Int,
         totalLandscapeCardsToGenerate: Int,
         useDifferentLandscapeCategories: Boolean,
-        rules: List<GenerationRule>): Kingdom
-    {
-        val cardList = mutableSetOf<Card>()
-
+        rules: List<GenerationRule>
+    ): Kingdom {
         // TODO idk if I like this nonSupplyLandscapePool (Especially because it's not needed most of the time)
         val (cardPool, landscapePool, nonSupplyLandscapePool) = getCandidatesFullRandom()
+        return finalizeKingdomGeneration(
+            totalCardsToGenerate,
+            totalLandscapeCardsToGenerate,
+            useDifferentLandscapeCategories,
+            rules,
+            cardPool,
+            landscapePool,
+            nonSupplyLandscapePool
+        )
+    }
+
+    private suspend fun generateKingdomLimitedRandom(
+        totalCardsToGenerate: Int,
+        totalLandscapeCardsToGenerate: Int,
+        useDifferentLandscapeCategories: Boolean,
+        pickLandscapesFromAnyOwned: Boolean,
+        numberOfExpansionsToPick: Int,
+        rules: List<GenerationRule>
+    ): Kingdom {
+        val ownedExpansions = expansionDao.getOwnedOnce()
+        val groupedExpansions = ownedExpansions.groupBy { it.name }
+        val pickedExpansionNames = groupedExpansions.keys.shuffled().take(min(numberOfExpansionsToPick, groupedExpansions.size))
+        val randomExpansions = pickedExpansionNames.flatMap { groupedExpansions[it] ?: emptyList() }
+
+        var (cardPool, landscapePool, nonSupplyLandscapePool) = getCandidatesEvenAmounts(randomExpansions)
+
+        if (pickLandscapesFromAnyOwned) {
+            val (_, globalLandscapes, globalNonSupplyLandscapes) = getCandidatesFullRandom()
+            landscapePool = globalLandscapes
+            nonSupplyLandscapePool = globalNonSupplyLandscapes
+        }
+
+        return finalizeKingdomGeneration(
+            totalCardsToGenerate,
+            totalLandscapeCardsToGenerate,
+            useDifferentLandscapeCategories,
+            rules,
+            cardPool,
+            landscapePool,
+            nonSupplyLandscapePool
+        )
+    }
+
+    private suspend fun finalizeKingdomGeneration(
+        totalCardsToGenerate: Int,
+        totalLandscapeCardsToGenerate: Int,
+        useDifferentLandscapeCategories: Boolean,
+        rules: List<GenerationRule>,
+        cardPool: MutableSet<Card>,
+        landscapePool: MutableSet<Card>,
+        nonSupplyLandscapePool: MutableSet<Card>
+    ): Kingdom {
+        val cardList = mutableSetOf<Card>()
 
         // We don't even theoretically have enough cards to generate the kingdom. Abort
         if (cardPool.size < totalCardsToGenerate) {
@@ -151,6 +218,7 @@ class KingdomGenerator @Inject constructor(
         totalCardsToGenerate: Int,
         totalLandscapeCardsToGenerate: Int,
         useDifferentLandscapeCategories: Boolean,
+        pickLandscapesFromAnyOwned: Boolean,
         numberOfExpansionsToPick: Int,
         rules: List<GenerationRule>): Kingdom
     {
@@ -168,7 +236,14 @@ class KingdomGenerator @Inject constructor(
         // Unsure about this rn but sure
         val randomExpansions = pickedExpansionNames.flatMap { groupedExpansions[it] ?: emptyList() }
 
-        val (cardPool, landscapePool, nonSupplyLandscapePool) = getCandidatesEvenAmounts(randomExpansions)
+        var (cardPool, landscapePool, nonSupplyLandscapePool) = getCandidatesEvenAmounts(randomExpansions)
+
+        // TODO hmm what is this
+        if (pickLandscapesFromAnyOwned) {
+            val (_, globalLandscapes, globalNonSupplyLandscapes) = getCandidatesFullRandom()
+            landscapePool = globalLandscapes
+            nonSupplyLandscapePool = globalNonSupplyLandscapes
+        }
 
         // We don't even theoretically have enough cards to generate the kingdom. Abort
         if (cardPool.size < totalCardsToGenerate) {
@@ -247,24 +322,18 @@ class KingdomGenerator @Inject constructor(
     ) {
         // TODO do we consider "always pick two different landscapes" here?
         // 1. Filter out EXCLUDED cards from the pool
-        val excludedPredicates = rules.filter { it.option == RuleOption.EXCLUDE }.map { it.condition }
+        val excludedPredicates = rules.filter { it.option.isExclude() }.map { it.condition }
         if (excludedPredicates.isNotEmpty()) {
             val toRemove = cardPool.filter { card -> excludedPredicates.any { it(card) } }
             cardPool.removeAll(toRemove.toSet())
             Log.d("Kingdom Generator", "Excluded ${toRemove.size} cards based on rules.")
         }
 
-        // 2. Identify rules that require certain counts (AT_LEAST, EXACTLY)
-        val requirementRules = rules.filter { 
-            it.option != RuleOption.ALLOW && it.option != RuleOption.EXCLUDE &&
-            it.option != RuleOption.AT_MOST_1 && it.option != RuleOption.AT_MOST_2
-        }
+        // 2. Identify rules that require certain counts (min > 0)
+        val requirementRules = rules.filter { it.option.min > 0 }
 
-        // 3. Identify rules that LIMIT counts (AT_MOST, EXACTLY)
-        val limitRules = rules.filter {
-            it.option == RuleOption.AT_MOST_1 || it.option == RuleOption.AT_MOST_2 ||
-            it.option == RuleOption.EXACTLY_1 || it.option == RuleOption.EXACTLY_2
-        }
+        // 3. Identify rules that LIMIT counts (max < MAX_CARDS)
+        val limitRules = rules.filter { it.option.max < RuleOption.MAX_CARDS }
 
         // 4. Satisfy requirements
         var attempts = 0
@@ -277,13 +346,7 @@ class KingdomGenerator @Inject constructor(
             // Here we check if any rule-fulfilling card randomly satisfies a second rule
             val unsatisfiedRules = requirementRules.filter { rule ->
                 val currentCount = cardList.count { rule.condition(it) }
-                val target = when (rule.option) {
-                    // TODO helper function? -> Yes, but might not be needed anymore after changing to range
-                    RuleOption.AT_LEAST_1, RuleOption.EXACTLY_1 -> 1
-                    RuleOption.AT_LEAST_2, RuleOption.EXACTLY_2 -> 2
-                    else -> 0
-                }
-                currentCount < target
+                currentCount < rule.option.min
             }
 
             if (unsatisfiedRules.isEmpty()) break // All rules are satisfied
@@ -299,19 +362,14 @@ class KingdomGenerator @Inject constructor(
                 // Must not violate any existing limits if added
                 limitRules.all { limitRule ->
                     val currentCount = cardList.count { limitRule.condition(it) }
-                    val maxAllowed = when(limitRule.option) {
-                        // TODO helper function?
-                        RuleOption.AT_MOST_1, RuleOption.EXACTLY_1 -> 1
-                        RuleOption.AT_MOST_2, RuleOption.EXACTLY_2 -> 2
-                        else -> Int.MAX_VALUE
-                    }
+                    val maxAllowed = limitRule.option.max
                     val satisfiesLimit = limitRule.condition(card)
                     if (satisfiesLimit) currentCount < maxAllowed else true
                 }
             }
             
             if (candidates.isEmpty()) {
-                throw GenerationException("Not enough cards to satisfy rule: ${ruleToSatisfy.name} without violating other constraints.")
+                throw GenerationException("Not enough cards to satisfy rule: ${ruleToSatisfy.name} (min ${ruleToSatisfy.option.min}) without violating other constraints.")
             }
 
             // Draw a card RANDOMLY (no prioritization)
@@ -340,20 +398,11 @@ class KingdomGenerator @Inject constructor(
         cardList: Set<Card>,
         rules: List<GenerationRule>
     ) {
-        val limitRules = rules.filter {
-            it.option == RuleOption.AT_MOST_1 || it.option == RuleOption.AT_MOST_2 ||
-            it.option == RuleOption.EXACTLY_1 || it.option == RuleOption.EXACTLY_2 ||
-            it.option == RuleOption.EXCLUDE
-        }
+        val limitRules = rules.filter { it.option.max < RuleOption.MAX_CARDS }
 
         for (rule in limitRules) {
             val currentCount = cardList.count { rule.condition(it) }
-            val maxAllowed = when(rule.option) {
-                RuleOption.EXCLUDE -> 0
-                RuleOption.AT_MOST_1, RuleOption.EXACTLY_1 -> 1
-                RuleOption.AT_MOST_2, RuleOption.EXACTLY_2 -> 2
-                else -> Int.MAX_VALUE
-            }
+            val maxAllowed = rule.option.max
             
             if (currentCount >= maxAllowed) {
                 val toRemove = cardPool.filter { rule.condition(it) }

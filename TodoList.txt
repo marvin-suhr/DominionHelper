@@ -1,3 +1,14 @@
+Add portrait / landscape counts to expansions. might have to add these counts to sets.json
+
+Fix UI for promo cards
+add logic to randomize promo cards
+ensure that promo owned is always false
+disable promo cards per default (through json?)
+Remove promo cards from blacklisted cards?
+Remove Promo cards "not owned" text
+
+If only first edition is owned, always display first edition icon
+
 Option to randomize if landscapes are picked
 
 Search for overpay and potion
@@ -10,8 +21,6 @@ Search for overpay and potion
 - Settings: save scroll state
 
 - Don't display version on single edition expansions -> Display that in the second line in general
-
-- Give possibility to randomly add promo cards if owned
 
 - Automatically sort cards after generating
 

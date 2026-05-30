@@ -34,6 +34,7 @@ object UserPreferencesKeys {
 
     val LANDSCAPE_COUNT = intPreferencesKey("landscape_categories_preference")
     val LANDSCAPE_DIFFERENT_CATEGORIES = booleanPreferencesKey("landscape_different_categories_preference")
+    val PICK_LANDSCAPES_FROM_ANY_OWNED = booleanPreferencesKey("pick_landscapes_from_any_owned_preference")
 
     val DARK_AGES_STARTER_CARDS = stringPreferencesKey("dark_ages_starter_preference")
     val PROSPERITY_BASIC_CARDS = stringPreferencesKey("prosperity_basic_preference")
@@ -166,6 +167,17 @@ class UserPrefsRepository @Inject constructor(
     suspend fun setLandscapeDifferentCategories(isDifferent: Boolean) {
         context.dataStore.edit { settings ->
             settings[UserPreferencesKeys.LANDSCAPE_DIFFERENT_CATEGORIES] = isDifferent
+        }
+    }
+
+    val pickLandscapesFromAnyOwned: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.PICK_LANDSCAPES_FROM_ANY_OWNED] ?: false
+        }
+
+    suspend fun setPickLandscapesFromAnyOwned(pickAny: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.PICK_LANDSCAPES_FROM_ANY_OWNED] = pickAny
         }
     }
 

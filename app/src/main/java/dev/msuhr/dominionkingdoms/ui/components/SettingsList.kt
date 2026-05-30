@@ -2,7 +2,12 @@ package dev.msuhr.dominionkingdoms.ui.components
 
 import android.util.Log
 import android.content.Intent
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import dev.msuhr.dominionkingdoms.model.RuleOption
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,6 +42,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -89,6 +95,7 @@ fun SettingsList(
                 is SettingItem.ChoiceSetting<*> -> ChoiceSettingItem(setting)
                 is SettingItem.FeedbackSetting -> FeedbackSettingItem(setting)
                 is SettingItem.NavigationSetting -> NavigationSettingItem(setting)
+                is SettingItem.RangeRuleSetting -> RangeRuleSettingItem(setting)
             }
         }
 
@@ -554,6 +561,188 @@ private fun RadioButton(
             .padding(8.dp)
             .clickable(onClick = onClick)
     )
+}
+
+@Composable
+fun RangeRuleSettingItem(setting: SettingItem.RangeRuleSetting) {
+    var componentWidth by remember { mutableStateOf(0f) }
+
+    // Helper to get step index from X offset
+    fun getStepIndex(x: Float): Int {
+        if (componentWidth <= 0) return 0
+        val stepWidth = componentWidth / 4
+        return (x / stepWidth).toInt().coerceIn(0, 3)
+    }
+
+    // Helper to map index to logical card count
+    fun indexToCount(index: Int, isMin: Boolean): Int = when (index) {
+        3 -> if (isMin) 3 else RuleOption.MAX_CARDS
+        else -> index
+    }
+
+    // Logical current state label
+    val label = when {
+        setting.min == 0 && setting.max == 0 -> "Exclude"
+        setting.min == 0 && setting.max == RuleOption.MAX_CARDS -> "Allow"
+        setting.min == setting.max -> "Exactly ${setting.min}"
+        setting.max == RuleOption.MAX_CARDS -> "At least ${setting.min}"
+        setting.min == 0 -> "At most ${setting.max}"
+        else -> "${setting.min} to ${setting.max}"
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .defaultMinSize(minHeight = 48.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val context = LocalContext.current
+            if (setting.imageName.isNotEmpty()) {
+                val drawableId = getDrawableId(context, setting.imageName)
+                AsyncImage(
+                    model = drawableId,
+                    contentDescription = "${setting.title} icon",
+                    modifier = Modifier
+                        .padding(end = Constants.PADDING_MEDIUM)
+                        .size(Constants.SETTING_ICON_SIZE),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                )
+            }
+
+            Text(
+                text = setting.title,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(0.4f)
+            )
+
+            // Segmented Range Picker (60% width)
+            Row(
+                modifier = Modifier
+                    .weight(0.6f)
+                    .height(40.dp)
+                    .onGloballyPositioned { componentWidth = it.size.width.toFloat() }
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .pointerInput(setting.min, setting.max) {
+                        detectTapGestures { offset ->
+                            val index = getStepIndex(offset.x)
+                            val minCount = indexToCount(index, isMin = true)
+                            val maxCount = indexToCount(index, isMin = false)
+
+                            // Toggle to "Allow" if the same state is tapped again
+                            if (setting.min == minCount && setting.max == maxCount) {
+                                setting.onRangeChange(0, RuleOption.MAX_CARDS)
+                            } else {
+                                setting.onRangeChange(minCount, maxCount)
+                            }
+                        }
+                    }
+                    .pointerInput(Unit) {
+                        var startStep = -1
+                        detectDragGestures(
+                            onDragStart = { offset ->
+                                startStep = getStepIndex(offset.x)
+                            },
+                            onDrag = { change, _ ->
+                                val currentStep = getStepIndex(change.position.x)
+                                if (startStep != -1) {
+                                    val minIdx = minOf(startStep, currentStep)
+                                    val maxIdx = maxOf(startStep, currentStep)
+
+                                    // Reset to "Allow" if full range is swiped (cancels visual selection)
+                                    if (minIdx == 0 && maxIdx == 3) {
+                                        setting.onRangeChange(0, RuleOption.MAX_CARDS)
+                                    } else {
+                                        setting.onRangeChange(
+                                            indexToCount(minIdx, isMin = true),
+                                            indexToCount(maxIdx, isMin = false)
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val steps = listOf("0", "1", "2", "3+")
+                val currentMinIdx = when (setting.min) {
+                    RuleOption.MAX_CARDS -> 3
+                    3 -> 3
+                    else -> setting.min.coerceAtMost(3)
+                }
+                val currentMaxIdx = when (setting.max) {
+                    RuleOption.MAX_CARDS -> 3
+                    else -> setting.max.coerceAtMost(3)
+                }
+
+                steps.forEachIndexed { index, stepLabel ->
+                    val isSelected = index in currentMinIdx..currentMaxIdx
+                    val isExclude = setting.min == 0 && setting.max == 0 && index == 0
+                    val isAllow = setting.min == 0 && setting.max == RuleOption.MAX_CARDS
+
+                    val backgroundColor = when {
+                        isExclude && index == 0 -> MaterialTheme.colorScheme.errorContainer
+                        isSelected && !isAllow -> MaterialTheme.colorScheme.primaryContainer
+                        else -> MaterialTheme.colorScheme.surface
+                    }
+
+                    val contentColor = when {
+                        isExclude && index == 0 -> MaterialTheme.colorScheme.onErrorContainer
+                        isSelected && !isAllow -> MaterialTheme.colorScheme.onPrimaryContainer
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .border(
+                                width = if (index > 0) 0.5.dp else 0.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(0.dp)
+                            )
+                            .padding(4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = backgroundColor,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = stepLabel,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = contentColor
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // State Label
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = if (label == "Allow") MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                else MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 4.dp, end = 4.dp)
+            )
+        }
+    }
 }
 
 @Composable

@@ -137,10 +137,9 @@ fun ExpansionLabels(
             text = buildAnnotatedString {
                 withStyle(SpanStyle(fontSize = Constants.CARD_NAME_FONT_SIZE, fontWeight = FontWeight.Bold)) {
                     append(expansion.name)
+                    // TODO add portrait and landscape counts here
                 }
-                withStyle(SpanStyle(fontSize = Constants.TEXT_SMALL, fontStyle = FontStyle.Italic)) {
-                    append(" ($ownedText)")
-                }
+                //withStyle(SpanStyle(fontSize = Constants.TEXT_SMALL, fontStyle = FontStyle.Italic)) { }
             },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -156,8 +155,14 @@ fun ExpansionLabels(
             //color = MaterialTheme.colorScheme.onSurface
         )*/
 
+        val year = if (expansion.secondEdition?.isOwned ?: false) {
+            (" (${expansion.secondEdition.year})")
+        } else if (expansion.firstEdition?.isOwned ?: false) {
+            (" (${expansion.firstEdition.year})")
+        } else ""
+
         Text(
-            text = expansion.firstEdition?.size?.text + " expansion",
+            text = ownedText + year,//expansion.firstEdition?.size?.text + " expansion",
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontSize = Constants.TEXT_SMALL,
@@ -172,6 +177,22 @@ fun ExpansionOwnershipIcon(
     hasMultipleEditions: Boolean,
     onOwnershipToggle: () -> Unit
 ) {
+    // Special case for Promo expansion: show chevron instead of ownership toggle
+    if (expansion.name == "Promo Cards") { // TODO can we use Enum here?
+        Box(
+            modifier = Modifier.size(Constants.CHECKMARK_SIZE),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "View Promo cards",
+                modifier = Modifier.size(Constants.ICON_SIZE),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
     Box(
         modifier = Modifier
             .size(Constants.CHECKMARK_SIZE)

@@ -107,7 +107,12 @@ fun CardDetailPager(
             if (page >= 0 && page < cardList.size) {
                 val cardForPage = cardList[page]
                 Log.i("CardDetailPager", "Displaying ${cardForPage.name}, Index $page")
-                CardDetail(card = cardForPage, onClick = onClick, onFavorite = onFavorite, onBan = onBan)
+                CardDetail(
+                    card = cardForPage,
+                    onClick = onClick,
+                    onFavorite = onFavorite,
+                    onBan = onBan
+                )
             } else {
                 Log.w("CardDetailPager", "Page index $page is out of bounds for cardList size ${cardList.size}")
                 // Optionally, display a placeholder or empty content

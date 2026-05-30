@@ -8,7 +8,6 @@ import dev.msuhr.dominionkingdoms.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.* // TODO When does this wildcard make sense?
 import kotlinx.coroutines.launch
-import java.util.Locale
 import javax.inject.Inject
 
 sealed class SettingItem {
@@ -70,10 +69,21 @@ sealed class SettingItem {
     ) : SettingItem() {
         override fun toString(): String = "NavigationSetting(title='$title')"
     }
+
+    data class RangeRuleSetting(
+        val title: String,
+        val min: Int,
+        val max: Int,
+        val onRangeChange: (Int, Int) -> Unit,
+        val imageName: String = ""
+    ) : SettingItem() {
+        override fun toString(): String = "RangeRuleSetting(title='$title', min=$min, max=$max)"
+    }
 }
 
 enum class RandomMode(val displayName: String) {
     FULL_RANDOM("Full Random"),
+    LIMITED_RANDOM("Limited Random"),
     EVEN_AMOUNTS("Even Amounts")
 }
 
@@ -143,6 +153,7 @@ class SettingsViewModel @Inject constructor(
             userPrefsRepository.numberOfCardsToGenerate,
             userPrefsRepository.landscapeCount,
             userPrefsRepository.landscapeDifferentCategories,
+            userPrefsRepository.pickLandscapesFromAnyOwned,
             userPrefsRepository.darkAgesStarterCardsMode,
             userPrefsRepository.prosperityBasicCardsMode,
             userPrefsRepository.activeRules,
@@ -157,10 +168,11 @@ class SettingsViewModel @Inject constructor(
             val currentNumCardsToGen = values[6] as Int
             val currentLandscapeCategories = values[7] as Int
             val currentLandscapeDiffCat = values[8] as Boolean
-            val currentDarkAgesMode = values[9] as DarkAgesMode
-            val currentProsperityMode = values[10] as ProsperityMode
-            val currentActiveRules = values[11] as Map<String, RuleOption>
-            val currentSubScreen = values[12] as SettingsSubScreen
+            val currentPickLandscapesAny = values[9] as Boolean
+            val currentDarkAgesMode = values[10] as DarkAgesMode
+            val currentProsperityMode = values[11] as ProsperityMode
+            val currentActiveRules = values[12] as Map<String, RuleOption>
+            val currentSubScreen = values[13] as SettingsSubScreen
 
             val settings = mutableListOf<SettingItem>()
 
@@ -200,15 +212,17 @@ class SettingsViewModel @Inject constructor(
 
                     // Generation Section
                     settings.add(SettingItem.SectionHeader("Kingdom generation"))
+
                     settings.add(
                         SettingItem.NumberSetting(
-                            title = "Number of expansions to choose from",
-                            number = currentRandomExpAmount,
-                            min = 1,
-                            max = 10,
-                            onNumberChange = { setRandomExpansionAmount(it) }
+                            title = "Number of cards to generate",
+                            number = currentNumCardsToGen,
+                            min = 10,
+                            max = 20,
+                            onNumberChange = { setNumberOfCardsToGenerate(it) }
                         )
                     )
+
                     settings.add(
                         SettingItem.ChoiceSetting(
                             title = "Random mode",
@@ -220,10 +234,23 @@ class SettingsViewModel @Inject constructor(
                             """Choose how cards are selected.
                         
 Full Random: select cards completely randomly from selected expansions.
+
+Limited Random: select a fixed number of expansions and randomly draw cards from them.
                         
-Even Amounts: select equal card amounts from selected expansion."""
+Even Amounts: select equal card amounts from each selected expansion."""
                         )
                     )
+                    if (currentRandomMode == RandomMode.LIMITED_RANDOM || currentRandomMode == RandomMode.EVEN_AMOUNTS) {
+                        settings.add(
+                            SettingItem.NumberSetting(
+                                title = "Number of expansions to choose from",
+                                number = currentRandomExpAmount,
+                                min = 1,
+                                max = 10,
+                                onNumberChange = { setRandomExpansionAmount(it) }
+                            )
+                        )
+                    }
 
                     // Switch to allow or disallow vetoing cards
                     settings.add(
@@ -253,15 +280,6 @@ Reroll from any: select cards completely randomly from selected expansions.
 Don't reroll: just remove cards until there's only 10 left."""
                             )
                         )
-                        settings.add(
-                            SettingItem.NumberSetting(
-                                title = "Number of cards to generate",
-                                number = currentNumCardsToGen,
-                                min = 10,
-                                max = 20,
-                                onNumberChange = { setNumberOfCardsToGenerate(it) }
-                            )
-                        )
                     }
 
                     // Landscapes Section
@@ -281,6 +299,14 @@ Don't reroll: just remove cards until there's only 10 left."""
                             title = "Use different landscape categories",
                             isChecked = currentLandscapeDiffCat,
                             onCheckedChange = { setLandscapeDifferentCategories(it) }
+                        )
+                    )
+
+                    settings.add(
+                        SettingItem.SwitchSetting(
+                            title = "Pick landscapes from any owned expansion",
+                            isChecked = currentPickLandscapesAny,
+                            onCheckedChange = { setPickLandscapesFromAnyOwned(it) }
                         )
                     )
 
@@ -378,16 +404,16 @@ Don't reroll: just remove cards until there's only 10 left."""
         currentActiveRules: Map<String, RuleOption>
     ) {
         rules.forEach { rule ->
+            val currentOption = currentActiveRules[rule.id] ?: RuleOption.ALLOW
+
             settings.add(
-                SettingItem.ChoiceSetting(
+                SettingItem.RangeRuleSetting(
                     title = rule.name,
-                    selectedOption = currentActiveRules[rule.id] ?: RuleOption.ALLOW,
-                    allOptions = RuleOption.entries.toList(),
-                    optionDisplayFormatter = { option ->
-                        option.name.lowercase().replace("_", " ")
-                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    min = currentOption.min,
+                    max = currentOption.max,
+                    onRangeChange = { newMin, newMax -> 
+                        setRuleOption(rule.id, RuleOption(newMin, newMax))
                     },
-                    onOptionSelected = { setRuleOption(rule.id, it) },
                     imageName = rule.imageName
                 )
             )
@@ -449,6 +475,12 @@ Don't reroll: just remove cards until there's only 10 left."""
     fun setLandscapeDifferentCategories(isDifferent: Boolean) {
         viewModelScope.launch {
             userPrefsRepository.setLandscapeDifferentCategories(isDifferent)
+        }
+    }
+
+    fun setPickLandscapesFromAnyOwned(pickAny: Boolean) {
+        viewModelScope.launch {
+            userPrefsRepository.setPickLandscapesFromAnyOwned(pickAny)
         }
     }
 

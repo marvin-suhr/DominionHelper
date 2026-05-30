@@ -199,7 +199,10 @@ fun LibraryCardList(
                         card = card,
                         onCardClick = { onCardClick(card) },
                         enabled = card.isEnabled,
-                        showIcon = false
+                        showIcon = false,
+                        onToggleEnable = { onToggleEnable(card) },
+                        onFavorite = { onFavorite(card) },
+                        onBan = { onBan(card) }
                     )
                 }
             }
@@ -639,6 +642,8 @@ fun CardView(
 
                 if (showIcon) {
                     CardIcon(card.expansionImageId, card.sets[0].name)
+                } else if (card.sets.any { it == Set.PROMO } && card.supply) {
+                    PromoToggle(card, onToggleEnable)
                 } else if (!card.isEnabled) {
                     CardButton(onToggleEnable)
                 }
@@ -1012,6 +1017,27 @@ fun CardIcon(imageId: Int, setName: String) {
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
             )
         }
+    }
+}
+
+// TODO this was lazy and bad, rework
+@Composable
+fun PromoToggle(card: Card, onToggleOwned: () -> Unit) {
+    // Specific toggle for Promo cards (individual ownership)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            //.size(Constants.ICON_SIZE)
+            .fillMaxHeight()
+            .padding(Constants.PADDING_MEDIUM)
+            .clickable { onToggleOwned() }
+    ) {
+        Icon(
+            imageVector = if (card.isEnabled) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
+            contentDescription = if (card.isEnabled) "Owned" else "Unowned",
+            modifier = Modifier.size(Constants.CHECKMARK_SIZE),
+            tint = if (card.isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

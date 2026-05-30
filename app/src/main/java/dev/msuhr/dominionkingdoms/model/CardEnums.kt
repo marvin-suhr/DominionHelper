@@ -28,7 +28,7 @@ enum class Set (val imageId: Int = 0, val displayName: String = "") {
     ALLIES(R.drawable.set_allies, "Allies"),
     PLUNDER(R.drawable.set_plunder, "Plunder"),
     RISING_SUN(R.drawable.set_rising_sun, "Rising Sun"),
-    PROMO(R.drawable.set_promo, "Promo"),
+    PROMO(R.drawable.set_promo, "Promo Cards"),
     PLACEHOLDER(displayName = "Placeholder") // TODO
 }
 

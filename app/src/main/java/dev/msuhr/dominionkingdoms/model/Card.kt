@@ -31,8 +31,8 @@ data class Card(
     @SerializedName("debt") val debt: Int,
     @SerializedName("categories") val categories: List<Category>,
     @SerializedName("potion") val potion: Boolean,
-    @SerializedName("isEnabled") @ColumnInfo(defaultValue = "1") val isEnabled: Boolean,
-    @SerializedName("isFavorite") @ColumnInfo(defaultValue = "0") val isFavorite: Boolean,
+    @SerializedName("is_enabled") @ColumnInfo(defaultValue = "1") val isEnabled: Boolean, // TODO set to 0 for promo
+    @SerializedName("is_favorite") @ColumnInfo(defaultValue = "0") val isFavorite: Boolean,
     @SerializedName("overpay") val overpay: Boolean,
     @SerializedName("special_cost") val specialCost: Boolean
 ) {
@@ -41,6 +41,7 @@ data class Card(
     var expansionImageId: Int = if (sets.size >= 2) sets[1].imageId else sets[0].imageId
 
     // TODO Might be able to simplify / remove second condition?
+    // TODO Huh what does this do again
     fun getDisplayCategory(): CardDisplayCategory {
         return when {
             this.landscape -> CardDisplayCategory.LANDSCAPE

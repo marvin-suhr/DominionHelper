@@ -61,8 +61,8 @@ object CardRules {
         GenerationRule("landscape_event", "Event", imageName = "set_adventures") { it.types.contains(Type.EVENT) },
         GenerationRule("landscape_landmark", "Landmark", imageName = "set_empires") { it.types.contains(Type.LANDMARK) },
         GenerationRule("landscape_project", "Project", imageName = "set_renaissance") { it.types.contains(Type.PROJECT) },
-        GenerationRule("landscape_way", "Way", imageName = "set_menagerie") { it.types.contains(Type.WAY) },
         GenerationRule("landscape_trait", "Trait", imageName = "set_plunder") { it.types.contains(Type.TRAIT) },
+        GenerationRule("landscape_way", "Way", imageName = "set_menagerie") { it.types.contains(Type.WAY) },
     )
 
     val LANDSCAPE_TYPES = setOf(
