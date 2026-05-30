@@ -42,8 +42,11 @@ interface CardDao {
         """
     SELECT * FROM cards
     WHERE name LIKE '%' || :filter || '%'
-       OR CAST(cost AS TEXT) = :filter -- Exact mtch on cost
+       OR CAST(cost AS TEXT) = :filter -- Exact match on cost
        OR CAST(debt AS TEXT) = :filter
+       OR (LOWER(:filter) = 'debt' AND debt > 0) -- "debt" matches cards with debt > 0
+       OR (LOWER(:filter) = 'potion' AND potion = 1) -- "potion" matches cards with potion cost
+       OR (LOWER(:filter) = 'overpay' AND overpay = 1) -- "overpay" matches cards with overpay
        -- Exact match boundaries for categories and types array elements
        -- Also replaces spaces with underscores in the filter input
        OR categories LIKE '%"' || REPLACE(UPPER(:filter), ' ', '_') || '"%'

@@ -123,6 +123,7 @@ fun ExpansionLabels(
     modifier: Modifier = Modifier
 ) {
     val ownedText= when {
+        expansion.secondEdition == null && expansion.firstEdition?.isOwned == true -> "Owned"
         expansion.firstEdition?.isOwned == true && expansion.secondEdition?.isOwned == true -> "Both editions"
         expansion.firstEdition?.isOwned == true -> "First edition"
         expansion.secondEdition?.isOwned == true -> "Second edition"

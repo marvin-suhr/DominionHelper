@@ -13,14 +13,10 @@ If only first edition is owned, always display first edition icon
 
 Option to randomize if landscapes are picked
 
-Search for overpay and potion
-
 - Issue: when we require 2 landscapes, even if only 1 is generated, the kingdom passes.
 -> Also, it might be weird that landscapes are a HARD requirement
 
 - Traits need to apply to a card
-
-- Don't display version on single edition expansions -> Display that in the second line in general
 
 - Automatically sort cards after generating
 
