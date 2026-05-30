@@ -1,5 +1,7 @@
 Add portrait / landscape counts to expansions. might have to add these counts to sets.json
 
+range slider onclick: open advanced slider 0-10
+
 Fix UI for promo cards
 add logic to randomize promo cards
 ensure that promo owned is always false
@@ -17,8 +19,6 @@ Search for overpay and potion
 -> Also, it might be weird that landscapes are a HARD requirement
 
 - Traits need to apply to a card
-
-- Settings: save scroll state
 
 - Don't display version on single edition expansions -> Display that in the second line in general
 

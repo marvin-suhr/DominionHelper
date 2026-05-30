@@ -14,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -35,8 +36,6 @@ fun SettingsScreen(
 
     LaunchedEffect(Unit) { onTitleChanged("Settings") }
 
-    val settingsListState = rememberLazyListState()
-
     // Clear snackbar when leaving the screen
     DisposableEffect(Unit) {
         onDispose {
@@ -53,12 +52,6 @@ fun SettingsScreen(
         }
     }*/
 
-    LaunchedEffect(Unit) {
-        viewModel.scrollToTopEvent.collect {
-            settingsListState.animateScrollToItem(0)
-        }
-    }
-
     BackHandler {
         // First, let the ViewModel handle back navigation
         if (!viewModel.handleBackNavigation()) {
@@ -70,6 +63,24 @@ fun SettingsScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
+
+    // Always maintain separate states - main screen keeps its persistent state
+    val mainScreenScrollState = rememberLazyListState()
+
+    // Current scroll state: use main screen's state when on main, fresh state for sub-screens
+    val settingsListState = if (uiState.currentSubScreen == SettingsSubScreen.MAIN) {
+        mainScreenScrollState
+    } else {
+        key(uiState.currentSubScreen) {
+            rememberLazyListState()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.scrollToTopEvent.collect {
+            settingsListState.animateScrollToItem(0)
+        }
+    }
 
     val title = when (uiState.currentSubScreen) {
         SettingsSubScreen.MAIN -> "Settings"
