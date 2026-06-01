@@ -17,6 +17,11 @@ data class RuleOption(
     fun isExclude(): Boolean = min == 0 && max == 0
 }
 
+enum class RuleTarget {
+    PORTRAIT,
+    LANDSCAPE
+}
+
 /**
  * Defines a specific constraint for the kingdom generation process.
  */
@@ -25,6 +30,7 @@ data class GenerationRule(
     val name: String,
     val option: RuleOption = RuleOption.ALLOW,
     val imageName: String = "",
+    val target: RuleTarget = RuleTarget.PORTRAIT,
     val condition: (Card) -> Boolean
 )
 

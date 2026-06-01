@@ -9,6 +9,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import dev.msuhr.dominionkingdoms.model.RuleOption
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,8 +55,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -580,6 +583,13 @@ fun RangeRuleSettingItem(setting: SettingItem.RangeRuleSetting) {
         else -> index
     }
 
+    // Convert current min/max to display indices (0-3)
+    fun countToIndex(count: Int): Int = when (count) {
+        RuleOption.MAX_CARDS -> 3
+        3 -> 3
+        else -> count.coerceAtMost(3)
+    }
+
     // Logical current state label
     val label = when {
         setting.min == 0 && setting.max == 0 -> "Exclude"
@@ -619,116 +629,27 @@ fun RangeRuleSettingItem(setting: SettingItem.RangeRuleSetting) {
                 modifier = Modifier.weight(0.4f)
             )
 
-            // Segmented Range Picker (60% width)
-            Row(
-                modifier = Modifier
-                    .weight(0.6f)
-                    .height(40.dp)
-                    .onGloballyPositioned { componentWidth = it.size.width.toFloat() }
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .pointerInput(setting.min, setting.max) {
-                        detectTapGestures { offset ->
-                            val index = getStepIndex(offset.x)
-                            val minCount = indexToCount(index, isMin = true)
-                            val maxCount = indexToCount(index, isMin = false)
-
-                            // Toggle to "Allow" if the same state is tapped again
-                            if (setting.min == minCount && setting.max == maxCount) {
-                                setting.onRangeChange(0, RuleOption.MAX_CARDS)
-                            } else {
-                                setting.onRangeChange(minCount, maxCount)
-                            }
-                        }
-                    }
-                    .pointerInput(Unit) {
-                        var startStep = -1
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                startStep = getStepIndex(offset.x)
-                            },
-                            onDrag = { change, _ ->
-                                val currentStep = getStepIndex(change.position.x)
-                                if (startStep != -1) {
-                                    val minIdx = minOf(startStep, currentStep)
-                                    val maxIdx = maxOf(startStep, currentStep)
-
-                                    // Reset to "Allow" if full range is swiped (cancels visual selection)
-                                    if (minIdx == 0 && maxIdx == 3) {
-                                        setting.onRangeChange(0, RuleOption.MAX_CARDS)
-                                    } else {
-                                        setting.onRangeChange(
-                                            indexToCount(minIdx, isMin = true),
-                                            indexToCount(maxIdx, isMin = false)
-                                        )
-                                    }
-                                }
-                            }
+            // Segmented Range Picker
+            RangePicker(
+                modifier = Modifier.weight(0.6f),
+                currentMinIdx = countToIndex(setting.min),
+                currentMaxIdx = countToIndex(setting.max),
+                onRangeChange = { newMinIdx, newMaxIdx ->
+                    // Full range (0-3) means "Allow"
+                    if (newMinIdx == 0 && newMaxIdx == 3) {
+                        setting.onRangeChange(0, RuleOption.MAX_CARDS)
+                    } else {
+                        setting.onRangeChange(
+                            indexToCount(newMinIdx, isMin = true),
+                            indexToCount(newMaxIdx, isMin = false)
                         )
-                    },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val steps = listOf("0", "1", "2", "3+")
-                val currentMinIdx = when (setting.min) {
-                    RuleOption.MAX_CARDS -> 3
-                    3 -> 3
-                    else -> setting.min.coerceAtMost(3)
-                }
-                val currentMaxIdx = when (setting.max) {
-                    RuleOption.MAX_CARDS -> 3
-                    else -> setting.max.coerceAtMost(3)
-                }
-
-                steps.forEachIndexed { index, stepLabel ->
-                    val isSelected = index in currentMinIdx..currentMaxIdx
-                    val isExclude = setting.min == 0 && setting.max == 0 && index == 0
-                    val isAllow = setting.min == 0 && setting.max == RuleOption.MAX_CARDS
-
-                    val backgroundColor = when {
-                        isExclude && index == 0 -> MaterialTheme.colorScheme.errorContainer
-                        isSelected && !isAllow -> MaterialTheme.colorScheme.primaryContainer
-                        else -> MaterialTheme.colorScheme.surface
                     }
-
-                    val contentColor = when {
-                        isExclude && index == 0 -> MaterialTheme.colorScheme.onErrorContainer
-                        isSelected && !isAllow -> MaterialTheme.colorScheme.onPrimaryContainer
-                        else -> MaterialTheme.colorScheme.onSurface
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .border(
-                                width = if (index > 0) 0.5.dp else 0.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(0.dp)
-                            )
-                            .padding(4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            color = backgroundColor,
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = stepLabel,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = contentColor
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+                },
+                getStepIndex = ::getStepIndex,
+                onWidthChange = { componentWidth = it }
+            )
         }
-        
+
         // State Label
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -741,6 +662,119 @@ fun RangeRuleSettingItem(setting: SettingItem.RangeRuleSetting) {
                 else MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = 4.dp, end = 4.dp)
             )
+        }
+    }
+}
+
+@Composable
+private fun RangePicker(
+    modifier: Modifier = Modifier,
+    currentMinIdx: Int,
+    currentMaxIdx: Int,
+    onRangeChange: (Int, Int) -> Unit,
+    getStepIndex: (Float) -> Int,
+    onWidthChange: (Float) -> Unit
+) {
+    val isExclude = currentMinIdx == 0 && currentMaxIdx == 0
+    val isAllow = currentMinIdx == 0 && currentMaxIdx == 3
+
+    Row(
+        modifier = modifier
+            .height(40.dp)
+            .onGloballyPositioned { onWidthChange(it.size.width.toFloat()) }
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .pointerInput(currentMinIdx, currentMaxIdx) {
+                detectTapGestures { offset ->
+                    val tappedIndex = getStepIndex(offset.x)
+
+                    // Determine new range based on adjacency
+                    val (newMinIdx, newMaxIdx) = when {
+                        // Single cell selected and tapped again - go to "Allow"
+                        currentMinIdx == currentMaxIdx && tappedIndex == currentMinIdx -> {
+                            0 to 3
+                        }
+                        isAllow -> {
+                            // Currently "Allow" - tapping any cell selects that cell only
+                            tappedIndex to tappedIndex
+                        }
+                        tappedIndex == currentMinIdx - 1 -> {
+                            // Tapped adjacent to current min - extend range downward
+                            tappedIndex to currentMaxIdx
+                        }
+                        tappedIndex == currentMaxIdx + 1 -> {
+                            // Tapped adjacent to current max - extend range upward
+                            currentMinIdx to tappedIndex
+                        }
+                        tappedIndex in currentMinIdx..currentMaxIdx -> {
+                            // Tapped within current range - reset to just that cell
+                            tappedIndex to tappedIndex
+                        }
+                        else -> {
+                            // Tapped non-adjacent cell - reset to just that cell
+                            tappedIndex to tappedIndex
+                        }
+                    }
+
+                    onRangeChange(newMinIdx, newMaxIdx)
+                }
+            }
+            .pointerInput(Unit) {
+                var startStep = -1
+                detectDragGestures(
+                    onDragStart = { offset -> startStep = getStepIndex(offset.x) },
+                    onDrag = { change, _ ->
+                        val currentStep = getStepIndex(change.position.x)
+                        if (startStep != -1) {
+                            val minIdx = minOf(startStep, currentStep)
+                            val maxIdx = maxOf(startStep, currentStep)
+                            onRangeChange(minIdx, maxIdx)
+                        }
+                    }
+                )
+            },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val steps = listOf("0", "1", "2", "3+")
+
+        steps.forEachIndexed { index, stepLabel ->
+            val isSelected = index in currentMinIdx..currentMaxIdx
+
+            val backgroundColor = when {
+                isExclude && index == 0 -> MaterialTheme.colorScheme.errorContainer
+                isSelected && !isAllow -> MaterialTheme.colorScheme.primaryContainer
+                else -> MaterialTheme.colorScheme.surface
+            }
+
+            val contentColor = when {
+                isExclude && index == 0 -> MaterialTheme.colorScheme.onErrorContainer
+                isSelected && !isAllow -> MaterialTheme.colorScheme.onPrimaryContainer
+                else -> MaterialTheme.colorScheme.onSurface
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .border(
+                        width = if (index > 0) 0.5.dp else 0.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(0.dp)
+                    )
+                    .padding(4.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(backgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stepLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor
+                )
+            }
         }
     }
 }

@@ -1,4 +1,9 @@
-Add portrait / landscape counts to expansions. might have to add these counts to sets.json
+tell user what rule is fucking him up
+Make landscape rules more chill, or at least give the option
+
+Range slider: Remove 0 -> none selected = exclude
+
+Add portrait / landscape counts to expansions -> getCountForExpansion DAO
 
 range slider onclick: open advanced slider 0-10
 
@@ -239,8 +244,4 @@ TODO LOW PRIO
 - Font: Princeps
 - Attack, Prize -> Prize, attack (order)=? Clash, Augur, Wizard too
 - Add source card to dependent cards in library
-
-
-
-
 

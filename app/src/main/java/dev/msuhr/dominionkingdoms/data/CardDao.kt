@@ -83,16 +83,6 @@ interface CardDao {
     )
     suspend fun getSupplyLandscapesByExpansion(id: String): List<Card>
 
-    @Query(
-        """
-        SELECT * FROM cards AS c
-        WHERE sets LIKE '%' || :id || '%'
-        AND c.isEnabled = 1
-        AND (c.types LIKE '%"ALLY"%' OR c.types LIKE '%"PROPHECY"%')
-        """
-    )
-    suspend fun getSpecialLandscapesByExpansion(id: String): List<Card>
-
     @Query("SELECT * FROM cards ORDER BY RANDOM() LIMIT :amount")
     suspend fun getRandomCards(amount: Int): List<Card>
 
@@ -176,10 +166,27 @@ interface CardDao {
         AND c.isEnabled = 1
         AND c.landscape = 1
         AND c.basic = 0
-        AND (c.types LIKE '%"ALLY"%' OR c.types LIKE '%"PROPHECY"%')
+        AND c.types LIKE '%"PROPHECY"%'
+        ORDER BY RANDOM()
+        LIMIT 1
     """
     )
-    suspend fun getEnabledOwnedSpecialLandscapes(): List<Card>
+    suspend fun getRandomEnabledProphecy(): Card?
+
+    @Query(
+        """
+        SELECT c.* FROM cards AS c
+        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        WHERE e.isOwned
+        AND c.isEnabled = 1
+        AND c.landscape = 1
+        AND c.basic = 0
+        AND c.types LIKE '%"ALLY"%'
+        ORDER BY RANDOM()
+        LIMIT 1
+    """
+    )
+    suspend fun getRandomEnabledAlly(): Card?
 
     @Query(
         """

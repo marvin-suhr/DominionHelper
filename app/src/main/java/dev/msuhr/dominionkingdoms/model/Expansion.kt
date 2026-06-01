@@ -43,7 +43,9 @@ data class Expansion(
     @SerializedName("isOwned") val isOwned: Boolean,
     @SerializedName("size") val size: ExpansionSize,
     @SerializedName("year") val year: Int
-)
+) {
+    override fun toString(): String = "$name $edition"
+}
 
 // To data package
 fun loadExpansionsFromAssets(context: Context): List<Expansion> {

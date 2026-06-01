@@ -21,14 +21,14 @@ object CardRules {
     )
 
     val COST_RULES = listOf(
-        GenerationRule("cost_2", "Cost 2") { it.cost == 2 },
-        GenerationRule("cost_3", "Cost 3") { it.cost == 3 },
-        GenerationRule("cost_4", "Cost 4") { it.cost == 4 },
-        GenerationRule("cost_5", "Cost 5") { it.cost == 5 },
-        GenerationRule("cost_6_plus", "Cost 6+") { (it.cost ?: 0) >= 6 },
-        GenerationRule("cost_debt", "Debt") { it.debt > 0 },
-        GenerationRule("cost_potion", "Potion") { it.potion },
-        GenerationRule("cost_overpay", "Overpay") { it.overpay }
+        GenerationRule("cost_2", "Cost 2", imageName = "cost_2") { it.cost == 2 },
+        GenerationRule("cost_3", "Cost 3", imageName = "cost_3") { it.cost == 3 },
+        GenerationRule("cost_4", "Cost 4", imageName = "cost_4") { it.cost == 4 },
+        GenerationRule("cost_5", "Cost 5", imageName = "cost_5") { it.cost == 5 },
+        GenerationRule("cost_6_plus", "Cost 6+", imageName = "cost_6") { (it.cost ?: 0) >= 6 },
+        GenerationRule("cost_debt", "Debt", imageName = "type_victory") { it.debt > 0 },
+        GenerationRule("cost_potion", "Potion", imageName = "set_alchemy") { it.potion },
+        GenerationRule("cost_overpay", "Overpay", imageName = "cost_plus") { it.overpay }
     )
 
     val CATEGORY_RULES = listOf(
@@ -58,11 +58,11 @@ object CardRules {
     )
 
     val LANDSCAPE_RULES = listOf(
-        GenerationRule("landscape_event", "Event", imageName = "set_adventures") { it.types.contains(Type.EVENT) },
-        GenerationRule("landscape_landmark", "Landmark", imageName = "set_empires") { it.types.contains(Type.LANDMARK) },
-        GenerationRule("landscape_project", "Project", imageName = "set_renaissance") { it.types.contains(Type.PROJECT) },
-        GenerationRule("landscape_trait", "Trait", imageName = "set_plunder") { it.types.contains(Type.TRAIT) },
-        GenerationRule("landscape_way", "Way", imageName = "set_menagerie") { it.types.contains(Type.WAY) },
+        GenerationRule("landscape_event", "Event", target = RuleTarget.LANDSCAPE, imageName = "set_adventures") { it.types.contains(Type.EVENT) },
+        GenerationRule("landscape_landmark", "Landmark", target = RuleTarget.LANDSCAPE, imageName = "set_empires") { it.types.contains(Type.LANDMARK) },
+        GenerationRule("landscape_project", "Project", target = RuleTarget.LANDSCAPE, imageName = "set_renaissance") { it.types.contains(Type.PROJECT) },
+        GenerationRule("landscape_trait", "Trait", target = RuleTarget.LANDSCAPE, imageName = "set_plunder") { it.types.contains(Type.TRAIT) },
+        GenerationRule("landscape_way", "Way", target = RuleTarget.LANDSCAPE, imageName = "set_menagerie") { it.types.contains(Type.WAY) },
     )
 
     val LANDSCAPE_TYPES = setOf(

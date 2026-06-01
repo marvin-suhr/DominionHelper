@@ -39,6 +39,8 @@ object UserPreferencesKeys {
     val DARK_AGES_STARTER_CARDS = stringPreferencesKey("dark_ages_starter_preference")
     val PROSPERITY_BASIC_CARDS = stringPreferencesKey("prosperity_basic_preference")
 
+    val KINGDOM_SORT_TYPE = stringPreferencesKey("kingdom_sort_type")
+
     val GENERATION_RULES = stringPreferencesKey("generation_rules")
 }
 
@@ -212,6 +214,17 @@ class UserPrefsRepository @Inject constructor(
     suspend fun setProsperityBasicCardsMode(newMode: ProsperityMode) {
         context.dataStore.edit { settings ->
             settings[UserPreferencesKeys.PROSPERITY_BASIC_CARDS] = newMode.name
+        }
+    }
+
+    val kingdomSortType: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.KINGDOM_SORT_TYPE] ?: "EXPANSION"
+        }
+
+    suspend fun setKingdomSortType(newSortType: String) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.KINGDOM_SORT_TYPE] = newSortType
         }
     }
 
