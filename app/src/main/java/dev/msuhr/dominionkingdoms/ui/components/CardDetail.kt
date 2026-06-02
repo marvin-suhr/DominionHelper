@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import dev.msuhr.dominionkingdoms.model.Card
+import dev.msuhr.dominionkingdoms.model.Type
 import dev.msuhr.dominionkingdoms.utils.getDrawableId
 import dev.msuhr.dominionkingdoms.utils.ui.horizontalFadingEdges
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -187,61 +188,65 @@ fun CardDetail(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Favorite toggle
-            if (card.isFavorite) {
-                Button(
-                    modifier = Modifier.weight(1f),
-                    onClick = { onFavorite(card) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,//Color(0xFFFFD54F), // TODO: Light mode colors
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer//Color(0xFF121212)
-                    )
-                ) {
-                    Icon(Icons.Filled.Star, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Unfavorite", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            } else {
-                OutlinedButton(
-                    modifier = Modifier.weight(1f),
-                    onClick = { onFavorite(card) },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
-                    ),
-                    border = BorderStroke(1.dp, Color(0xFF424242))
-                ) {
-                    Icon(Icons.Outlined.StarBorder, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Favorite", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            }
+            // No favorite / ban buttons for tokens and mats
+            if (!card.types.contains(Type.TOKEN) && !card.types.contains(Type.MAT)) {
 
-            // Ban toggle
-            if (!card.isEnabled) {
-                Button(
-                    modifier = Modifier.weight(1f),
-                    onClick = { onBan(card) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer,//Color(0xFFE57373), // TODO: Light mode colors
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer//Color(0xFF121212)
-                    )
-                ) {
-                    Icon(Icons.Filled.Block, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Unban", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // Favorite toggle
+                if (card.isFavorite) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { onFavorite(card) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,//Color(0xFFFFD54F), // TODO: Light mode colors
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer//Color(0xFF121212)
+                        )
+                    ) {
+                        Icon(Icons.Filled.Star, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Unfavorite", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                } else {
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = { onFavorite(card) },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFF424242))
+                    ) {
+                        Icon(Icons.Outlined.StarBorder, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Favorite", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 }
-            } else {
-                OutlinedButton(
-                    modifier = Modifier.weight(1f),
-                    onClick = { onBan(card) },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
-                    ),
-                    border = BorderStroke(1.dp, Color(0xFF424242))
-                ) {
-                    Icon(Icons.Outlined.Block, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ban", maxLines = 1, overflow = TextOverflow.Ellipsis)
+
+                // Ban toggle
+                if (!card.isEnabled) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = { onBan(card) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,//Color(0xFFE57373), // TODO: Light mode colors
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer//Color(0xFF121212)
+                        )
+                    ) {
+                        Icon(Icons.Filled.Block, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Unban", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                } else {
+                    OutlinedButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = { onBan(card) },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFF424242))
+                    ) {
+                        Icon(Icons.Outlined.Block, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Ban", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 }
             }
         }

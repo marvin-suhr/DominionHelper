@@ -36,6 +36,10 @@ object CardNames {
     const val ENVIOUS = "Envious"
     const val MISERABLE = "Miserable"
     const val TWICE_MISERABLE = "Twice Miserable"
+    const val ISLAND = "Island"
+    const val PIRATE_SHIP = "Pirate Ship"
+    const val NATIVE_VILLAGE = "Native Village"
+    const val TRADE_ROUTE = "Trade Route"
 
     // For Loot providers
     const val JEWELLED_EGG = "Jewelled Egg"
@@ -67,6 +71,36 @@ object CardNames {
     const val TREASURE_CHEST = "Treasure Chest"
     const val TREASURER = "Treasurer"
     const val KEY = "Key"
+
+    // Coffers Guilds
+    const val BAKER = "Baker"
+    const val BUTCHER = "Butcher"
+    const val CANDLESTICK_MAKER = "Candlestick Maker"
+    const val FOOTPAD = "Footpad"
+    // const val JOUST = "Joust"
+    const val MERCHANT_GUILD = "Merchant Guild"
+    const val PLAZA = "Plaza"
+
+    // Coffers Renaissance
+    const val DUCAT = "Ducat"
+    const val PATRON = "Patron"
+    const val SILK_MERCHANT = "Silk Merchant"
+    const val SPICES = "Spices"
+    // const val SWASHBUCKLER= "Swashbuckler"
+    const val VILLAIN = "Villain"
+    const val EXPLORATION = "Exploration"
+    const val GUILDHALL = "Guildhall"
+    const val PAGEANT = "Pageant"
+
+    // Villagers
+    const val ACTING_TROUPE = "Acting Troupe"
+    const val LACKEYS = "Lackeys"
+    //const val PATRON = "Patron"
+    const val RECRUITER = "Recruiter"
+    const val SCULPTOR = "Sculptor"
+    //const val SILK_MERCHANT = "Silk Merchant"
+    const val ACADEMY = "Academy"
+    //const val EXPLORATION = "Exploration"
 
     // Specific card interactions
     const val FOOL = "Fool"
@@ -119,8 +153,18 @@ object CardNames {
     const val STAMPEDE = "Stampede"
     const val HORSE = "Horse"
 
-    // General game elements often represented as cards/piles
+    // Mats
     const val TRASH_MAT = "Trash Mat"
+    const val ISLAND_MAT = "Island Mat"
+    const val PIRATE_SHIP_MAT = "Pirate Ship Mat"
+    const val NATIVE_VILLAGE_MAT = "Native Village Mat"
+    const val TRADE_ROUTE_MAT = "Trade Route Mat"
+    const val VICTORY_TOKEN_MAT = "Victory Token Mat"
+    const val TAVERN_MAT = "Tavern Mat"
+    const val COFFERS_MAT = "Coffers Mat"
+    const val COFFERS_VILLAGERS_MAT = "Coffers / Villagers Mat"
+    const val EXILE_MAT = "Exile Mat"
+    const val FAVORS_MAT = "Favors Mat"
 
     // Placeholders for entire piles
     const val BOON_PILE = "Boon pile"
@@ -133,5 +177,4 @@ object CardNames {
     const val PRIZE_PILE = "Prizes"
     const val JOUST = "Joust"
     const val REWARD_PILE = "Rewards"
-
 }

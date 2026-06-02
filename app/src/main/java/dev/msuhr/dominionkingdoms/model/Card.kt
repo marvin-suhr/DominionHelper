@@ -37,15 +37,17 @@ data class Card(
     @SerializedName("special_cost") val specialCost: Boolean
 ) {
 
+    override fun toString(): String {
+        return id.toString()
+    }
+
     @Ignore
     var expansionImageId: Int = if (sets.size >= 2) sets[1].imageId else sets[0].imageId
 
-    // TODO Might be able to simplify / remove second condition?
-    // TODO Huh what does this do again
     fun getDisplayCategory(): CardDisplayCategory {
         return when {
             this.landscape -> CardDisplayCategory.LANDSCAPE
-            //this.types.any { it == Type.LOOT || it == Type.RUINS || it == Type.SHELTER || it == Type.PRIZE || it == Type.REWARD } -> CardDisplayCategory.SPECIAL
+            this.types.contains(Type.MAT) || this.types.contains(Type.TOKEN) -> CardDisplayCategory.MATERIAL
             !this.supply || this.basic -> CardDisplayCategory.SPECIAL
             else -> CardDisplayCategory.SUPPLY
         }
@@ -59,7 +61,7 @@ data class Card(
             val displayCategory1 = card1.getDisplayCategory()
             val displayCategory2 = card2.getDisplayCategory()
 
-            // 1. Compare by main display category's ordinal (ensures SUPPLY < SPECIAL < LANDSCAPE)
+            // 1. Compare by main display category's ordinal (ensures SUPPLY < SPECIAL < LANDSCAPE < MATERIAL)
             val categoryComparison = displayCategory1.ordinal.compareTo(displayCategory2.ordinal)
             if (categoryComparison != 0) {
                 return categoryComparison

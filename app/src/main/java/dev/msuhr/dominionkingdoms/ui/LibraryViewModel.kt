@@ -237,33 +237,38 @@ class LibraryViewModel @Inject constructor(
                     }
 
                 _expansionsWithEditions.value = expansionsWithEditions
+
+                // Load card counts for all expansions
+                val counts = mutableMapOf<String, Pair<Int, Int>>()
+
+                expansionsWithEditions.forEach { expansionWithEditions ->
+                    val firstId = expansionWithEditions.firstEdition?.id
+                    val secondId = expansionWithEditions.secondEdition?.id
+
+                    val allPortraitCards = mutableListOf<Card>()
+                    val allLandscapeCards = mutableListOf<Card>()
+
+                    // Get cards from both editions if they exist
+                    firstId?.let { allPortraitCards.addAll(cardDao.getPortraitsByExpansion(it)) }
+                    secondId?.let { allPortraitCards.addAll(cardDao.getPortraitsByExpansion(it)) }
+                    firstId?.let { allLandscapeCards.addAll(cardDao.getSupplyLandscapesByExpansion(it)) }
+                    secondId?.let { allLandscapeCards.addAll(cardDao.getSupplyLandscapesByExpansion(it)) }
+
+                    val portraitCount = allPortraitCards.distinctBy { it.id }.size
+                    val landscapeCount = allLandscapeCards.distinctBy { it.id }.size
+
+                    // Store the same count for both edition IDs (they share the card pool)
+                    firstId?.let { counts[it] = Pair(portraitCount, landscapeCount) }
+                    secondId?.let { counts[it] = Pair(portraitCount, landscapeCount) }
+                }
+
+                _expansionCardCounts.value = counts
+
                 Log.i(
                     "LibraryViewModel",
                     "Loaded expansions [${expansionsWithEditions.size}] with editions [${allExpansions.size}]"
                 )
             }
-        }
-    }
-
-    fun toggleExpansion(expansionToToggle: ExpansionWithEditions) {
-        Log.i(
-            "LibraryViewModel",
-            "Toggling expansion ${expansionToToggle.name}: ${expansionToToggle.isExpanded}"
-        )
-        viewModelScope.launch {
-            _expansionsWithEditions.value = _expansionsWithEditions.value.map { expansion ->
-                if (expansion.name == expansionToToggle.name) {
-                    // Create a new ExpansionWithEditions object with the toggled isExpanded flag
-                    expansion.copy(isExpanded = !expansion.isExpanded)
-                } else {
-                    // Keep other expansions as they are
-                    expansion
-                }
-            }
-            Log.i(
-                "LibraryViewModel",
-                "Toggled expansion ${expansionToToggle.name}: ${expansionToToggle.isExpanded}"
-            )
         }
     }
 
@@ -304,6 +309,7 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
+    // Might need this
     fun getOwnershipText(expansion: ExpansionWithEditions): String {
 
         val isFirstOwned = expansion.firstEdition?.isOwned == true
@@ -570,19 +576,6 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    fun selectEdition(expansion: Expansion) {
-        viewModelScope.launch {
-            _cardsToShow.value =
-                sortCards(cardDao.getCardsByExpansion(expansion.id))
-            // We need to set these, so we need ExpansionWithEditions here. But also an int for the clicked edition
-            //_selectedExpansion.value = expansion
-            //_selectedEdition.value = whichEditionIsOwned(expansion)
-            //_uiScreenState.value = UiScreenState.EXPANSION_CARDS
-
-            Log.d("LibraryViewModel", "Selected edition ${expansion.name}")
-        }
-    }
-
     fun expansionHasTwoEditions(expansion: ExpansionWithEditions): Boolean {
         return expansion.firstEdition != null && expansion.secondEdition != null
     }
@@ -689,16 +682,6 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    // Card functions
-    /*fun loadAllCards() {
-        Log.d("LibraryViewModel", "Loading all cards")
-        viewModelScope.launch {
-            _cards.value = cardDao.getAll()
-            sortCards()
-            Log.d("LibraryViewModel", "Loaded all ${_cards.value.size} cards")
-        }
-    }*/
-
     fun triggerError(message: String) {
         _errorMessage.value = message
     }
@@ -730,6 +713,11 @@ class LibraryViewModel @Inject constructor(
 
     val favoriteCardCount: StateFlow<Int> = cardDao.getFavoriteCardCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    // TODO why is this here
+    // Map of expansion ID to Pair(portraitCount, landscapeCount)
+    private val _expansionCardCounts = MutableStateFlow<Map<String, Pair<Int, Int>>>(emptyMap())
+    val expansionCardCounts: StateFlow<Map<String, Pair<Int, Int>>> = _expansionCardCounts.asStateFlow()
 
     fun toggleCardFavorite(card: Card) {
         viewModelScope.launch {

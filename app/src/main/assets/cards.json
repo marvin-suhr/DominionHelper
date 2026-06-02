@@ -3430,7 +3430,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Peddler_variant"
+      "Peddler_variant", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -3451,7 +3451,7 @@
     "image_name": "butcher",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Coffers"],
     "potion": false,
     "sets": [
       "Guilds_1E",
@@ -3472,7 +3472,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -3645,7 +3645,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -3954,7 +3954,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -3976,7 +3976,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Village"
+      "Village", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -10796,7 +10796,7 @@
     "image_name": "actingtroupe",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Villagers"],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -10861,7 +10861,8 @@
     "debt": 0,
     "categories": [
       "Trasher",
-      "Plusbuy"
+      "Plusbuy",
+      "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -10989,7 +10990,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw", "Villagers"
     ],
     "potion": false,
     "sets": [
@@ -11054,7 +11055,7 @@
     "image_name": "patron",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Coffers", "Villagers"],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11097,7 +11098,8 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Trash_for_benefit"
+      "Trash_for_benefit",
+      "Villagers"
     ],
     "potion": false,
     "sets": [
@@ -11184,7 +11186,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Gainer"
+      "Gainer",
+      "Villagers"
     ],
     "potion": false,
     "sets": [
@@ -11229,7 +11232,9 @@
     "debt": 0,
     "categories": [
       "Terminal_draw",
-      "Plusbuy"
+      "Plusbuy",
+      "Coffers",
+      "Villagers"
     ],
     "potion": false,
     "sets": [
@@ -11250,7 +11255,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -11271,7 +11276,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_draw"
+      "Terminal_draw", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -11314,7 +11319,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Handsize_attack"
+      "Handsize_attack", "Coffers"
     ],
     "potion": false,
     "sets": [
@@ -11334,7 +11339,7 @@
     "image_name": "academy",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Villagers"],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11492,7 +11497,7 @@
     "image_name": "exploration",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Coffers", "Villagers"],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11551,7 +11556,7 @@
     "image_name": "guildhall",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Coffers"],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11589,7 +11594,7 @@
     "image_name": "pageant",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Coffers"],
     "potion": false,
     "sets": [
       "Renaissance"
@@ -11891,7 +11896,7 @@
     "image_name": "bountyhunter",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -11910,7 +11915,7 @@
     "image_name": "cameltrain",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -11931,7 +11936,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Terminal_silver"
+      "Terminal_silver", "Exile"
     ],
     "potion": false,
     "sets": [
@@ -11974,7 +11979,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Curser"
+      "Curser", "Exile"
     ],
     "potion": false,
     "sets": [
@@ -12015,7 +12020,7 @@
     "image_name": "displace",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -12079,7 +12084,7 @@
     "image_name": "gatekeeper",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -12268,7 +12273,8 @@
     "debt": 0,
     "categories": [
       "Cantrip",
-      "Plusbuy"
+      "Plusbuy",
+      "Exile"
     ],
     "potion": false,
     "sets": [
@@ -12374,7 +12380,8 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Plusbuy"
+      "Plusbuy",
+      "Exile"
     ],
     "potion": false,
     "sets": [
@@ -12498,7 +12505,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Trasher"
+      "Trasher", "Exile"
     ],
     "potion": false,
     "sets": [
@@ -12616,7 +12623,7 @@
     "image_name": "enclave",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -12675,7 +12682,7 @@
     "image_name": "invest",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -12852,7 +12859,7 @@
     "image_name": "transport",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -12890,7 +12897,7 @@
     "image_name": "wayofthecamel",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -13248,7 +13255,7 @@
     "image_name": "wayoftheworm",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": ["Exile"],
     "potion": false,
     "sets": [
       "Menagerie"
@@ -18273,18 +18280,327 @@
     "special_cost": false
   },
   {
-    "name": "Trash Mat",
+    "name": "Trash Card",
     "cost": null,
     "supply": false,
-    "landscape": true,
-    "types": [],
-    "image_name": "trash_mat",
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "trash_card",
     "basic": false,
     "debt": 0,
     "categories": [],
     "potion": false,
     "sets": [
-      "PLACEHOLDER"
+      "BASE_1E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Trash Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_trash",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "BASE_2E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Island Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_island",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "SEASIDE_1E",
+      "SEASIDE_2E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Pirate Ship Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_pirate_ship",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "SEASIDE_1E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Native Village Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_native_village",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "SEASIDE_1E",
+      "SEASIDE_2E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Trade Route Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_trade_route",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "PROSPERITY_1E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Victory Token Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_victory_token",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "PROSPERITY_1E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Tavern Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_tavern",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "ADVENTURES"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Coffers Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_coffers",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "GUILDS_1E",
+      "CORNUCOPIA_GUILDS_2E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Coffers / Villagers Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_coffers_villagers",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "RENAISSANCE"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Exile Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_exile",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "MENAGERIE"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Favors Mat",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "mat_favors",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "ALLIES"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Victory Tokens",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["TOKEN"],
+    "image_name": "token_victory",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "PROSPERITY_1E", "PROSPERITY_2E", "EMPIRES"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Coin Tokens",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["TOKEN"],
+    "image_name": "token_coins",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "SEASIDE_1E", "PROSPERITY_1E", "CORNUCOPIA_GUILDS_2E", "RENAISSANCE", "ALLIES"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Embargo Tokens",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["TOKEN"],
+    "image_name": "token_embargo",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "SEASIDE_1E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Adventures Tokens",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["TOKEN"],
+    "image_name": "token_adventured",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "ADVENTURES"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Debt Tokens",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["TOKEN"],
+    "image_name": "token_debt",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "EMPIRES", "RISING_SUN"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Wooden Cubes",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["TOKEN"],
+    "image_name": "token_cubes",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "RENAISSANCE"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Sun tokens",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["TOKEN"],
+    "image_name": "token_sun",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "RISING_SUN"
     ],
     "overpay": false,
     "special_cost": false

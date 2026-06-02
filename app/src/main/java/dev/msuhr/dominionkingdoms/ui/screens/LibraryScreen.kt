@@ -144,6 +144,7 @@ fun LibraryScreen(
     val disabledCardCount by viewModel.blacklistedCardCount.collectAsState()
     val favoriteCardCount by viewModel.favoriteCardCount.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val expansionCardCounts by viewModel.expansionCardCounts.collectAsState()
 
     // List states
     val libraryListState = rememberLazyListState()
@@ -244,12 +245,29 @@ fun LibraryScreen(
                         }
 
                         is LibraryListItem.ExpansionItem -> {
+                            val expansion = item.expansion
+                            val firstId = expansion.firstEdition?.id
+                            val secondId = expansion.secondEdition?.id
+
+                            // Get counts from the map (both editions have the same count since they share card pool)
+                            val counts = when {
+                                firstId != null && secondId != null -> {
+                                    val expansionCounts = expansionCardCounts[firstId] ?: Pair(0, 0)
+                                    expansionCounts
+                                }
+                                firstId != null -> expansionCardCounts[firstId] ?: Pair(0, 0)
+                                secondId != null -> expansionCardCounts[secondId] ?: Pair(0, 0)
+                                else -> Pair(0, 0)
+                            }
+
                             ExpansionListItemContent(
-                                expansion = item.expansion,
+                                expansion = expansion,
                                 viewModel = viewModel,
-                                onExpansionClick = { viewModel.selectExpansion(item.expansion) },
-                                onOwnershipToggle = { expansion, isOwned ->
-                                    viewModel.updateExpansionOwnership(expansion, isOwned)
+                                portraitCount = counts.first,
+                                landscapeCount = counts.second,
+                                onExpansionClick = { viewModel.selectExpansion(expansion) },
+                                onOwnershipToggle = { exp, isOwned ->
+                                    viewModel.updateExpansionOwnership(exp, isOwned)
                                 }
                             )
                         }
@@ -435,6 +453,8 @@ private fun HeaderItem(text: String) {
 private fun ExpansionListItemContent(
     expansion: ExpansionWithEditions,
     viewModel: LibraryViewModel,
+    portraitCount: Int,
+    landscapeCount: Int,
     onExpansionClick: () -> Unit,
     onOwnershipToggle: (Expansion, Boolean) -> Unit
 ) {
@@ -442,11 +462,13 @@ private fun ExpansionListItemContent(
 
     ExpansionListItem(
         expansion = expansion,
+        portraitCount = portraitCount,
+        landscapeCount = landscapeCount,
         onClick = onExpansionClick,
         onOwnershipToggle = {
             if (hasMultipleEditions) {
                 // Multi-edition: cycle through ownership states (NONE → FIRST → SECOND → BOTH → NONE)
-                viewModel.cycleMultiEditionOwnership(expansion)
+                viewModel.cycleMultiEditionOwnership(expansion) // pass this instead of VM
             } else {
                 // Single edition: simple toggle using ViewModel's current state
                 val editionToToggle = expansion.firstEdition ?: expansion.secondEdition

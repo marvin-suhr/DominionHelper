@@ -412,12 +412,182 @@ class CardDependencies {
             dependentCardNames = listOf(CardNames.IMP)
         ),
 
-        // If there is a trasher present, add Trash mat
+        //////////
+        // MATS //
+        //////////
+
+        // If there is a trasher present, add Trash Mat
+        DependencyRule(
+            condition = {
+                it.categories.contains(Category.TRASHER) || it.categories.contains(Category.TRASH_FOR_BENEFIT)
+            },
+            dependentCardNames = listOf(CardNames.TRASH_MAT) // Trash card??
+        ),
+
+        // If Island is present, add Island Mat
+        DependencyRule(
+            condition = {
+                it.name == CardNames.ISLAND
+            },
+            dependentCardNames = listOf(CardNames.ISLAND_MAT)
+        ),
+
+        // If Pirate Ship is present, add Pirate Ship Mat
+        DependencyRule(
+            condition = {
+                it.name == CardNames.PIRATE_SHIP
+            },
+            dependentCardNames = listOf(CardNames.PIRATE_SHIP_MAT)
+        ),
+
+        // If Native Village is present, add Native Village Mat
+        DependencyRule(
+            condition = {
+                it.name == CardNames.NATIVE_VILLAGE
+            },
+            dependentCardNames = listOf(CardNames.NATIVE_VILLAGE_MAT)
+        ),
+
+        // If Trade Route is present, add Trade Route Mat
+        DependencyRule(
+            condition = {
+                it.name == CardNames.TRADE_ROUTE
+            },
+            dependentCardNames = listOf(CardNames.TRADE_ROUTE_MAT)
+        ),
+
+        // VP Tokens
         DependencyRule(
             condition = {
                 it.categories.contains(Category.TRASHER) || it.categories.contains(Category.TRASH_FOR_BENEFIT)
             },
             dependentCardNames = listOf(CardNames.TRASH_MAT)
+        ),
+
+        // If any Reserve card is present, add Tavern Mat
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.RESERVE)
+            },
+            dependentCardNames = listOf(CardNames.TAVERN_MAT)
+        ),
+
+        // If any coffers card from Guilds is present, add Coffers Mat
+        DependencyRule(
+            condition = { card ->
+                listOf(
+                    CardNames.BAKER,
+                    CardNames.BUTCHER,
+                    CardNames.CANDLESTICK_MAKER,
+                    CardNames.FOOTPAD,
+                    CardNames.JOUST, // -> Huge Turnip (lazy)
+                    CardNames.MERCHANT_GUILD,
+                    CardNames.PLAZA
+                ).contains(card.name)
+            },
+            dependentCardNames = listOf(CardNames.COFFERS_MAT)
+        ),
+
+        // TODO ^v if category = ... and sets contains ...
+
+        // If any coffers card from Renaissance or any villagers card is present, add Coffers / Villagers Mat
+        DependencyRule(
+            condition = { card ->
+                listOf(
+                    CardNames.DUCAT,
+                    CardNames.PATRON,
+                    CardNames.SILK_MERCHANT,
+                    CardNames.SPICES,
+                    CardNames.SWASHBUCKLER,
+                    CardNames.VILLAIN,
+                    CardNames.EXPLORATION,
+                    CardNames.GUILDHALL,
+                    CardNames.PAGEANT,
+                    CardNames.ACTING_TROUPE,
+                    CardNames.LACKEYS,
+                    CardNames.RECRUITER,
+                    CardNames.SCULPTOR,
+                    CardNames.ACADEMY
+                ).contains(card.name)
+            },
+            dependentCardNames = listOf(CardNames.COFFERS_VILLAGERS_MAT)
+        ),
+
+        // If any exile card is present, add Exile Mat
+        DependencyRule(
+            condition = {
+                it.categories.contains(Category.EXILE)
+            },
+            dependentCardNames = listOf(CardNames.EXILE_MAT)
+        ),
+
+        // If any Liaison card is present, add Favors Mat
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
+        ),
+
+        ////////////
+        // TOKENS //
+        ////////////
+        // TODO
+
+        // If any alt VP card is present, add Victory tokens
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
+        ),
+
+        // Coin tokens
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
+        ),
+
+        // If Embargo is present, add embargo tokens
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
+        ),
+
+        // Adventures tokens
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
+        ),
+
+        // Debt tokens
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
+        ),
+
+        // Renaissance cubes
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
+        ),
+
+        // Prophecy tokens
+        DependencyRule(
+            condition = {
+                it.types.contains(Type.LIAISON)
+            },
+            dependentCardNames = listOf(CardNames.FAVORS_MAT)
         )
     )
 }

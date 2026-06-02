@@ -86,9 +86,15 @@ enum class Type(
     ALLY(sortPriority = 33, displayText = "Ally"),              // Allies
     TRAIT(sortPriority = 34, displayText = "Trait"),            // Plunder
     PROPHECY(sortPriority = 35, displayText = "Prophecy"),      // Rising Sun
+    MAT(sortPriority = 998, displayText = "Mat"),
+    TOKEN(sortPriority = 999, displayText = "Token")
 }
 
 enum class Category(val displayName: String) {
+    COFFERS("Coffers"),
+    VILLAGERS("Villagers"),
+    EXILE("Exile"),
+
     CANTRIP("Cantrip"),
     NONTERMINAL_DRAW("Non-terminal Draw"),
     TERMINAL_DRAW("Terminal Draw"),
@@ -139,7 +145,8 @@ enum class Category(val displayName: String) {
 enum class CardDisplayCategory {
     SUPPLY, // Normal kingdom cards
     SPECIAL, // Additional cards dependent on other cards
-    LANDSCAPE // Landscape cards
+    LANDSCAPE, // Landscape cards
+    MATERIAL // Tokens and mats
 }
 
 sealed class AppSortType(val text: String) {

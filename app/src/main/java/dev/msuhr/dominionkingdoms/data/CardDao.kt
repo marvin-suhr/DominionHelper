@@ -246,6 +246,12 @@ interface CardDao {
     @Query("SELECT COUNT(*) FROM cards WHERE sets LIKE '%' || :expansionId || '%' AND isEnabled = 1 AND basic = 0")
     suspend fun getEnabledCardAmountForExpansion(expansionId: String): Int
 
+    @Query("SELECT COUNT(*) FROM cards WHERE sets LIKE '%' || :expansionId || '%' AND basic = 0 AND landscape = 0 AND supply = 1")
+    suspend fun getTotalPortraitAmountForExpansion(expansionId: String): Int
+
+    @Query("SELECT COUNT(*) FROM cards WHERE sets LIKE '%' || :expansionId || '%' AND basic = 0 AND landscape = 1")
+    suspend fun getTotalLandscapeAmountForExpansion(expansionId: String): Int
+
     @Query("SELECT * FROM cards WHERE name = :name")
     suspend fun getCardByName(name: String): Card?
 

@@ -152,6 +152,19 @@ fun SwitchSettingItem(setting: SettingItem.SwitchSetting) {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val context = LocalContext.current
+        if (setting.imageName.isNotEmpty()) {
+            val drawableId = getDrawableId(context, setting.imageName)
+            AsyncImage(
+                model = drawableId,
+                contentDescription = "${setting.title} icon",
+                modifier = Modifier
+                    .padding(end = Constants.PADDING_MEDIUM)
+                    .size(Constants.SETTING_ICON_SIZE),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+            )
+        }
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -635,15 +648,10 @@ fun RangeRuleSettingItem(setting: SettingItem.RangeRuleSetting) {
                 currentMinIdx = countToIndex(setting.min),
                 currentMaxIdx = countToIndex(setting.max),
                 onRangeChange = { newMinIdx, newMaxIdx ->
-                    // Full range (0-3) means "Allow"
-                    if (newMinIdx == 0 && newMaxIdx == 3) {
-                        setting.onRangeChange(0, RuleOption.MAX_CARDS)
-                    } else {
-                        setting.onRangeChange(
-                            indexToCount(newMinIdx, isMin = true),
-                            indexToCount(newMaxIdx, isMin = false)
-                        )
-                    }
+                    setting.onRangeChange(
+                        indexToCount(newMinIdx, isMin = true),
+                        indexToCount(newMaxIdx, isMin = false)
+                    )
                 },
                 getStepIndex = ::getStepIndex,
                 onWidthChange = { componentWidth = it }
@@ -745,13 +753,13 @@ private fun RangePicker(
 
             val backgroundColor = when {
                 isExclude && index == 0 -> MaterialTheme.colorScheme.errorContainer
-                isSelected && !isAllow -> MaterialTheme.colorScheme.primaryContainer
+                isSelected && !isExclude -> MaterialTheme.colorScheme.primaryContainer
                 else -> MaterialTheme.colorScheme.surface
             }
 
             val contentColor = when {
                 isExclude && index == 0 -> MaterialTheme.colorScheme.onErrorContainer
-                isSelected && !isAllow -> MaterialTheme.colorScheme.onPrimaryContainer
+                isSelected && !isExclude -> MaterialTheme.colorScheme.onPrimaryContainer
                 else -> MaterialTheme.colorScheme.onSurface
             }
 

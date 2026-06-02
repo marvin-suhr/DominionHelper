@@ -143,6 +143,10 @@ fun LibraryCardList(
         cardList.filter { it.getDisplayCategory() == CardDisplayCategory.LANDSCAPE }
     }
 
+    val materialCards = remember(cardList) {
+        cardList.filter { it.types.contains(Type.TOKEN) || it.types.contains(Type.MAT) }
+    }
+
     LazyColumn(
         modifier = modifier,
         state = listState,
@@ -213,6 +217,24 @@ fun LibraryCardList(
                     CardSpacer("Landscape Cards (${landscapeCards.size})")
                 }
                 items(landscapeCards, key = { card -> "landscape_${card.id}" }) { card ->
+                    CardView(
+                        card = card,
+                        onCardClick = { onCardClick(card) },
+                        enabled = card.isEnabled,
+                        showIcon = false,
+                        onToggleEnable = { onToggleEnable(card) },
+                        onFavorite = { onFavorite(card) },
+                        onBan = { onBan(card) }
+                    )
+                }
+            }
+
+            // Additional Material (TOKEN/MAT cards) in library
+            if (materialCards.isNotEmpty()) {
+                item {
+                    CardSpacer("Additional Material (${materialCards.size})")
+                }
+                items(materialCards, key = { card -> "material_${card.id}" }) { card ->
                     CardView(
                         card = card,
                         onCardClick = { onCardClick(card) },
@@ -624,9 +646,11 @@ fun CardView(
                         onCardClick(card)
                     },
                     onLongPress = { offset ->
-                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         touchOffset = offset
-                        showPopupMenu = true
+                        if (!card.types.contains(Type.TOKEN) && !card.types.contains(Type.MAT)) {
+                            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                            showPopupMenu = true
+                        }
                     }
                 )
             }

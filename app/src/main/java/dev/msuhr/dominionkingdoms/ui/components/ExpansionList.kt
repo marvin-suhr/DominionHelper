@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
@@ -35,6 +37,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -53,6 +58,8 @@ import dev.msuhr.dominionkingdoms.utils.getDrawableId
 @Composable
 fun ExpansionListItem(
     expansion: ExpansionWithEditions,
+    portraitCount: Int,
+    landscapeCount: Int,
     onClick: () -> Unit, // Click on the whole item goes to detail
     onOwnershipToggle: () -> Unit, // Callback for ownership toggle click
     hasMultipleEditions: Boolean
@@ -76,8 +83,10 @@ fun ExpansionListItem(
 
             // Expansion name and additional text
             ExpansionLabels(
-                expansion, Modifier
-                    .weight(1f)
+                expansion,
+                portraitCount,
+                landscapeCount,
+                Modifier.weight(1f)
             )
 
             // Ownership toggle
@@ -120,6 +129,8 @@ fun ExpansionImage(expansion: ExpansionWithEditions) {
 @Composable
 fun ExpansionLabels(
     expansion: ExpansionWithEditions,
+    portraitCount: Int,
+    landscapeCount: Int,
     modifier: Modifier = Modifier
 ) {
     val ownedText= when {
@@ -130,6 +141,43 @@ fun ExpansionLabels(
         else -> "Not owned"
     }
 
+    // TODO REFACTOR
+    val myId = "portrait"
+    val myId2 = "landscape"
+
+    val drawableId = getDrawableId(LocalContext.current, "portrait")
+    val drawableId2 = getDrawableId(LocalContext.current, "landscape")
+
+    val inlineContent = mapOf(
+        myId to InlineTextContent(
+            Placeholder(
+                width = 16.sp,
+                height = 16.sp,
+                placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = drawableId),
+                contentDescription = null,
+                tint = LocalContentColor.current.copy(alpha = 0.6f),
+                modifier = Modifier.size(16.dp)
+            )
+        },
+        myId2 to InlineTextContent(
+            Placeholder(
+                width = 16.sp,
+                height = 16.sp,
+                placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = drawableId2),
+                contentDescription = null,
+                tint = LocalContentColor.current.copy(alpha = 0.6f),
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    )
 
     Column (
         modifier = modifier
@@ -138,10 +186,19 @@ fun ExpansionLabels(
             text = buildAnnotatedString {
                 withStyle(SpanStyle(fontSize = Constants.CARD_NAME_FONT_SIZE, fontWeight = FontWeight.Bold)) {
                     append(expansion.name)
-                    // TODO add portrait and landscape counts here
                 }
-                //withStyle(SpanStyle(fontSize = Constants.TEXT_SMALL, fontStyle = FontStyle.Italic)) { }
+                withStyle(SpanStyle(fontSize = Constants.TEXT_SMALL, fontStyle = FontStyle.Italic)) {
+                    if (portraitCount != 0) {
+                        append(" $portraitCount ")
+                        appendInlineContent(myId, "[icon]")
+                    }
+                    if (landscapeCount != 0) {
+                        append(" $landscapeCount ")
+                        appendInlineContent(myId2, "[icon]")
+                    }
+                }
             },
+            inlineContent = inlineContent,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontSize = Constants.CARD_NAME_FONT_SIZE,

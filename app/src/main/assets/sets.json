@@ -6,7 +6,9 @@
     "edition": 1,
     "image_name": "set_dominion_1e",
     "size": "Medium",
-    "year": 2008
+    "year": 2008,
+    "cards": 25,
+    "landscapes": 0
   },
   {
     "id": "BASE_2E",
@@ -15,7 +17,9 @@
     "edition": 2,
     "image_name": "set_dominion_2e",
     "size": "Medium",
-    "year": 2016
+    "year": 2016,
+    "cards": 26,
+    "landscapes": 0
   },
   {
     "id": "INTRIGUE_1E",
@@ -24,7 +28,9 @@
     "edition": 1,
     "image_name": "set_intrigue_1e",
     "size": "Medium",
-    "year": 2009
+    "year": 2009,
+    "cards": 25,
+    "landscapes": 0
   },
   {
     "id": "INTRIGUE_2E",
@@ -33,7 +39,9 @@
     "edition": 2,
     "image_name": "set_intrigue_2e",
     "size": "Medium",
-    "year": 2016
+    "year": 2016,
+    "cards": 26,
+    "landscapes": 0
   },
   {
     "id": "SEASIDE_1E",
@@ -42,7 +50,9 @@
     "edition": 1,
     "image_name": "set_seaside_1e",
     "size": "Medium",
-    "year": 2009
+    "year": 2009,
+    "cards": 26,
+    "landscapes": 0
   },
   {
     "id": "SEASIDE_2E",
@@ -51,7 +61,9 @@
     "edition": 2,
     "image_name": "set_seaside_2e",
     "size": "Medium",
-    "year": 2022
+    "year": 2022,
+    "cards": 27,
+    "landscapes": 0
   },
   {
     "id": "ALCHEMY",
@@ -60,7 +72,9 @@
     "edition": 1,
     "image_name": "set_alchemy",
     "size": "Small",
-    "year": 2010
+    "year": 2010,
+    "cards": 12,
+    "landscapes": 0
   },
   {
     "id": "PROSPERITY_1E",
@@ -69,7 +83,9 @@
     "edition": 1,
     "image_name": "set_prosperity_1e",
     "size": "Medium",
-    "year": 2010
+    "year": 2010,
+    "cards": 25,
+    "landscapes": 0
   },
   {
     "id": "PROSPERITY_2E",
@@ -78,7 +94,9 @@
     "edition": 2,
     "image_name": "set_prosperity_2e",
     "size": "Medium",
-    "year": 2022
+    "year": 2022,
+    "cards": 25,
+    "landscapes": 0
   },
   {
     "id": "CORNUCOPIA_1E",
@@ -87,7 +105,9 @@
     "edition": 1,
     "image_name": "set_cornucopia",
     "size": "Small",
-    "year": 2011
+    "year": 2011,
+    "cards": 13,
+    "landscapes": 0
   },
   {
     "id": "HINTERLANDS_1E",
@@ -96,7 +116,9 @@
     "edition": 1,
     "image_name": "set_hinterlands_1e",
     "size": "Medium",
-    "year": 2011
+    "year": 2011,
+    "cards": 26,
+    "landscapes": 0
   },
   {
     "id": "HINTERLANDS_2E",
@@ -105,7 +127,9 @@
     "edition": 2,
     "image_name": "set_hinterlands_2e",
     "size": "Medium",
-    "year": 2022
+    "year": 2022,
+    "cards": 26,
+    "landscapes": 0
   },
   {
     "id": "DARK_AGES",
@@ -114,7 +138,9 @@
     "edition": 1,
     "image_name": "set_dark_ages",
     "size": "Large",
-    "year": 2012
+    "year": 2012,
+    "cards": 35,
+    "landscapes": 0
   },
   {
     "id": "GUILDS_1E",
@@ -123,7 +149,9 @@
     "edition": 1,
     "image_name": "set_guilds",
     "size": "Small",
-    "year": 2013
+    "year": 2013,
+    "cards": 13,
+    "landscapes": 0
   },
   {
     "id": "CORNUCOPIA_GUILDS_2E",
@@ -132,7 +160,9 @@
     "edition": 2,
     "image_name": "set_cornucopia_guilds_2e",
     "size": "Medium",
-    "year": 2024
+    "year": 2024,
+    "cards": 26,
+    "landscapes": 0
   },
   {
     "id": "ADVENTURES",
@@ -141,7 +171,9 @@
     "edition": 1,
     "image_name": "set_adventures",
     "size": "Large",
-    "year": 2015
+    "year": 2015,
+    "cards": 30,
+    "landscapes": 20
   },
   {
     "id": "EMPIRES",
@@ -150,7 +182,9 @@
     "edition": 1,
     "image_name": "set_empires",
     "size": "Medium",
-    "year": 2016
+    "year": 2016,
+    "cards": 24,
+    "landscapes": 0
   },
   {
     "id": "NOCTURNE",
@@ -159,7 +193,9 @@
     "edition": 1,
     "image_name": "set_nocturne",
     "size": "Large",
-    "year": 2017
+    "year": 2017,
+    "cards": 33,
+    "landscapes": 0
   },
   {
     "id": "RENAISSANCE",
@@ -168,7 +204,9 @@
     "edition": 1,
     "image_name": "set_renaissance",
     "size": "Medium",
-    "year": 2018
+    "year": 2018,
+    "cards": 25,
+    "landscapes": 20
   },
   {
     "id": "MENAGERIE",
@@ -177,7 +215,9 @@
     "edition": 1,
     "image_name": "set_menagerie",
     "size": "Large",
-    "year": 2020
+    "year": 2020,
+    "cards": 30,
+    "landscapes": 40
   },
   {
     "id": "ALLIES",
@@ -186,7 +226,9 @@
     "edition": 1,
     "image_name": "set_allies",
     "size": "Large",
-    "year": 2022
+    "year": 2022,
+    "cards": 31,
+    "landscapes": 23
   },
   {
     "id": "PLUNDER",
@@ -195,7 +237,9 @@
     "edition": 1,
     "image_name": "set_plunder",
     "size": "Large",
-    "year": 2022
+    "year": 2022,
+    "cards": 40,
+    "landscapes": 30
   },
   {
     "id": "RISING_SUN",
@@ -204,7 +248,9 @@
     "edition": 1,
     "image_name": "set_rising_sun",
     "size": "Medium",
-    "year": 2024
+    "year": 2024,
+    "cards": 25,
+    "landscapes": 25
   },
   {
     "id": "PROMO",
@@ -213,6 +259,8 @@
     "edition": 1,
     "image_name": "set_promo",
     "size": "Small",
-    "year": 2008
+    "year": 2008,
+    "cards": 11,
+    "landscapes": 1
   }
 ]

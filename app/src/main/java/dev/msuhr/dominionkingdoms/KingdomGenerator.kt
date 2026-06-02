@@ -43,10 +43,20 @@ class KingdomGenerator @Inject constructor(
         val pickLandscapesFromAnyOwned = userPrefsRepository.pickLandscapesFromAnyOwned.first()
         val randomMode = userPrefsRepository.randomMode.first()
         val activeRulesMap = userPrefsRepository.activeRules.first()
+        val landscapeRulesMap = userPrefsRepository.landscapeRules.first()
 
         val activeRules = activeRulesMap.mapNotNull { (id, option) ->
             CardRules.getRuleById(id)?.copy(option = option)
         }
+
+        // Filter landscape pool based on enabled landscape types
+        val enabledLandscapeTypes = landscapeRulesMap
+            .filter { (_, enabled) -> enabled }
+            .keys
+            .mapNotNull { ruleId ->
+                // Get the rule and check its condition to find the Type
+                CardRules.getRuleById(ruleId)?.condition
+            }
 
         return when (randomMode) {
 
@@ -59,7 +69,8 @@ class KingdomGenerator @Inject constructor(
                     totalLandscapeCardsToGenerate,
                     useDifferentLandscapeCategories,
                     activeRules,
-                    pool
+                    pool,
+                    enabledLandscapeTypes
                 )
             }
 
@@ -91,6 +102,7 @@ class KingdomGenerator @Inject constructor(
                     useDifferentLandscapeCategories,
                     activeRules,
                     pool,
+                    enabledLandscapeTypes,
                     fillPortraitsStrategy = { cardList, cardPool, rules ->
                         fillPortraitsEvenly(totalCardsToGenerate, cardList, cardPool, randomExpansions, rules)
                     },
@@ -120,6 +132,7 @@ class KingdomGenerator @Inject constructor(
                     useDifferentLandscapeCategories,
                     activeRules,
                     pool,
+                    enabledLandscapeTypes,
                     expansionSource = randomExpansions
                 )
             }
@@ -135,6 +148,7 @@ class KingdomGenerator @Inject constructor(
         useDifferentLandscapeCategories: Boolean,
         rules: List<GenerationRule>,
         pool: CandidatePool,
+        enabledLandscapeTypes: List<(Card) -> Boolean> = emptyList(),
         fillPortraitsStrategy: ((MutableSet<Card>, MutableSet<Card>, List<GenerationRule>) -> Unit)? = null,
         expansionSource: List<Expansion>? = null
     ): Kingdom {
@@ -151,26 +165,24 @@ class KingdomGenerator @Inject constructor(
 
         Log.d("Kingdom Generator", "${pool.portraitPool.size} portrait and ${pool.landscapePool.size} landscape candidates found (goal: $totalCardsToGenerate / $totalLandscapeCardsToGenerate)")
 
-        // 1. Separate rules by card target (Portrait vs Landscape)
-        val portraitRules = rules.filter { rule ->
-            rule.target == RuleTarget.PORTRAIT
-        }.toMutableList() // TODO Why mutable?
-        val landscapeRules = rules.filter { rule ->
-            rule.target == RuleTarget.LANDSCAPE
+        // 0. Filter landscape pool based on enabled landscape types
+        if (enabledLandscapeTypes.isNotEmpty()) {
+            val beforeFilter = pool.landscapePool.size
+            pool.landscapePool.retainAll { card ->
+                enabledLandscapeTypes.any { condition -> condition(card) }
+            }
+            Log.d("Kingdom Generator", "Filtered landscapes: $beforeFilter -> ${pool.landscapePool.size} (enabled types: ${enabledLandscapeTypes.size})")
         }
 
-        //val (portraitRules, landscapeRules) = rules.partition { rule ->
-        //      rule.target == RuleTarget.PORTRAIT
-        //  }
+        // 1. Filter rules to only portrait rules (landscapes are now handled as simple on/off switches)
+        val portraitRules = rules.filter { it.target == RuleTarget.PORTRAIT }.toMutableList()
 
-        // 2. Apply landscape rules and fill
-        applyRules(pool.landscapePool, landscapeList, landscapeRules)
-
+        // 2. Fill landscape pool with enabled types
         // TODO Shouldn't we check beforehand if [landscapes required by rules] > landscapesToInclude? -> YES, fail early
         val landscapesLeft = totalLandscapeCardsToGenerate - landscapeList.size
         // -> Check early. This means that the rules require more cards than we have set to generate. -> Exception (?)
 
-        fillLandscapePool(landscapesLeft, pool.landscapePool, landscapeList, useDifferentLandscapeCategories, landscapeRules)
+        fillLandscapePool(landscapesLeft, pool.landscapePool, landscapeList, useDifferentLandscapeCategories)
 
         // 3. Apply portrait rules and fill
         applyRules(pool.portraitPool, cardList, portraitRules)
@@ -336,14 +348,10 @@ class KingdomGenerator @Inject constructor(
         landscapesLeft: Int,
         landscapePool: MutableSet<Card>,
         landscapeList: MutableSet<Card>,
-        useDifferentLandscapeCategories: Boolean,
-        rules: List<GenerationRule>
+        useDifferentLandscapeCategories: Boolean
     ) {
         if (landscapesLeft > 0) {
             var currentLandscapesLeft = landscapesLeft
-            
-            // Respect limit rules for landscapes
-            prunePoolByLimitRules(landscapePool, landscapeList, rules)
 
             while (currentLandscapesLeft > 0 && landscapePool.isNotEmpty()) {
                 val currentCategories = landscapeList.flatMap { card ->
@@ -366,7 +374,6 @@ class KingdomGenerator @Inject constructor(
                 Log.d("Kingdom Generator", "Adding landscape card ${selected.name}")
                 landscapeList.add(selected)
                 landscapePool.remove(selected)
-                prunePoolByLimitRules(landscapePool, landscapeList, rules)  // Just remove from normal landscapePool?
                 currentLandscapesLeft--
             }
         }
