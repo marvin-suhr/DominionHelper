@@ -2,11 +2,14 @@ package dev.msuhr.dominionkingdoms.di
 
 import android.app.Application
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.data.AppDatabase
 import dev.msuhr.dominionkingdoms.data.CardDao
 import dev.msuhr.dominionkingdoms.data.ExpansionDao
 import dev.msuhr.dominionkingdoms.data.KingdomDao
+import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.data.repositories.KingdomRepository
 import com.google.gson.Gson
 import dagger.Module
@@ -16,6 +19,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.runBlocking
 import javax.inject.Singleton
 
 @Module
@@ -31,7 +35,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideAppDatabase(
-        app: Application
+        app: Application,
+        userPrefsRepository: UserPrefsRepository
     ): AppDatabase {
         val databaseName = app.getString(R.string.database_name)
 
@@ -39,7 +44,16 @@ object AppModule {
             app.applicationContext,
             AppDatabase::class.java,
             databaseName
-        )//.fallbackToDestructiveMigration()
+        ).fallbackToDestructiveMigration(true)
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+                    super.onDestructiveMigration(db)
+                    // Set flag to show dialog in MainActivity
+                    runBlocking {
+                        userPrefsRepository.setShowDatabaseResetDialog(true)
+                    }
+                }
+            })
             .build()
     }
 

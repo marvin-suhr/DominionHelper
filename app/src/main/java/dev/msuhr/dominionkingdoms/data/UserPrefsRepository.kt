@@ -43,6 +43,8 @@ object UserPreferencesKeys {
 
     val GENERATION_RULES = stringPreferencesKey("generation_rules")
     val LANDSCAPE_RULES = stringPreferencesKey("landscape_rules")
+
+    val SHOW_DATABASE_RESET_DIALOG = booleanPreferencesKey("show_database_reset_dialog")
 }
 
 @Singleton
@@ -301,6 +303,17 @@ class UserPrefsRepository @Inject constructor(
             }
             currentMap[ruleId] = enabled
             settings[UserPreferencesKeys.LANDSCAPE_RULES] = gson.toJson(currentMap)
+        }
+    }
+
+    val showDatabaseResetDialog: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.SHOW_DATABASE_RESET_DIALOG] ?: false
+        }
+
+    suspend fun setShowDatabaseResetDialog(show: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.SHOW_DATABASE_RESET_DIALOG] = show
         }
     }
 }

@@ -57,15 +57,8 @@ class KingdomViewModel @Inject constructor(
 
     override fun handleBackNavigation(): Boolean {
         when (_uiState.value) {
-
-            KingdomUiState.KINGDOM_LIST -> {
-                return false
-            }
-
-            KingdomUiState.LOADING -> {
-                return false
-            }
-
+            KingdomUiState.KINGDOM_LIST -> return false
+            KingdomUiState.LOADING -> return false
             KingdomUiState.SINGLE_KINGDOM -> {
                 // Save kingdom if it's newly created
                 saveKingdomIfNeeded()
@@ -73,7 +66,6 @@ class KingdomViewModel @Inject constructor(
                 // Clear kingdom?
                 return true
             }
-
             KingdomUiState.CARD_DETAIL -> {
                 clearSelectedCard()
                 switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
@@ -141,19 +133,14 @@ class KingdomViewModel @Inject constructor(
     val playerCount: StateFlow<Int> = _playerCount.asStateFlow()
 
     // Track if there are any owned expansions
-    val hasOwnedExpansions: StateFlow<Boolean> = expansionDao.hasAnyOwnedExpansion()
+    val hasOwnedExpansions: StateFlow<Boolean> = expansionDao.hasAnyOwnedEdition()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    // Error message
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     val allKingdoms: StateFlow<List<Kingdom>> = kingdomRepository.getAllKingdoms()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val isCardDismissalEnabled: StateFlow<Boolean> = combine(
         userPrefsRepository.allowVetoing,
@@ -166,13 +153,7 @@ class KingdomViewModel @Inject constructor(
         // 2. Vetoing is enabled, AND
         // 3. A veto mode with rerolling is enabled OR we have more than 10 cards
         isNew && allowVetoing && (currentVetoMode != VetoMode.NO_REROLL || currentKingdom.randomCards.size > 10)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = false
-    )
-
-    // TopBarTitle stuff
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private fun switchUiStateTo(newState: KingdomUiState) {
         _uiState.value = newState
@@ -194,12 +175,7 @@ class KingdomViewModel @Inject constructor(
 
     fun getRandomKingdom() {
         viewModelScope.launch {
-
-            if (expansionDao.getOwnedOnce().count() < 1) {
-                Log.d(
-                    "LibraryViewModel",
-                    "No kingdom generated, as the user does not own any expansion"
-                )
+            if (expansionDao.getOwnedExpansionsWithEditions().isEmpty()) {
                 triggerError("You need at least one expansion to generate a kingdom.")
                 return@launch
             }
@@ -224,41 +200,22 @@ class KingdomViewModel @Inject constructor(
         }
     }
 
-    private fun applySortTypeToKingdom(
-        kingdom: Kingdom,
-        newSortType: SortType
-    ): Kingdom {
-
-        // Sort kingdom lists (only random makes sense right?)
+    private fun applySortTypeToKingdom(kingdom: Kingdom, newSortType: SortType): Kingdom {
         val sortedRandomCards = sortCards(kingdom.randomCards, newSortType)
-        //val sortedDependentCards = sortCards(kingdom.dependentCards, newSortType)
-        //val sortedBasicCards = sortCards(kingdom.basicCards, newSortType)
-        //val sortedStartingCards = sortCards(kingdom.startingCards, newSortType)
-        //val sortedLandscapeCards = sortCards(kingdom.landscapeCards, newSortType)
-
+        // Is it okay to sort just random cards here?
         return kingdom.copy(
             randomCards = sortedRandomCards,
-            //dependentCards = sortedDependentCards,
-            //basicCards = sortedBasicCards,
-            //startingCards = sortedStartingCards,
-            //landscapeCards = sortedLandscapeCards,
-            // TODO think of sth else
-            creationTimeStamp = kingdom.creationTimeStamp + 1
+            creationTimeStamp = kingdom.creationTimeStamp + 1 // trigger recompose. This sucks
         )
     }
 
-    private fun sortCards(
-        cards: LinkedHashMap<Card, Int>,
-        sortType: SortType
-    ): LinkedHashMap<Card, Int> {
+    private fun sortCards(cards: LinkedHashMap<Card, Int>, sortType: SortType): LinkedHashMap<Card, Int> {
         if (cards.isEmpty()) return linkedMapOf()
-
         val sortedEntries = when (sortType) {
-            SortType.EXPANSION -> cards.entries.sortedBy { it.key.sets.first().name }
+            SortType.EXPANSION -> cards.entries.sortedBy { it.key.sets.first().displayName }
             SortType.ALPHABETICAL -> cards.entries.sortedBy { it.key.name }
             SortType.COST -> cards.entries.sortedBy { it.key.cost }
         }
-
         val sortedCards = LinkedHashMap<Card, Int>()
         sortedEntries.forEach { sortedCards[it.key] = it.value }
         Log.d("LibraryViewModel", "Sorted ${sortedCards.size} cards by ${_sortType.value}")
@@ -269,7 +226,6 @@ class KingdomViewModel @Inject constructor(
         val updatedRandomCards = getCardAmounts(kingdom.randomCards, count)
         val updatedDependentCards = getCardAmounts(kingdom.dependentCards, count)
         val updatedBasicCards = getCardAmounts(kingdom.basicCards, count)
-
         return kingdom.copy(
             randomCards = updatedRandomCards,
             dependentCards = updatedDependentCards,
@@ -280,65 +236,49 @@ class KingdomViewModel @Inject constructor(
     fun userChangedPlayerCount(newPlayerCount: Int) {
         Log.d("KingdomViewModel", "Selected player count $newPlayerCount")
         _playerCount.value = newPlayerCount
-        _kingdom.update { currentGlobalKingdom ->
-            applyPlayerCountToKingdom(currentGlobalKingdom, newPlayerCount)
-        }
+        _kingdom.update { currentGlobalKingdom -> applyPlayerCountToKingdom(currentGlobalKingdom, newPlayerCount) }
     }
 
     fun userChangedSortType(newSortType: AppSortType.Kingdom) {
         Log.d("KingdomViewModel", "Selected sort type $newSortType")
         _sortType.value = newSortType.sortType
-        _kingdom.update { currentGlobalKingdom ->
-            applySortTypeToKingdom(currentGlobalKingdom, newSortType.sortType)
-        }
+        _kingdom.update { currentGlobalKingdom -> applySortTypeToKingdom(currentGlobalKingdom, newSortType.sortType) }
     }
 
-    // TODO: Move elsewherre
-    fun getCardAmounts(
-        cards: LinkedHashMap<Card, Int>,
-        playerCount: Int
-    ): LinkedHashMap<Card, Int> {
+    // Move elsewhere
+    fun getCardAmounts(cards: LinkedHashMap<Card, Int>, playerCount: Int): LinkedHashMap<Card, Int> {
         require(playerCount in 2..4) { "Invalid player count: $playerCount" }
-
         val cardAmounts = linkedMapOf<Card, Int>()
-
-        cards.forEach { card, amount ->
-
+        cards.forEach { card, _ ->
             val amount = if (card.types.contains(Type.VICTORY)) {
                 when (playerCount) {
                     2 -> 8
                     else -> 12
                 }
             } else {
-
                 when (card.name) {
                     CardNames.COPPER -> when (playerCount) {
                         2 -> 46
                         3 -> 39
                         4 -> 32
-                        else -> error("Impossible: already validated")
+                        else -> error("Invalid player count")
                     }
-
                     CardNames.SILVER -> 40
                     CardNames.GOLD -> 30
                     CardNames.PLATINUM -> 12
-
                     CardNames.CURSE -> when (playerCount) {
                         2 -> 10
                         3 -> 20
                         4 -> 30
-                        else -> error("Impossible: already validated")
+                        else -> error("Invalid player count")
                     }
-
                     CardNames.RUINS_PILE -> when (playerCount) {
                         2 -> 10
                         3 -> 20
                         4 -> 30
-                        else -> error("Impossible: already validated")
+                        else -> error("Invalid player count")
                     }
-
                     CardNames.REWARD_PILE -> if (playerCount == 2) 6 else 12
-
                     else -> 1
                 }
             }
@@ -356,21 +296,13 @@ class KingdomViewModel @Inject constructor(
 
         Log.i("KingdomViewModel", "Selected kingdom ${kingdom.name}")
         viewModelScope.launch {
-            val fullKingdom = cardDependencyResolver.addDependentCards(
-                kingdom.randomCards.keys,
-                kingdom.landscapeCards.keys
-            )
+            val fullKingdom = cardDependencyResolver.addDependentCards(kingdom.randomCards.keys, kingdom.landscapeCards.keys)
             // Preserve the original kingdom's metadata (name, uuid, favorites, etc.)
-            val kingdomWithMetadata = fullKingdom.copy(
-                uuid = kingdom.uuid,
-                creationTimeStamp = kingdom.creationTimeStamp,
-                isFavorite = kingdom.isFavorite,
-                name = kingdom.name
-            )
+            val kingdomWithMetadata = fullKingdom.copy(uuid = kingdom.uuid, creationTimeStamp = kingdom.creationTimeStamp, isFavorite = kingdom.isFavorite, name = kingdom.name)
             // player count
             // sort
             _kingdom.value = kingdomWithMetadata
-            _isNewKingdom.value = false // This is a previously saved kingdom
+            _isNewKingdom.value = false
             switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
         }
     }
@@ -389,16 +321,11 @@ class KingdomViewModel @Inject constructor(
     }
 
     // Card dismissal / reroll
-
     fun onCardDismissed(dismissedCard: Card) {
-
         val currentKingdom = _kingdom.value
-
         // Check if the card to be dismissed is actually present
         // (only random and landscape cards are dismissable)
-        if (!currentKingdom.randomCards.containsKey(dismissedCard)
-            && !currentKingdom.landscapeCards.containsKey(dismissedCard)
-        ) {
+        if (!currentKingdom.randomCards.containsKey(dismissedCard) && !currentKingdom.landscapeCards.containsKey(dismissedCard)) {
             Log.w(
                 "LibraryViewModel",
                 "Attempted to dismiss card '${dismissedCard.name}' not found in the current kingdom."
@@ -417,50 +344,28 @@ class KingdomViewModel @Inject constructor(
         }
     }
 
-    private fun handleNoRerollDismissal(
-        dismissedCard: Card,
-        wasLandscape: Boolean
-    ) {
+    private fun handleNoRerollDismissal(dismissedCard: Card, wasLandscape: Boolean) {
         Log.i(
             "LibraryViewModel",
             "VetoMode is NO_REROLL. Removing '${dismissedCard.name}' without replacement."
         )
         _kingdom.update { currentKingdom ->
-            val updatedKingdom = when {
-                wasLandscape -> currentKingdom.copy(
-                    landscapeCards = LinkedHashMap(
-                        currentKingdom.landscapeCards.toMutableMap()
-                            .apply { remove(dismissedCard) })
-                )
-
-                else -> currentKingdom.copy(
-                    randomCards = LinkedHashMap(
-                        currentKingdom.randomCards.toMutableMap()
-                            .apply { remove(dismissedCard) })
-                )
+            val updatedKingdom = if (wasLandscape) {
+                currentKingdom.copy(landscapeCards = LinkedHashMap(currentKingdom.landscapeCards.toMutableMap().apply { remove(dismissedCard) }))
+            } else {
+                currentKingdom.copy(randomCards = LinkedHashMap(currentKingdom.randomCards.toMutableMap().apply { remove(dismissedCard) }))
             }
-
             // Save the updated kingdom to database immediately
-            viewModelScope.launch {
-                kingdomRepository.saveKingdom(updatedKingdom)
-            }
-
+            viewModelScope.launch { kingdomRepository.saveKingdom(updatedKingdom) }
             updatedKingdom
         }
     }
 
-    private suspend fun handleRerollDismissal(
-        dismissedCard: Card,
-        kingdomSnapshot: Kingdom,
-        wasLandscape: Boolean
-    ) {
+    private suspend fun handleRerollDismissal(dismissedCard: Card, kingdomSnapshot: Kingdom, wasLandscape: Boolean) {
         // Determine which list to use for exclusion and replacement target
-        val originalCardsMap =
-            if (wasLandscape) kingdomSnapshot.landscapeCards else kingdomSnapshot.randomCards
+        val originalCardsMap = if (wasLandscape) kingdomSnapshot.landscapeCards else kingdomSnapshot.randomCards
         val cardsToExclude = originalCardsMap.keys.toMutableSet()
-
         val newCard = kingdomGenerator.replaceCardInKingdom(dismissedCard, cardsToExclude)
-
         if (newCard == null) {
             Log.e(
                 "LibraryViewModel",
@@ -473,39 +378,16 @@ class KingdomViewModel @Inject constructor(
         Log.i("LibraryViewModel", "Replaced '${dismissedCard.name}' with '${newCard.name}'.")
         _kingdom.update { currentKingdom ->
             val updatedKingdom = if (newCard.landscape) {
-                currentKingdom.copy(
-                    landscapeCards = insertOrReplaceAtKeyPosition(
-                        map = kingdomSnapshot.landscapeCards,
-                        targetKey = dismissedCard,
-                        newKey = newCard,
-                        newValue = 1
-                    )
-                )
+                currentKingdom.copy(landscapeCards = insertOrReplaceAtKeyPosition(kingdomSnapshot.landscapeCards, dismissedCard, newCard, 1))
             } else {
-                currentKingdom.copy(
-                    randomCards = insertOrReplaceAtKeyPosition(
-                        map = kingdomSnapshot.randomCards,
-                        targetKey = dismissedCard,
-                        newKey = newCard,
-                        newValue = 1
-                    )
-                )
+                currentKingdom.copy(randomCards = insertOrReplaceAtKeyPosition(kingdomSnapshot.randomCards, dismissedCard, newCard, 1))
             }
-
-            // Save the updated kingdom to database immediately
-            viewModelScope.launch {
-                kingdomRepository.saveKingdom(updatedKingdom)
-            }
-
+            viewModelScope.launch { kingdomRepository.saveKingdom(updatedKingdom) }
             updatedKingdom
         }
     }
 
-    // In its own class?
-
-    suspend fun fetchKingdomDetails(uuid: String): Kingdom? {
-        return kingdomRepository.getKingdomById(uuid)
-    }
+    suspend fun fetchKingdomDetails(uuid: String): Kingdom? = kingdomRepository.getKingdomById(uuid)
 
     fun deleteKingdom(uuid: String) {
         viewModelScope.launch {
@@ -520,15 +402,11 @@ class KingdomViewModel @Inject constructor(
     }
 
     fun toggleFavorite(kingdom: Kingdom) {
-        viewModelScope.launch {
-            kingdomRepository.favoriteKingdomById(kingdom.uuid, !kingdom.isFavorite)
-        }
+        viewModelScope.launch { kingdomRepository.favoriteKingdomById(kingdom.uuid, !kingdom.isFavorite) }
     }
 
     fun updateKingdomName(uuid: String, newName: String) {
-        viewModelScope.launch {
-            kingdomRepository.changeKingdomName(uuid, newName)
-        }
+        viewModelScope.launch { kingdomRepository.changeKingdomName(uuid, newName) }
     }
 
     private fun saveKingdomIfNeeded() {
@@ -547,11 +425,11 @@ class KingdomViewModel @Inject constructor(
             // TODO Dunno how I feel about this
             // Update all card maps in the kingdom
             _kingdom.value = _kingdom.value.copy(
-                randomCards = updateCardMap(_kingdom.value.randomCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
-                basicCards = updateCardMap(_kingdom.value.basicCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
-                dependentCards = updateCardMap(_kingdom.value.dependentCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
-                startingCards = updateCardMap(_kingdom.value.startingCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) },
-                landscapeCards = updateCardMap(_kingdom.value.landscapeCards, card.id) { c -> c.copy(isFavorite = newIsFavoriteState) }
+                randomCards = updateCardMap(_kingdom.value.randomCards, card.id) { it.copy(isFavorite = newIsFavoriteState) },
+                basicCards = updateCardMap(_kingdom.value.basicCards, card.id) { it.copy(isFavorite = newIsFavoriteState) },
+                dependentCards = updateCardMap(_kingdom.value.dependentCards, card.id) { it.copy(isFavorite = newIsFavoriteState) },
+                startingCards = updateCardMap(_kingdom.value.startingCards, card.id) { it.copy(isFavorite = newIsFavoriteState) },
+                landscapeCards = updateCardMap(_kingdom.value.landscapeCards, card.id) { it.copy(isFavorite = newIsFavoriteState) }
             )
 
             // Update selectedCard to maintain reference equality
@@ -572,11 +450,11 @@ class KingdomViewModel @Inject constructor(
 
             // Update all card maps in the kingdom
             _kingdom.value = _kingdom.value.copy(
-                randomCards = updateCardMap(_kingdom.value.randomCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
-                basicCards = updateCardMap(_kingdom.value.basicCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
-                dependentCards = updateCardMap(_kingdom.value.dependentCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
-                startingCards = updateCardMap(_kingdom.value.startingCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) },
-                landscapeCards = updateCardMap(_kingdom.value.landscapeCards, card.id) { c -> c.copy(isEnabled = newIsEnabledState) }
+                randomCards = updateCardMap(_kingdom.value.randomCards, card.id) { it.copy(isEnabled = newIsEnabledState) },
+                basicCards = updateCardMap(_kingdom.value.basicCards, card.id) { it.copy(isEnabled = newIsEnabledState) },
+                dependentCards = updateCardMap(_kingdom.value.dependentCards, card.id) { it.copy(isEnabled = newIsEnabledState) },
+                startingCards = updateCardMap(_kingdom.value.startingCards, card.id) { it.copy(isEnabled = newIsEnabledState) },
+                landscapeCards = updateCardMap(_kingdom.value.landscapeCards, card.id) { it.copy(isEnabled = newIsEnabledState) }
             )
 
             // Update selectedCard to maintain reference equality
@@ -589,19 +467,9 @@ class KingdomViewModel @Inject constructor(
     }
 
     // Helper function to update a card in a LinkedHashMap
-    private fun updateCardMap(
-        map: LinkedHashMap<Card, Int>,
-        cardId: Int,
-        update: (Card) -> Card
-    ): LinkedHashMap<Card, Int> {
+    private fun updateCardMap(map: LinkedHashMap<Card, Int>, cardId: Int, update: (Card) -> Card): LinkedHashMap<Card, Int> {
         val newMap = linkedMapOf<Card, Int>()
-        map.forEach { (card, amount) ->
-            if (card.id == cardId) {
-                newMap[update(card)] = amount
-            } else {
-                newMap[card] = amount
-            }
-        }
+        map.forEach { (card, amount) -> if (card.id == cardId) newMap[update(card)] = amount else newMap[card] = amount }
         return newMap
     }
 }

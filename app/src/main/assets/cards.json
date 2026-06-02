@@ -17789,27 +17789,6 @@
     "special_cost": false
   },
   {
-    "name": "Avanto",
-    "cost": 5,
-    "supply": false,
-    "landscape": false,
-    "types": [
-      "Action"
-    ],
-    "image_name": "avanto",
-    "basic": false,
-    "debt": 0,
-    "categories": [
-      "Terminal_draw"
-    ],
-    "potion": false,
-    "sets": [
-      "Promo"
-    ],
-    "overpay": false,
-    "special_cost": false
-  },
-  {
     "name": "Black Market",
     "cost": 3,
     "supply": true,
@@ -17828,7 +17807,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Captain",
@@ -17849,7 +17829,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Church",
@@ -17871,7 +17852,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Dismantle",
@@ -17890,7 +17872,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Envoy",
@@ -17911,7 +17894,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Governor",
@@ -17933,7 +17917,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Marchland",
@@ -17955,7 +17940,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Prince",
@@ -17978,7 +17964,28 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
+  },
+  {
+    "name": "Sauna / Avanto",
+    "cost": 4,
+    "supply": true,
+    "landscape": false,
+    "types": [
+      "Action"
+    ],
+    "image_name": "sauna_avanto",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "Promo"
+    ],
+    "overpay": false,
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Sauna",
@@ -18000,26 +18007,30 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": true
   },
   {
-    "name": "Sauna / Avanto",
-    "cost": 4,
-    "supply": true,
+    "name": "Avanto",
+    "cost": 5,
+    "supply": false,
     "landscape": false,
     "types": [
       "Action"
     ],
-    "image_name": "sauna_avanto",
+    "image_name": "avanto",
     "basic": false,
     "debt": 0,
-    "categories": [],
+    "categories": [
+      "Terminal_draw"
+    ],
     "potion": false,
     "sets": [
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": true
   },
   {
     "name": "Stash",
@@ -18038,7 +18049,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Summon",
@@ -18057,7 +18069,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Walled Village",
@@ -18078,7 +18091,8 @@
       "Promo"
     ],
     "overpay": false,
-    "special_cost": false
+    "special_cost": false,
+    "is_enabled": false
   },
   {
     "name": "Knights",

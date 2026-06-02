@@ -31,7 +31,7 @@ data class Card(
     @SerializedName("debt") val debt: Int,
     @SerializedName("categories") val categories: List<Category>,
     @SerializedName("potion") val potion: Boolean,
-    @SerializedName("is_enabled") @ColumnInfo(defaultValue = "1") val isEnabled: Boolean, // TODO set to 0 for promo
+    @SerializedName("is_enabled") @ColumnInfo(defaultValue = "1") val isEnabled: Boolean,
     @SerializedName("is_favorite") @ColumnInfo(defaultValue = "0") val isFavorite: Boolean,
     @SerializedName("overpay") val overpay: Boolean,
     @SerializedName("special_cost") val specialCost: Boolean
@@ -166,9 +166,13 @@ fun loadCardsFromAssets(context: Context): List<Card> {
     val cardListType = object : TypeToken<List<Card>>() {}.type
     val cardList: List<Card> = gson.fromJson(jsonString, cardListType)
 
-    // Explicitly set isEnabled to true for all cards parsed from the initial JSON
-    val cardsWithDefaultEnabled = cardList.map { cardFromJson ->
-        cardFromJson.copy(isEnabled = true)
+    // Expansion cards are enabled by default, Promo cards are disabled by default
+    val cardsWithDefaultEnabled = cardList.map { card ->
+        if (card.sets.contains(Set.PROMO)) {
+            card // Keeps value from JSON (defaulting to false if missing)
+        } else {
+            card.copy(isEnabled = true)
+        }
     }
 
     return cardsWithDefaultEnabled

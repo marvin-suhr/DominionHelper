@@ -425,7 +425,7 @@ Don't reroll: just remove cards until there's only 10 left."""
 
     private fun addLandscapeRulesToSettings(
         settings: MutableList<SettingItem>,
-        rules: List<GenerationRule>,
+        rules: List<GenerationRule>, // TODO i dont think we need the rules here
         currentLandscapeRules: Map<String, Boolean>
     ) {
         rules.forEach { rule ->

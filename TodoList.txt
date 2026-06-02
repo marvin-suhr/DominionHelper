@@ -1,3 +1,11 @@
+// TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
+
+
+GetRandomAlly vs getRandomEnabledAlly (/Prophecy)
+KingdomGenerator
+check cornucopia guilds owership stuff
+Think about loading all the cards in RAM for library and search (i think it does so for kingdom generation)
+
 Island, pirate ship, native village are sorted wrong
 tokens dependency
 tokens mats in kingdomlist
@@ -6,6 +14,7 @@ TOP PRIO
 - Make landscape rules more chill, or at least give the option + option
 + Currently, when we require 2 landscapes, 1 is fine for the kingdom to pass
 + Check if we can generate more
++ There is no way to force a landscape type?
 Range slider: Remove 0 -> none selected = exclude? + default mode all selected + onclick advanced slider?
 
 MID PRIO
@@ -88,7 +97,7 @@ Warning
 This App Bundle contains native code, and you've not uploaded debug symbols. We recommend you upload a symbol file to make your crashes and ANRs easier to analyze and debug. Learn More
 
 
-
+Think about making a map for drawables: "witch" to R.drawable.witch ...
 
 return to "home" when tapping nav bar icon while in submenu
 

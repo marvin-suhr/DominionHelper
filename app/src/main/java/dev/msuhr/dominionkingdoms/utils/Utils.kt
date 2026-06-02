@@ -1,5 +1,6 @@
 package dev.msuhr.dominionkingdoms.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -17,6 +18,7 @@ fun getDrawableId(context: Context, imageName: String): Int {
     catch (Exception e) {
         Log.e("MyTag", "Failure to get drawable id.", e);
     }*/
+    @SuppressLint("DiscouragedApi")
     val resourceId = context.resources.getIdentifier(
         imageName,
         "drawable",

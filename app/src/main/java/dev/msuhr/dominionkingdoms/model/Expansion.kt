@@ -2,31 +2,19 @@ package dev.msuhr.dominionkingdoms.model
 
 import android.content.Context
 import android.util.Log
+import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.annotations.SerializedName
-import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import java.io.IOException
-
-data class ExpansionWithEditions(
-    val name: String, // The name of the Expansion (e.g., "Base", "Intrigue")
-    val firstEdition: Expansion? = null, // -> LIST of editions?
-    val secondEdition: Expansion? = null,
-    val image: String,
-    val isExpanded: Boolean = false
-)
-
-enum class OwnedEdition {
-    NONE,
-    FIRST,
-    SECOND,
-    BOTH
-}
 
 enum class ExpansionSize(val text: String) {
     SMALL("Small"),
@@ -36,19 +24,98 @@ enum class ExpansionSize(val text: String) {
 
 @Entity(tableName = "expansions")
 data class Expansion(
-    @SerializedName("id") @PrimaryKey(autoGenerate = false) val id: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("edition") val edition: Int,
-    @SerializedName("image_name") val imageName: String,
+    @PrimaryKey val id: String, // e.g., "BASE", "INTRIGUE"
+    val name: String,
+    @SerializedName("image_name") val imageName: String
+)
+
+@Entity(
+    tableName = "editions",
+    foreignKeys = [
+        ForeignKey(
+            entity = Expansion::class,
+            parentColumns = ["id"],
+            childColumns = ["expansionId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["expansionId"])]
+)
+data class Edition(
+    @PrimaryKey val id: String, // e.g., "BASE_1E", "BASE_2E"
+    val expansionId: String,
+    val editionNumber: Int,
     @SerializedName("isOwned") val isOwned: Boolean,
-    @SerializedName("size") val size: ExpansionSize,
-    @SerializedName("year") val year: Int
+    val year: Int,
+    val size: ExpansionSize,
+    @SerializedName("image_name") val imageName: String,
+    val cards: Int,
+    val landscapes: Int
+)
+
+// Relation class
+data class ExpansionWithEditions(
+    @Embedded val expansion: Expansion,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "expansionId"
+    )
+    val editions: List<Edition>
 ) {
-    override fun toString(): String = "$name $edition"
+    val name: String get() = expansion.name
+    val id: String get() = expansion.id
+    val conceptImage: String get() = expansion.imageName
+    
+    // Helpers to maintain compatibility with existing UI logic
+    val firstEdition: Edition? get() = editions.find { it.editionNumber == 1 }
+    val secondEdition: Edition? get() = editions.find { it.editionNumber == 2 }
+
+    val isFirstEditionOwned: Boolean get() = firstEdition?.isOwned == true
+    val isSecondEditionOwned: Boolean get() = secondEdition?.isOwned == true
+
+    val isSharedSecondEdition: Boolean get() = secondEdition?.expansionId == "CORNUCOPIA_GUILDS"
+
+    val hasMultipleEditions: Boolean get() = editions.size >= 2
+
+    fun isAnyOwned(): Boolean = editions.any { it.isOwned }
+    fun isBothOwned(): Boolean = editions.count { it.isOwned } >= 2
+
+    /**
+     * Logic: Prefers Owned 2E -> any other Owned Edition -> Unowned 2E (for preview) -> fallback to First available.
+     */
+    val activeEdition: Edition? 
+        get() = editions.find { it.editionNumber == 2 && it.isOwned } 
+            ?: editions.find { it.isOwned } 
+            ?: editions.find { it.editionNumber == 2 }
+            ?: editions.firstOrNull()
+
+    val ownershipText: String
+        get() = when {
+            secondEdition == null && firstEdition?.isOwned == true -> "Owned"
+            firstEdition?.isOwned == true && secondEdition?.isOwned == true -> "Both editions"
+            firstEdition?.isOwned == true -> "First edition"
+            secondEdition?.isOwned == true -> "Second edition"
+            else -> "Not owned"
+        }
 }
 
+enum class OwnedEdition {
+    NONE,
+    FIRST,
+    SECOND,
+    BOTH
+}
+
+/**
+ * Data class for parsing the hierarchical JSON structure
+ */
+data class ExpansionData(
+    val expansions: List<Expansion>,
+    val editions: List<Edition>
+)
+
 // To data package
-fun loadExpansionsFromAssets(context: Context): List<Expansion> {
+fun loadExpansionsFromAssets(context: Context): ExpansionData {
     val jsonString: String
     try {
         val inputStream = context.assets.open("sets.json")
@@ -59,7 +126,7 @@ fun loadExpansionsFromAssets(context: Context): List<Expansion> {
         jsonString = String(buffer, Charsets.UTF_8)
     } catch (e: IOException) {
         Log.e("loadExpansionsFromAssets", "Error reading from assets", e)
-        return emptyList()
+        return ExpansionData(emptyList(), emptyList())
     }
 
     val gson = GsonBuilder()
@@ -67,9 +134,7 @@ fun loadExpansionsFromAssets(context: Context): List<Expansion> {
         .registerTypeAdapter(ExpansionSize::class.java, ExpansionSizeTypeAdapter())
         .create()
 
-    val expansionListType = object : TypeToken<List<Expansion>>() {}.type
-    val expansionList: List<Expansion> = gson.fromJson(jsonString, expansionListType)
-    return expansionList
+    return gson.fromJson(jsonString, ExpansionData::class.java)
 }
 
 class ExpansionSizeTypeAdapter : TypeAdapter<ExpansionSize>() {

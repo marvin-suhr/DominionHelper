@@ -72,7 +72,7 @@ object CardRules {
         Type.WAY, Type.ALLY, Type.TRAIT, Type.PROPHECY
     )
 
-    val ALL_RULES = TYPE_RULES + COST_RULES + CATEGORY_RULES + LANDSCAPE_RULES
+    val ALL_RULES = TYPE_RULES + COST_RULES + CATEGORY_RULES// + LANDSCAPE_RULES
 
     fun getRuleById(id: String): GenerationRule? = ALL_RULES.find { it.id == id }
 }

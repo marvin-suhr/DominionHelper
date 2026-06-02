@@ -21,10 +21,6 @@ interface CardDao {
     @Update
     suspend fun update(card: Card)
 
-    /*@Transaction
-    @Query("SELECT * FROM cards WHERE id IN (SELECT cardId FROM card_category_cross_ref WHERE categoryId = :categoryId)")
-    suspend fun getCardsByCategory(categoryId: Int): List<CardWithCategories>*/
-
     @Query("SELECT * FROM cards")
     suspend fun getAll(): List<Card>
 
@@ -58,6 +54,9 @@ interface CardDao {
     @Query("SELECT * FROM cards WHERE sets LIKE '%' || :id || '%'")
     suspend fun getCardsByExpansion(id: String): List<Card>
 
+    @Query("SELECT * FROM cards WHERE sets LIKE '%' || :id || '%'")
+    fun getCardsByExpansionFlow(id: String): Flow<List<Card>>
+
 
     @Query(
         """
@@ -83,13 +82,39 @@ interface CardDao {
     )
     suspend fun getSupplyLandscapesByExpansion(id: String): List<Card>
 
+    @Query(
+        """
+        SELECT * FROM cards AS c
+        WHERE c.isEnabled = 1
+        AND c.landscape = 1
+        AND c.basic = 0
+        AND c.types LIKE '%"PROPHECY"%'
+        ORDER BY RANDOM()
+        LIMIT 1
+        """
+    )
+    suspend fun getRandomProphecy(): Card?
+
+    @Query(
+        """
+        SELECT * FROM cards AS c
+        WHERE c.isEnabled = 1
+        AND c.landscape = 1
+        AND c.basic = 0
+        AND c.types LIKE '%"ALLY"%'
+        ORDER BY RANDOM()
+        LIMIT 1
+        """
+    )
+    suspend fun getRandomAlly(): Card?
+
     @Query("SELECT * FROM cards ORDER BY RANDOM() LIMIT :amount")
     suspend fun getRandomCards(amount: Int): List<Card>
 
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = 0
@@ -104,7 +129,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = 1
@@ -133,7 +158,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = 0
@@ -147,7 +172,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = 1
@@ -161,7 +186,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = 1
@@ -176,7 +201,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = 1
@@ -191,7 +216,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE e.isOwned
         AND c.isEnabled = 1
         AND c.landscape = :isLandscape
@@ -210,7 +235,7 @@ interface CardDao {
     @Query(
         """
         SELECT c.* FROM cards AS c
-        INNER JOIN expansions AS e ON c.sets LIKE '%' || e.id || '%'
+        INNER JOIN editions AS e ON c.sets LIKE '%' || e.id || '%'
         WHERE
             ( 
               (:set1 IS NOT NULL AND sets LIKE '%' || :set1 || '%') OR
@@ -267,8 +292,14 @@ interface CardDao {
     @Query("SELECT * FROM cards WHERE isEnabled = 0")
     suspend fun getDisabledCards(): List<Card>
 
-    @Query("SELECT COUNT(*) FROM cards WHERE isEnabled = 0")
-    fun getDisabledCardCount(): Flow<Int>
+    @Query("SELECT * FROM cards WHERE isEnabled = 0 AND sets NOT LIKE '%' || 'PROMO' || '%' ")
+    suspend fun getDisabledCardsExceptPromo(): List<Card>
+
+    @Query("SELECT COUNT(*) FROM cards WHERE isEnabled = 0 AND sets NOT LIKE '%' || 'PROMO' || '%' ")
+    fun getDisabledCardCountExceptPromo(): Flow<Int>
+
+    @Query("SELECT * FROM cards WHERE basic = 0")
+    fun getCardsForCountingFlow(): Flow<List<Card>>
 
     @Query("SELECT * FROM cards WHERE isFavorite = 1")
     suspend fun getFavoriteCards(): List<Card>

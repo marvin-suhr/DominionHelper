@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.data.CardDao
-import dev.msuhr.dominionkingdoms.model.Expansion
+import dev.msuhr.dominionkingdoms.model.Edition
 import dev.msuhr.dominionkingdoms.data.ExpansionDao
 import dev.msuhr.dominionkingdoms.model.AppSortType
 import dev.msuhr.dominionkingdoms.model.ExpansionWithEditions
@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.text.first
 
 enum class LibraryUiState {
     EXPANSIONS,
@@ -30,7 +29,8 @@ enum class LibraryUiState {
     SEARCH_RESULTS,
     CARD_DETAIL,
     BLACKLISTED_CARDS,
-    FAVORITE_CARDS
+    FAVORITE_CARDS,
+    PROMO_CARDS
 }
 
 @HiltViewModel
@@ -92,6 +92,13 @@ class LibraryViewModel @Inject constructor(
                 switchUiStateTo(lastState)
                 return true
             }
+
+            LibraryUiState.PROMO_CARDS -> {
+                Log.i("BackHandler", "Leave promo cards -> Return to expansion list")
+                clearSelectedExpansion()
+                switchUiStateTo(LibraryUiState.EXPANSIONS)
+                return true
+            }
         }
     }
 
@@ -112,30 +119,75 @@ class LibraryViewModel @Inject constructor(
 
     override val currentAppSortType: StateFlow<AppSortType?> =
         sortType.map { AppSortType.Library(it) }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _uiState = MutableStateFlow(LibraryUiState.EXPANSIONS)
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
 
     override val showBackButton: StateFlow<Boolean> =
-        uiState.map { uiState ->
-            uiState != LibraryUiState.EXPANSIONS // && !isSearch?
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        uiState.map { uiState -> uiState != LibraryUiState.EXPANSIONS }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     override val showTopAppBar: StateFlow<Boolean> =
         uiState.map { uiState ->
-            uiState == LibraryUiState.EXPANSION_CARDS || uiState == LibraryUiState.FAVORITE_CARDS || uiState == LibraryUiState.BLACKLISTED_CARDS
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+            uiState == LibraryUiState.EXPANSION_CARDS || uiState == LibraryUiState.FAVORITE_CARDS || uiState == LibraryUiState.BLACKLISTED_CARDS || uiState == LibraryUiState.PROMO_CARDS
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     // Fields
 
     private var lastState: LibraryUiState = LibraryUiState.EXPANSIONS
     private var stateBeforeSearch: LibraryUiState = LibraryUiState.EXPANSIONS
 
-    // Expansion variables
-    private val _expansionsWithEditions = MutableStateFlow<List<ExpansionWithEditions>>(emptyList())
     val expansionsWithEditions: StateFlow<List<ExpansionWithEditions>> =
-        _expansionsWithEditions.asStateFlow()
+        expansionDao.getAllWithEditions()
+            .map { all ->
+                // Restore conceptual mapping for shared editions
+                val cornucopiaGuilds = all.find { it.expansion.id == "CORNUCOPIA_GUILDS" }
+                all.filter { it.expansion.id != "CORNUCOPIA_GUILDS" && it.expansion.id != "PROMO" }
+                    .map { expWithEds ->
+                        if (expWithEds.id == "CORNUCOPIA" || expWithEds.id == "GUILDS") {
+                            val sharedEdition = cornucopiaGuilds?.editions?.find { it.editionNumber == 2 }
+                            if (sharedEdition != null) {
+                                expWithEds.copy(editions = expWithEds.editions + sharedEdition)
+                            } else expWithEds
+                        } else expWithEds
+                    }
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val expansionCardCounts: StateFlow<Map<String, Pair<Int, Int>>> = combine(
+        expansionsWithEditions,
+        cardDao.getCardsForCountingFlow()
+    ) { expansions, allCards ->
+        val counts = mutableMapOf<String, Pair<Int, Int>>()
+        val enabledCards = allCards.filter { it.isEnabled }
+
+        expansions.forEach { expansionWithEditions ->
+            val portraitSet = mutableSetOf<Int>()
+            val landscapeSet = mutableSetOf<Int>()
+
+            expansionWithEditions.editions.forEach { edition ->
+                val editionId = edition.id
+                val editionCards = enabledCards.filter { card ->
+                    card.sets.any { set -> set.name == editionId }
+                }
+
+                val portraits = editionCards.count { it.supply && !it.landscape }
+                val landscapes = editionCards.count { it.supply && it.landscape }
+
+                counts[editionId] = Pair(portraits, landscapes)
+
+                editionCards.forEach { card ->
+                    if (card.supply) {
+                        if (card.landscape) landscapeSet.add(card.id) else portraitSet.add(card.id)
+                    }
+                }
+            }
+
+            counts[expansionWithEditions.id] = Pair(portraitSet.size, landscapeSet.size)
+        }
+        counts
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     private val _selectedExpansion = MutableStateFlow<ExpansionWithEditions?>(null)
     val selectedExpansion: StateFlow<ExpansionWithEditions?> = _selectedExpansion.asStateFlow()
@@ -171,233 +223,50 @@ class LibraryViewModel @Inject constructor(
                     "${expansion.name} ${getEnabledCardAmount(cardsToShow)}"
                 } ?: "Cards"
             }
-
-            LibraryUiState.SEARCH_RESULTS -> "Search Results" // I think this isn't shown
+            LibraryUiState.SEARCH_RESULTS -> "Search Results" // This isn't shown
             LibraryUiState.BLACKLISTED_CARDS -> "Blacklisted Cards (${cardsToShow.size})"
             LibraryUiState.FAVORITE_CARDS -> "Favorite Cards (${cardsToShow.size})"
+            LibraryUiState.PROMO_CARDS -> "Promo Cards"
             LibraryUiState.CARD_DETAIL -> selectedCard?.name ?: "Details"
         }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = "Kingdoms"
-    )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, "Library")
 
-    init {
+    /*init {
         loadExpansionsWithEditions()
-    }
+    } ??? */
 
     private fun switchUiStateTo(newState: LibraryUiState) {
         _uiState.value = newState
         Log.d("LibraryViewModel", "Switched UI state to $newState")
     }
 
-    // Load all expansions and their editions, grouped by name
-    // TODO the expansion and edition entity is ass
-    private fun loadExpansionsWithEditions() {
-        viewModelScope.launch {
-            expansionDao.getAll().collect { allExpansions ->
-
-                val currentExpandedState =
-                    _expansionsWithEditions.value.associate { it.name to it.isExpanded }
-
-                // Make a map of name -> list of editions
-                val expansionsGrouped = allExpansions.groupBy { it.name }
-                val cornGuild = allExpansions.find { it.name == "Cornucopia & Guilds" }
-
-                // Assemble ExpansionWithEditions object for each entry
-                val expansionsWithEditions = expansionsGrouped
-                    .filter { (expansionName, _) -> expansionName != "Cornucopia & Guilds" }
-                    .map { (expansionName, editions) ->
-
-                        val firstEdition = editions.find { it.edition == 1 }
-                        val secondEdition =
-                            if (firstEdition?.name == "Cornucopia" || firstEdition?.name == "Guilds") {
-                                cornGuild
-                            } else {
-                                editions.find { it.edition == 2 }
-                            }
-
-                        // Choose the correct image
-                        val image = when {
-                            firstEdition != null -> firstEdition.imageName
-                            secondEdition != null -> secondEdition.imageName // Only for Cornucopia + Guilds 2nd edition
-                            else -> throw java.lang.IllegalArgumentException("No edition found.")
-                        }
-
-                        val shouldBeExpanded = currentExpandedState[expansionName] == true
-
-                        ExpansionWithEditions(
-                            name = expansionName,
-                            firstEdition = firstEdition,
-                            secondEdition = secondEdition,
-                            image = image,
-                            isExpanded = shouldBeExpanded
-                        )
-                    }
-
-                _expansionsWithEditions.value = expansionsWithEditions
-
-                // Load card counts for all expansions
-                val counts = mutableMapOf<String, Pair<Int, Int>>()
-
-                expansionsWithEditions.forEach { expansionWithEditions ->
-                    val firstId = expansionWithEditions.firstEdition?.id
-                    val secondId = expansionWithEditions.secondEdition?.id
-
-                    val allPortraitCards = mutableListOf<Card>()
-                    val allLandscapeCards = mutableListOf<Card>()
-
-                    // Get cards from both editions if they exist
-                    firstId?.let { allPortraitCards.addAll(cardDao.getPortraitsByExpansion(it)) }
-                    secondId?.let { allPortraitCards.addAll(cardDao.getPortraitsByExpansion(it)) }
-                    firstId?.let { allLandscapeCards.addAll(cardDao.getSupplyLandscapesByExpansion(it)) }
-                    secondId?.let { allLandscapeCards.addAll(cardDao.getSupplyLandscapesByExpansion(it)) }
-
-                    val portraitCount = allPortraitCards.distinctBy { it.id }.size
-                    val landscapeCount = allLandscapeCards.distinctBy { it.id }.size
-
-                    // Store the same count for both edition IDs (they share the card pool)
-                    firstId?.let { counts[it] = Pair(portraitCount, landscapeCount) }
-                    secondId?.let { counts[it] = Pair(portraitCount, landscapeCount) }
-                }
-
-                _expansionCardCounts.value = counts
-
-                Log.i(
-                    "LibraryViewModel",
-                    "Loaded expansions [${expansionsWithEditions.size}] with editions [${allExpansions.size}]"
-                )
-            }
-        }
-    }
-
     // Update ownership of an expansion
-    fun updateExpansionOwnership(expansion: Expansion, newIsOwned: Boolean) {
+    fun updateExpansionOwnership(edition: Edition, newIsOwned: Boolean) {
         viewModelScope.launch {
-            // Update the database
-            when (expansion.edition) {
-                1 -> expansionDao.updateFirstEditionOwned(
-                    expansion.name,
-                    newIsOwned
-                )
-
-                2 -> expansionDao.updateSecondEditionOwned(
-                    expansion.name,
-                    newIsOwned
-                )
-
-                else -> throw java.lang.IllegalArgumentException("Invalid edition.")
-            }
-
-            // Update the object
-            _expansionsWithEditions.value = _expansionsWithEditions.value.map {
-                if (it.name == expansion.name) {
-                    when (expansion.edition) {
-                        1 -> it.copy(firstEdition = it.firstEdition?.copy(isOwned = newIsOwned))
-                        2 -> it.copy(secondEdition = it.secondEdition?.copy(isOwned = newIsOwned))
-                        else -> throw java.lang.IllegalArgumentException("Invalid edition.")
-                    }
-                } else {
-                    it
-                }
-            }
-            Log.i(
-                "LibraryViewModel",
-                "UpdateExpansionOwnership(): Updated isOwned for ${expansion.name}[${expansion.edition}] to $newIsOwned"
-            )
+            expansionDao.updateEditionOwnership(edition.id, newIsOwned)
         }
     }
 
-    // Might need this
-    fun getOwnershipText(expansion: ExpansionWithEditions): String {
-
-        val isFirstOwned = expansion.firstEdition?.isOwned == true
-        val isSecondOwned = expansion.secondEdition?.isOwned == true
-
-        return when {
-            isFirstOwned && isSecondOwned -> "Both Editions Owned"
-            isFirstOwned ->
-                if (expansion.secondEdition == null) {
-                    "Owned"
-                } else {
-                    "First Edition Owned"
-                }
-
-            isSecondOwned -> "Second Edition Owned"
-            else -> "Unowned"
-        }
-    }
-
-    /**
-     * Get the current OwnedEdition state for an expansion with multiple editions.
-     * Returns the appropriate state based on which editions are owned.
-     * Reads from the current in-memory state to ensure accuracy.
-     */
     fun getOwnedEdition(expansion: ExpansionWithEditions): OwnedEdition {
-        // Find the current state from the in-memory list (not from the parameter)
-        val currentExpansion = _expansionsWithEditions.value.find { it.name == expansion.name }
-            ?: return OwnedEdition.NONE
-
-        val isFirstOwned = currentExpansion.firstEdition?.isOwned == true
-        val isSecondOwned = currentExpansion.secondEdition?.isOwned == true
+        val editions = expansion.editions
+        val firstOwned = editions.find { it.editionNumber == 1 }?.isOwned == true
+        val secondOwned = editions.find { it.editionNumber == 2 }?.isOwned == true
 
         return when {
-            isFirstOwned && isSecondOwned -> OwnedEdition.BOTH
-            isFirstOwned -> OwnedEdition.FIRST
-            isSecondOwned -> OwnedEdition.SECOND
+            firstOwned && secondOwned -> OwnedEdition.BOTH
+            firstOwned -> OwnedEdition.FIRST
+            secondOwned -> OwnedEdition.SECOND
             else -> OwnedEdition.NONE
         }
     }
 
-    /**
-     * Get the current owned state for a specific expansion edition.
-     * Reads from the in-memory state to ensure freshness.
-     */
-    fun isEditionOwned(expansionName: String, edition: Int): Boolean {
-        val currentExpansion = _expansionsWithEditions.value.find { it.name == expansionName }
-            ?: return false
-
-        return when (edition) {
-            1 -> currentExpansion.firstEdition?.isOwned == true
-            2 -> currentExpansion.secondEdition?.isOwned == true
-            else -> false
-        }
-    }
-
-    /**
-     * Toggle ownership for a single-edition expansion.
-     * Updates database and in-memory state.
-     */
-    fun toggleSingleEditionOwnership(expansionName: String, edition: Int) {
+    fun toggleSingleEditionOwnership(expansionId: String, editionNumber: Int) {
         viewModelScope.launch {
-            val currentOwned = isEditionOwned(expansionName, edition)
-            val newOwned = !currentOwned
-
-            // Update the database
-            when (edition) {
-                1 -> expansionDao.updateFirstEditionOwned(expansionName, newOwned)
-                2 -> expansionDao.updateSecondEditionOwned(expansionName, newOwned)
-                else -> throw IllegalArgumentException("Invalid edition.")
+            val edition = expansionsWithEditions.value.find { it.expansion.id == expansionId }
+                ?.editions?.find { it.editionNumber == editionNumber }
+            edition?.let {
+                expansionDao.updateEditionOwnership(it.id, !it.isOwned)
             }
-
-            // Update the in-memory state
-            _expansionsWithEditions.value = _expansionsWithEditions.value.map {
-                if (it.name == expansionName) {
-                    when (edition) {
-                        1 -> it.copy(firstEdition = it.firstEdition?.copy(isOwned = newOwned))
-                        2 -> it.copy(secondEdition = it.secondEdition?.copy(isOwned = newOwned))
-                        else -> it
-                    }
-                } else {
-                    it
-                }
-            }
-
-            Log.i(
-                "LibraryViewModel",
-                "ToggleSingleEditionOwnership(): Toggled ${expansionName}[${edition}] from $currentOwned to $newOwned"
-            )
         }
     }
 
@@ -420,31 +289,14 @@ class LibraryViewModel @Inject constructor(
 
             val shouldOwnFirst = newOwned == OwnedEdition.FIRST || newOwned == OwnedEdition.BOTH
             val shouldOwnSecond = newOwned == OwnedEdition.SECOND || newOwned == OwnedEdition.BOTH
-            val isSharedEdition = expansion.secondEdition?.name == "Cornucopia & Guilds"
-
-            // Use transaction for atomic database updates
-            expansionDao.updateMultiEditionOwnership(
-                expansionName = expansion.name,
-                shouldOwnFirst = shouldOwnFirst,
-                shouldOwnSecond = shouldOwnSecond,
-                isSharedEdition = isSharedEdition
-            )
-
-            // Immediately update in-memory state to ensure UI correctness
-            _expansionsWithEditions.value = _expansionsWithEditions.value.map {
-                if (it.name == expansion.name) {
-                    // Update both editions for the clicked expansion
-                    it.copy(
-                        firstEdition = it.firstEdition?.copy(isOwned = shouldOwnFirst),
-                        secondEdition = it.secondEdition?.copy(isOwned = shouldOwnSecond)
-                    )
-                } else if (isSharedEdition && it.secondEdition?.name == "Cornucopia & Guilds") {
-                    // ONLY update second edition for shared expansions (keep first editions independent)
-                    it.copy(
-                        secondEdition = it.secondEdition?.copy(isOwned = shouldOwnSecond)
-                    )
-                } else {
-                    it
+            
+            expansion.firstEdition?.let { expansionDao.updateEditionOwnership(it.id, shouldOwnFirst) }
+            expansion.secondEdition?.let { expansionDao.updateEditionOwnership(it.id, shouldOwnSecond) }
+            
+            if (expansion.id == "CORNUCOPIA" || expansion.id == "GUILDS") {
+                val cornGuild = expansionsWithEditions.value.find { it.id == "CORNUCOPIA_GUILDS" }
+                cornGuild?.editions?.find { it.editionNumber == 2 }?.let {
+                    expansionDao.updateEditionOwnership(it.id, shouldOwnSecond)
                 }
             }
 
@@ -456,41 +308,33 @@ class LibraryViewModel @Inject constructor(
     // Expansion functions //
     /////////////////////////
 
+    // TODO Check these all. Might be outdated
     fun selectExpansion(expansion: ExpansionWithEditions) {
         viewModelScope.launch {
-
             val ownedEditions = whichEditionIsOwned(expansion)
-            val set = getCardsFromOwnedEditions(expansion, ownedEditions)
+            val cards = getCardsFromOwnedEditions(expansion, ownedEditions)
             _selectedExpansion.value = expansion
             _selectedEdition.value = ownedEditions
-            _cardsToShow.value = sortCards(set.toList())
+            _cardsToShow.value = sortCards(cards.toList())
 
             Log.d(
                 "LibraryViewModel",
                 "Loaded ${_cardsToShow.value.size} cards for expansion ${expansion.name}"
             )
 
-            _uiState.value = LibraryUiState.EXPANSION_CARDS
-            Log.d("LibraryViewModel", "Selected ${expansion.name}")
+            switchUiStateTo(LibraryUiState.EXPANSION_CARDS)
         }
     }
 
     private fun whichEditionIsOwned(expansion: ExpansionWithEditions): OwnedEdition {
-        if (expansion.firstEdition?.isOwned == true) {
-            if (expansion.secondEdition?.isOwned == true) {
-                return OwnedEdition.BOTH
-            }
-            return OwnedEdition.FIRST
-        } else if (expansion.secondEdition?.isOwned == true) {
-            return OwnedEdition.SECOND
-        } else {
-            // Neither owned - default to available edition
-            // If second edition exists, default to it, otherwise use first edition
-            return if (expansion.secondEdition != null) {
-                OwnedEdition.SECOND
-            } else {
-                OwnedEdition.FIRST
-            }
+        val firstOwned = expansion.firstEdition?.isOwned == true
+        val secondOwned = expansion.secondEdition?.isOwned == true
+        
+        return when {
+            firstOwned && secondOwned -> OwnedEdition.BOTH
+            firstOwned -> OwnedEdition.FIRST
+            secondOwned -> OwnedEdition.SECOND
+            else -> if (expansion.secondEdition != null) OwnedEdition.SECOND else OwnedEdition.FIRST
         }
     }
 
@@ -498,29 +342,13 @@ class LibraryViewModel @Inject constructor(
         expansion: ExpansionWithEditions,
         ownedEdition: OwnedEdition
     ): Set<Card> {
-
         val set = mutableSetOf<Card>()
-
         when (ownedEdition) {
-            OwnedEdition.FIRST -> {
-                expansion.firstEdition?.let { firstEdition ->
-                    set.addAll(cardDao.getCardsByExpansion(firstEdition.id))
-                }
-            }
-
-            OwnedEdition.SECOND -> {
-                expansion.secondEdition?.let { secondEdition ->
-                    set.addAll(cardDao.getCardsByExpansion(secondEdition.id))
-                }
-            }
-
+            OwnedEdition.FIRST -> expansion.firstEdition?.let { set.addAll(cardDao.getCardsByExpansion(it.id)) }
+            OwnedEdition.SECOND -> expansion.secondEdition?.let { set.addAll(cardDao.getCardsByExpansion(it.id)) }
             else -> {
-                if (expansion.firstEdition != null) {
-                    set.addAll(cardDao.getCardsByExpansion(expansion.firstEdition.id))
-                }
-                if (expansion.secondEdition != null) {
-                    set.addAll(cardDao.getCardsByExpansion(expansion.secondEdition.id))
-                }
+                expansion.firstEdition?.let { set.addAll(cardDao.getCardsByExpansion(it.id)) }
+                expansion.secondEdition?.let { set.addAll(cardDao.getCardsByExpansion(it.id)) }
             }
         }
         return set
@@ -545,9 +373,8 @@ class LibraryViewModel @Inject constructor(
                 2 -> toggleSecondEdition(currentOwnedEdition)
                 else -> currentOwnedEdition
             }
-
-            val set = getCardsFromOwnedEditions(expansion, newSelectedEdition)
-            _cardsToShow.value = sortCards(set.toList())
+            val cards = getCardsFromOwnedEditions(expansion, newSelectedEdition)
+            _cardsToShow.value = sortCards(cards.toList())
             _selectedEdition.value = newSelectedEdition
             Log.d(
                 "LibraryViewModel",
@@ -556,35 +383,24 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    private fun toggleFirstEdition(current: OwnedEdition): OwnedEdition {
-        return when (current) {
-            OwnedEdition.FIRST -> OwnedEdition.SECOND     // First only → Switch to Second
-            OwnedEdition.SECOND -> OwnedEdition.BOTH       // Second only → Add First
-            OwnedEdition.BOTH -> OwnedEdition.SECOND       // Both → Remove First, keep Second
-            // NONE should never happen, but if it does, default to FIRST
-            OwnedEdition.NONE -> OwnedEdition.FIRST
-        }
+    private fun toggleFirstEdition(current: OwnedEdition): OwnedEdition = when (current) {
+        OwnedEdition.FIRST -> OwnedEdition.SECOND
+        OwnedEdition.SECOND -> OwnedEdition.BOTH
+        OwnedEdition.BOTH -> OwnedEdition.SECOND
+        OwnedEdition.NONE -> OwnedEdition.FIRST // // NONE should never happen, but if it does, default to FIRST
     }
 
-    private fun toggleSecondEdition(current: OwnedEdition): OwnedEdition {
-        return when (current) {
-            OwnedEdition.FIRST -> OwnedEdition.BOTH       // First only → Add Second
-            OwnedEdition.SECOND -> OwnedEdition.FIRST      // Second only → Switch to First
-            OwnedEdition.BOTH -> OwnedEdition.FIRST        // Both → Remove Second, keep First
-            // NONE should never happen, but if it does, default to SECOND
-            OwnedEdition.NONE -> OwnedEdition.SECOND
-        }
-    }
-
-    fun expansionHasTwoEditions(expansion: ExpansionWithEditions): Boolean {
-        return expansion.firstEdition != null && expansion.secondEdition != null
+    private fun toggleSecondEdition(current: OwnedEdition): OwnedEdition = when (current) {
+        OwnedEdition.FIRST -> OwnedEdition.BOTH
+        OwnedEdition.SECOND -> OwnedEdition.FIRST
+        OwnedEdition.BOTH -> OwnedEdition.FIRST
+        OwnedEdition.NONE -> OwnedEdition.SECOND // // NONE should never happen, but if it does, default to SECOND
     }
 
     fun selectCard(card: Card) {
         _selectedCard.value = card
         if (uiState.value != LibraryUiState.CARD_DETAIL) {
-            lastState =
-                uiState.value // Saving whether we come from search results or expansion cards
+            lastState = uiState.value
         }
         _uiState.value = LibraryUiState.CARD_DETAIL
         Log.d("LibraryViewModel", "Selected card ${card.name}")
@@ -603,20 +419,13 @@ class LibraryViewModel @Inject constructor(
 
     private fun sortCards(cards: List<Card>): List<Card> {
         if (cards.isEmpty()) return cards
-
         val sortedCards = when (_sortType.value) {
-
             SortType.TYPE -> {
                 // String comparison sucks
                 val name = _selectedExpansion.value?.name
-                if (name == "Base" || name == "Empires") {
-                    cards.sortedWith(Card.CardTypeComparator(sortByCostAsTieBreaker = true))
-                } else {
-                    cards.sortedWith(Card.CardTypeComparator())
-                }
+                cards.sortedWith(Card.CardTypeComparator(sortByCostAsTieBreaker = name == "Base" || name == "Empires"))
             }
-
-            SortType.EXPANSION -> cards.sortedBy { it.sets.first() }
+            SortType.EXPANSION -> cards.sortedBy { it.sets.first().displayName }
             SortType.ALPHABETICAL -> cards.sortedBy { it.name }
             SortType.COST -> cards.sortedBy { it.cost }
             SortType.ENABLED -> cards.sortedBy { !it.isEnabled }
@@ -627,7 +436,6 @@ class LibraryViewModel @Inject constructor(
 
     fun updateSortType(newSortType: AppSortType.Library) {
         _sortType.value = newSortType.sortType
-
         // Sort expansion list
         _cardsToShow.value = sortCards(_cardsToShow.value)
         Log.d("LibraryViewModel", "Updated sort type to ${_sortType.value}")
@@ -635,16 +443,14 @@ class LibraryViewModel @Inject constructor(
 
     fun changeSearchText(newText: String) {
         _searchText.value = newText
-        Log.d("LibraryViewModel", "Updated search text to $newText")
-
-        // Automatically trigger search when text changes
         viewModelScope.launch {
             if (newText.isEmpty()) {
                 // Clear search results and go back to previous state
                 _cardsToShow.value = emptyList()
                 // Return to the state we were in before searching
+                // Isn't this always EXPANSION LIST?
                 _uiState.value = stateBeforeSearch
-            } else if (newText.length >= 2 || newText.first().isDigit()) {
+            } else if (newText.length >= 2 || (newText.isNotEmpty() && newText.first().isDigit())) {
                 // Save current state before switching to search results
                 if (_uiState.value != LibraryUiState.SEARCH_RESULTS) {
                     stateBeforeSearch = _uiState.value
@@ -653,32 +459,6 @@ class LibraryViewModel @Inject constructor(
                 _cardsToShow.value = cardDao.getFilteredCards(newText)
                 _uiState.value = LibraryUiState.SEARCH_RESULTS
             }
-
-            Log.d(
-                "LibraryViewModel",
-                "Searched for $newText, search results: ${_cardsToShow.value.size}"
-            )
-        }
-    }
-
-    // TODO Remove?
-    fun searchCards(newText: String) {
-        viewModelScope.launch {
-
-            if (newText.isEmpty()) {
-                _cardsToShow.value = emptyList()
-            } else if (newText.length >= 2 || newText.first().isDigit()) {
-
-                // TODO: Sort? Type sort is broken here
-                _cardsToShow.value = cardDao.getFilteredCards("%$newText%")
-            }
-
-            _uiState.value = LibraryUiState.SEARCH_RESULTS
-
-            Log.d(
-                "LibraryViewModel",
-                "Searched for $newText, search results: ${_cardsToShow.value.size}"
-            )
         }
     }
 
@@ -692,15 +472,15 @@ class LibraryViewModel @Inject constructor(
 
     fun showBlacklistedCards() {
         viewModelScope.launch {
-            val disabledCards = cardDao.getDisabledCards()
+            val disabledCards = cardDao.getDisabledCardsExceptPromo()
             _cardsToShow.value = sortCards(disabledCards)
             _uiState.value = LibraryUiState.BLACKLISTED_CARDS
             Log.d("LibraryViewModel", "Showing ${disabledCards.size} disabled cards")
         }
     }
 
-    val blacklistedCardCount: StateFlow<Int> = cardDao.getDisabledCardCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val blacklistedCardCount: StateFlow<Int> = cardDao.getDisabledCardCountExceptPromo()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     fun showFavoriteCards() {
         viewModelScope.launch {
@@ -712,67 +492,54 @@ class LibraryViewModel @Inject constructor(
     }
 
     val favoriteCardCount: StateFlow<Int> = cardDao.getFavoriteCardCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
-    // TODO why is this here
-    // Map of expansion ID to Pair(portraitCount, landscapeCount)
-    private val _expansionCardCounts = MutableStateFlow<Map<String, Pair<Int, Int>>>(emptyMap())
-    val expansionCardCounts: StateFlow<Map<String, Pair<Int, Int>>> = _expansionCardCounts.asStateFlow()
+    fun showPromoCards() {
+        viewModelScope.launch {
+            val promoCards = cardDao.getCardsByExpansion("PROMO")
+            _cardsToShow.value = sortCards(promoCards)
+            _uiState.value = LibraryUiState.PROMO_CARDS
+        }
+    }
+
+    val promoCardCount: StateFlow<String> = cardDao.getCardsByExpansionFlow("PROMO")
+        .map { cards ->
+            val enabled = cards.count { it.isEnabled }
+            "$enabled / ${cards.size} cards owned"
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "0 / 0 cards owned")
 
     fun toggleCardFavorite(card: Card) {
         viewModelScope.launch {
-
             val newIsFavoriteState = !card.isFavorite
-
-            // Update database
             cardDao.toggleCardFavorite(card.id, newIsFavoriteState)
-
-            // Update object and selectedCard reference
+            // Update both cardsToShow and selectedCard
             _cardsToShow.value = _cardsToShow.value.map { c ->
-                if (c.id == card.id) {
-                    c.copy(isFavorite = newIsFavoriteState)
-                } else {
-                    c
-                }
+                if (c.id == card.id) c.copy(isFavorite = newIsFavoriteState) else c
             }
-
-            // Update selectedCard to maintain reference equality
             if (_selectedCard.value?.id == card.id) {
                 _selectedCard.value = _cardsToShow.value.find { it.id == card.id }
             }
-
             Log.d("LibraryViewModel", "Toggled card ${card.name} to favorite $newIsFavoriteState")
         }
     }
 
     fun toggleCardEnabled(card: Card) {
         viewModelScope.launch {
-
             val newIsEnabledState = !card.isEnabled
-
-            // Update database
             cardDao.toggleCardEnabled(card.id, newIsEnabledState)
-
-            // Update object
+            // Update both cardsToShow and selectedCard
             _cardsToShow.value = _cardsToShow.value.map { c ->
-                if (c.id == card.id) {
-                    c.copy(isEnabled = newIsEnabledState)
-                } else {
-                    c
-                }
+                if (c.id == card.id) c.copy(isEnabled = newIsEnabledState) else c
             }
-
-            // Update selectedCard to maintain reference equality
             if (_selectedCard.value?.id == card.id) {
                 _selectedCard.value = _cardsToShow.value.find { it.id == card.id }
             }
-
             // TODO does this make sense? When SortType == ENABLED, changing cards makes them jump
             if (sortType.value == SortType.ENABLED) {
                 _cardsToShow.value = sortCards(_cardsToShow.value)
             }
-
-            Log.d("LibraryViewModel", "Toggled card ${card.name} to enabled $newIsEnabledState")
+            // TODO does this make sense? When SortType == ENABLED, changing cards makes them jump
         }
     }
 }

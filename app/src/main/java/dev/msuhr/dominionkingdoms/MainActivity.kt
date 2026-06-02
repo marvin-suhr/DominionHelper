@@ -31,6 +31,9 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.rememberCoroutineScope
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.ui.theme.DominionKingdomsTheme
 import dev.msuhr.dominionkingdoms.ui.theme.ThemeColorProvider
@@ -42,6 +45,7 @@ import dev.msuhr.dominionkingdoms.ui.KingdomUiState
 import dev.msuhr.dominionkingdoms.ui.components.TopBar
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -80,6 +84,26 @@ class MainActivity : ComponentActivity() {
                 darkTheme = darkTheme,
                 colorScheme = colorScheme
             ) {
+                val coroutineScope = rememberCoroutineScope()
+
+                // Database reset dialog
+                val showResetDialog by userPrefsRepository.showDatabaseResetDialog.collectAsState(initial = false)
+                if (showResetDialog) {
+                    AlertDialog(
+                        onDismissRequest = { /* Don't allow dismiss by clicking outside */ },
+                        title = { Text("Database Updated") },
+                        text = { Text("The app's database has been refreshed to support new features. Your local settings have been preserved, but the kingdom library has been reset.") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                coroutineScope.launch {
+                                    userPrefsRepository.setShowDatabaseResetDialog(false)
+                                }
+                            }) {
+                                Text("OK")
+                            }
+                        }
+                    )
+                }
 
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()

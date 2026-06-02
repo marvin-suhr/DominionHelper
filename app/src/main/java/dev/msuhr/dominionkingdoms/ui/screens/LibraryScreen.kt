@@ -3,13 +3,7 @@ package dev.msuhr.dominionkingdoms.ui.screens
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -17,25 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -43,20 +20,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import dev.msuhr.dominionkingdoms.model.Card
-import dev.msuhr.dominionkingdoms.model.Expansion
 import dev.msuhr.dominionkingdoms.model.ExpansionWithEditions
 import dev.msuhr.dominionkingdoms.ui.LibraryUiState
 import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
-import dev.msuhr.dominionkingdoms.ui.components.BlacklistedCardsListItem
-import dev.msuhr.dominionkingdoms.ui.components.CardDetailPager
-import dev.msuhr.dominionkingdoms.ui.components.CardView
-import dev.msuhr.dominionkingdoms.ui.components.ExpansionListItem
-import dev.msuhr.dominionkingdoms.ui.components.FavoriteCardsListItem
-import dev.msuhr.dominionkingdoms.ui.components.LibraryCardList
-import dev.msuhr.dominionkingdoms.ui.components.SearchBar
+import dev.msuhr.dominionkingdoms.ui.components.*
 import dev.msuhr.dominionkingdoms.utils.Constants
 import dev.msuhr.dominionkingdoms.utils.calculatePadding
-import kotlinx.coroutines.launch
 
 /**
  * Sealed class representing items that can be displayed in the unified library list.
@@ -66,58 +35,24 @@ import kotlinx.coroutines.launch
  * focus and keyboard state when transitioning between search and non-search views.
  */
 sealed class LibraryListItem {
-    /**
-     * Search bar item - always rendered first in the list
-     */
-    data class SearchItem(
-        val searchText: String,
-        val onSearchTextChange: (String) -> Unit
-    ) : LibraryListItem()
-
-    /**
-     * Expansion header item (section header shown once before all expansions)
-     */
+    // Search bar item - always rendered first in the list
+    data class SearchItem(val searchText: String, val onSearchTextChange: (String) -> Unit) : LibraryListItem()
+    // Expansion header item (section header shown once before all expansions)
     data object ExpansionHeaderItem : LibraryListItem()
-
-    /**
-     * Expansion item from the library
-     */
+    // Expansion item from the library
     data class ExpansionItem(val expansion: ExpansionWithEditions) : LibraryListItem()
-
-    /**
-     * Individual card item (shown in search results)
-     */
+    // Individual card item (shown in search results)
     data class CardItem(val card: Card) : LibraryListItem()
-
-    /**
-     * "X cards found" info header with sort button (shown in search results)
-     */
-    data class CardsFoundInfoItem(
-        val count: Int,
-        val sortType: LibraryViewModel.SortType,
-        val onSortTypeSelected: (LibraryViewModel.SortType) -> Unit
-    ) : LibraryListItem()
-
-    /**
-     * Manage header item (section header shown once before favorite and blacklisted cards)
-     */
+    // "X cards found" info header with sort button (shown in search results)
+    data class CardsFoundInfoItem(val count: Int, val sortType: LibraryViewModel.SortType, val onSortTypeSelected: (LibraryViewModel.SortType) -> Unit) : LibraryListItem()
+    // Manage header item (section header shown once before favorite and blacklisted cards)
     data object ManageHeaderItem : LibraryListItem()
-
-    /**
-     * Section header for favorite cards (shown above blacklisted cards)
-     */
-    data class FavoriteCardsSectionItem(
-        val favoriteCardCount: Int,
-        val onClick: () -> Unit
-    ) : LibraryListItem()
-
-    /**
-     * Section header for blacklisted cards (shown at bottom of expansion list)
-     */
-    data class BlacklistedSectionItem(
-        val disabledCardCount: Int,
-        val onClick: () -> Unit
-    ) : LibraryListItem()
+    // Section header for favorite cards (shown above blacklisted cards)
+    data class PromoCardsSectionItem(val countText: String, val onClick: () -> Unit) : LibraryListItem()
+    // Section header for favorite cards (shown above blacklisted cards)
+    data class FavoriteCardsSectionItem(val favoriteCardCount: Int, val onClick: () -> Unit) : LibraryListItem()
+    // Section header for blacklisted cards (shown at bottom of expansion list)
+    data class BlacklistedSectionItem(val disabledCardCount: Int, val onClick: () -> Unit) : LibraryListItem()
 }
 
 /**
@@ -143,15 +78,13 @@ fun LibraryScreen(
     val searchText by viewModel.searchText.collectAsState()
     val disabledCardCount by viewModel.blacklistedCardCount.collectAsState()
     val favoriteCardCount by viewModel.favoriteCardCount.collectAsState()
+    val promoCardCount by viewModel.promoCardCount.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val expansionCardCounts by viewModel.expansionCardCounts.collectAsState()
 
-    // List states
     val libraryListState = rememberLazyListState()
     val cardListState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
 
-    // Side effects
     LaunchedEffect(title) { onTitleChanged(title) }
 
     // Clear snackbar and error when leaving the screen
@@ -170,6 +103,7 @@ fun LibraryScreen(
                 LibraryUiState.EXPANSIONS -> libraryListState.animateScrollToItem(0)
                 LibraryUiState.FAVORITE_CARDS -> cardListState.animateScrollToItem(0)
                 LibraryUiState.BLACKLISTED_CARDS -> cardListState.animateScrollToItem(0)
+                LibraryUiState.PROMO_CARDS -> cardListState.animateScrollToItem(0)
                 else -> {}
             }
         }
@@ -177,10 +111,8 @@ fun LibraryScreen(
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
-                viewModel.clearError()
-            }
+            snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
+            viewModel.clearError()
         }
     }
 
@@ -198,16 +130,8 @@ fun LibraryScreen(
     // Unified list view for EXPANSIONS and SEARCH_RESULTS
     when (uiState) {
         LibraryUiState.EXPANSIONS, LibraryUiState.SEARCH_RESULTS -> {
-            val listItems = remember(uiState, expansionsWithEditions, cardsToShow, searchText, disabledCardCount, favoriteCardCount) {
-                buildListItems(
-                    uiState = uiState,
-                    expansionsWithEditions = expansionsWithEditions,
-                    cardsToShow = cardsToShow,
-                    searchText = searchText,
-                    disabledCardCount = disabledCardCount,
-                    favoriteCardCount = favoriteCardCount,
-                    viewModel = viewModel
-                )
+            val listItems = remember(uiState, expansionsWithEditions, cardsToShow, searchText, disabledCardCount, favoriteCardCount, promoCardCount) {
+                buildListItems(uiState, expansionsWithEditions, cardsToShow, searchText, disabledCardCount, favoriteCardCount, promoCardCount, viewModel)
             }
 
             LazyColumn(
@@ -225,6 +149,7 @@ fun LibraryScreen(
                             is LibraryListItem.CardItem -> "card_${item.card.id}"
                             is LibraryListItem.CardsFoundInfoItem -> "cards_found_info"
                             is LibraryListItem.ManageHeaderItem -> "manage_header"
+                            is LibraryListItem.PromoCardsSectionItem -> "promo_section"
                             is LibraryListItem.FavoriteCardsSectionItem -> "favorite_section"
                             is LibraryListItem.BlacklistedSectionItem -> "blacklisted_section"
                         }
@@ -233,82 +158,48 @@ fun LibraryScreen(
                     contentType = { it::class.java.name }
                 ) { item ->
                     when (item) {
-                        is LibraryListItem.SearchItem -> {
-                            SearchBar(
-                                searchText = item.searchText,
-                                onSearchTextChange = item.onSearchTextChange
-                            )
-                        }
-
-                        is LibraryListItem.ExpansionHeaderItem -> {
-                            HeaderItem("Expansions")
-                        }
-
+                        is LibraryListItem.SearchItem -> SearchBar(item.searchText, item.onSearchTextChange)
+                        is LibraryListItem.ExpansionHeaderItem -> HeaderItem("Expansions")
                         is LibraryListItem.ExpansionItem -> {
                             val expansion = item.expansion
-                            val firstId = expansion.firstEdition?.id
-                            val secondId = expansion.secondEdition?.id
+                            val ownedEdition = viewModel.getOwnedEdition(expansion)
+                            
+                            val counts = if (ownedEdition == dev.msuhr.dominionkingdoms.model.OwnedEdition.BOTH) {
+                                expansionCardCounts[expansion.id]
+                            } else {
+                                expansion.activeEdition?.let { expansionCardCounts[it.id] }
+                            } ?: Pair(0, 0)
 
-                            // Get counts from the map (both editions have the same count since they share card pool)
-                            val counts = when {
-                                firstId != null && secondId != null -> {
-                                    val expansionCounts = expansionCardCounts[firstId] ?: Pair(0, 0)
-                                    expansionCounts
-                                }
-                                firstId != null -> expansionCardCounts[firstId] ?: Pair(0, 0)
-                                secondId != null -> expansionCardCounts[secondId] ?: Pair(0, 0)
-                                else -> Pair(0, 0)
-                            }
-
-                            ExpansionListItemContent(
+                            ExpansionListItem(
                                 expansion = expansion,
-                                viewModel = viewModel,
                                 portraitCount = counts.first,
                                 landscapeCount = counts.second,
-                                onExpansionClick = { viewModel.selectExpansion(expansion) },
-                                onOwnershipToggle = { exp, isOwned ->
-                                    viewModel.updateExpansionOwnership(exp, isOwned)
+                                onClick = { viewModel.selectExpansion(expansion) },
+                                onOwnershipToggle = {
+                                    if (expansion.hasMultipleEditions) {
+                                        viewModel.cycleMultiEditionOwnership(expansion)
+                                    } else {
+                                        expansion.editions.firstOrNull()?.let {
+                                            viewModel.toggleSingleEditionOwnership(expansion.expansion.id, it.editionNumber)
+                                        }
+                                    }
                                 }
                             )
                         }
-
-                        is LibraryListItem.CardItem -> {
-                            CardView(
-                                card = item.card,
-                                onCardClick = { viewModel.selectCard(item.card) },
-                                enabled = item.card.isEnabled,
-                                showIcon = true,
-                                onToggleEnable = { viewModel.toggleCardEnabled(item.card) },
-                                onFavorite = { viewModel.toggleCardFavorite(item.card) },
-                                onBan = { viewModel.toggleCardEnabled(item.card) }
-                            )
-                        }
-
-                        is LibraryListItem.CardsFoundInfoItem -> {
-                            CardsFoundInfoRow(
-                                count = item.count,
-                                sortType = item.sortType,
-                                onSortTypeSelected = item.onSortTypeSelected
-                            )
-                        }
-
-                        is LibraryListItem.ManageHeaderItem -> {
-                            HeaderItem("Manage")
-                        }
-
-                        is LibraryListItem.FavoriteCardsSectionItem -> {
-                            FavoriteCardsListItem(
-                                favoriteCardCount = item.favoriteCardCount,
-                                onClick = item.onClick
-                            )
-                        }
-
-                        is LibraryListItem.BlacklistedSectionItem -> {
-                            BlacklistedCardsListItem(
-                                disabledCardCount = item.disabledCardCount,
-                                onClick = item.onClick
-                            )
-                        }
+                        is LibraryListItem.CardItem -> CardView(
+                            card = item.card,
+                            onCardClick = { viewModel.selectCard(item.card) },
+                            enabled = item.card.isEnabled,
+                            showIcon = true,
+                            onToggleEnable = { viewModel.toggleCardEnabled(item.card) },
+                            onFavorite = { viewModel.toggleCardFavorite(item.card) },
+                            onBan = { viewModel.toggleCardEnabled(item.card) }
+                        )
+                        is LibraryListItem.CardsFoundInfoItem -> CardsFoundInfoRow(item.count, item.sortType, item.onSortTypeSelected)
+                        is LibraryListItem.ManageHeaderItem -> HeaderItem("Manage")
+                        is LibraryListItem.PromoCardsSectionItem -> PromoCardsListItem(item.countText, item.onClick)
+                        is LibraryListItem.FavoriteCardsSectionItem -> FavoriteCardsListItem(item.favoriteCardCount, item.onClick)
+                        is LibraryListItem.BlacklistedSectionItem -> BlacklistedCardsListItem(item.disabledCardCount, item.onClick)
                     }
                 }
             }
@@ -320,11 +211,9 @@ fun LibraryScreen(
             LibraryCardList(
                 cardList = cardsToShow,
                 sortType = sortType,
-                includeEditionSelection = viewModel.expansionHasTwoEditions(selectedExpansion!!),
+                includeEditionSelection = selectedExpansion!!.hasMultipleEditions,
                 selectedEdition = selectedEdition,
-                onEditionSelected = { editionClicked, ownedEdition ->
-                    viewModel.selectEdition(selectedExpansion!!, editionClicked, ownedEdition)
-                },
+                onEditionSelected = { ed, owned -> viewModel.selectEdition(selectedExpansion!!, ed, owned) },
                 onCardClick = { viewModel.selectCard(it) },
                 onToggleEnable = { viewModel.toggleCardEnabled(it) },
                 onFavorite = { viewModel.toggleCardFavorite(it) },
@@ -349,9 +238,7 @@ fun LibraryScreen(
                 onBan = { viewModel.toggleCardEnabled(it) },
                 listState = cardListState,
                 paddingValues = calculatePadding(innerPadding),
-                onSortTypeSelected = {
-                    viewModel.updateSortType(dev.msuhr.dominionkingdoms.model.AppSortType.Library(it))
-                }
+                onSortTypeSelected = { viewModel.updateSortType(dev.msuhr.dominionkingdoms.model.AppSortType.Library(it)) }
             )
         }
 
@@ -370,9 +257,7 @@ fun LibraryScreen(
                 onBan = { viewModel.toggleCardEnabled(it) },
                 listState = cardListState,
                 paddingValues = calculatePadding(innerPadding),
-                onSortTypeSelected = {
-                    viewModel.updateSortType(dev.msuhr.dominionkingdoms.model.AppSortType.Library(it))
-                }
+                onSortTypeSelected = { viewModel.updateSortType(dev.msuhr.dominionkingdoms.model.AppSortType.Library(it)) }
             )
         }
 
@@ -396,197 +281,55 @@ fun LibraryScreen(
 /**
  * Builds the list of items for the unified library view.
  */
-private fun buildListItems(
-    uiState: LibraryUiState,
-    expansionsWithEditions: List<ExpansionWithEditions>,
-    cardsToShow: List<Card>,
-    searchText: String,
-    disabledCardCount: Int,
-    favoriteCardCount: Int,
-    viewModel: LibraryViewModel
-): List<LibraryListItem> {
+private fun buildListItems(uiState: LibraryUiState, expansionsWithEditions: List<ExpansionWithEditions>, cardsToShow: List<Card>, searchText: String, disabledCardCount: Int, favoriteCardCount: Int, promoCardCountText: String, viewModel: LibraryViewModel): List<LibraryListItem> {
     return when (uiState) {
         LibraryUiState.EXPANSIONS -> buildList {
             add(LibraryListItem.SearchItem(searchText) { viewModel.changeSearchText(it) })
             add(LibraryListItem.ExpansionHeaderItem)
-            expansionsWithEditions.forEach { expansion ->
-                add(LibraryListItem.ExpansionItem(expansion))
-            }
+            expansionsWithEditions.forEach { add(LibraryListItem.ExpansionItem(it)) }
             add(LibraryListItem.ManageHeaderItem)
+            add(LibraryListItem.PromoCardsSectionItem(promoCardCountText) { viewModel.showPromoCards() })
             add(LibraryListItem.FavoriteCardsSectionItem(favoriteCardCount) { viewModel.showFavoriteCards() })
             add(LibraryListItem.BlacklistedSectionItem(disabledCardCount) { viewModel.showBlacklistedCards() })
         }
-
         LibraryUiState.SEARCH_RESULTS -> buildList {
             add(LibraryListItem.SearchItem(searchText) { viewModel.changeSearchText(it) })
-            add(LibraryListItem.CardsFoundInfoItem(cardsToShow.size, viewModel.sortType.value) {
-                viewModel.updateSortType(dev.msuhr.dominionkingdoms.model.AppSortType.Library(it))
-            })
-            cardsToShow.forEach { card ->
-                add(LibraryListItem.CardItem(card))
-            }
+            add(LibraryListItem.CardsFoundInfoItem(cardsToShow.size, viewModel.sortType.value) { viewModel.updateSortType(dev.msuhr.dominionkingdoms.model.AppSortType.Library(it)) })
+            cardsToShow.forEach { add(LibraryListItem.CardItem(card = it)) }
         }
-
         else -> emptyList()
     }
 }
 
-/**
- * Displays a header item in the list
- */
 @Composable
 private fun HeaderItem(text: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
-            style = MaterialTheme.typography.titleMedium,
-            color = LocalContentColor.current.copy(alpha = 0.6f)
-        )
+        Text(text = text, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMedium, color = LocalContentColor.current.copy(alpha = 0.6f))
     }
 }
 
-/**
- * Content renderer for ExpansionItem including the expansion item and nested edition items.
- */
 @Composable
-private fun ExpansionListItemContent(
-    expansion: ExpansionWithEditions,
-    viewModel: LibraryViewModel,
-    portraitCount: Int,
-    landscapeCount: Int,
-    onExpansionClick: () -> Unit,
-    onOwnershipToggle: (Expansion, Boolean) -> Unit
-) {
-    val hasMultipleEditions = expansion.firstEdition != null && expansion.secondEdition != null
-
-    ExpansionListItem(
-        expansion = expansion,
-        portraitCount = portraitCount,
-        landscapeCount = landscapeCount,
-        onClick = onExpansionClick,
-        onOwnershipToggle = {
-            if (hasMultipleEditions) {
-                // Multi-edition: cycle through ownership states (NONE → FIRST → SECOND → BOTH → NONE)
-                viewModel.cycleMultiEditionOwnership(expansion) // pass this instead of VM
-            } else {
-                // Single edition: simple toggle using ViewModel's current state
-                val editionToToggle = expansion.firstEdition ?: expansion.secondEdition
-                editionToToggle?.let { edition ->
-                    viewModel.toggleSingleEditionOwnership(expansion.name, edition.edition)
-                }
-            }
-        },
-        hasMultipleEditions = hasMultipleEditions
-    )
-}
-
-/**
- * Displays the "X cards found" info row with sort button.
- */
-@Composable
-private fun CardsFoundInfoRow(
-    count: Int,
-    sortType: LibraryViewModel.SortType,
-    onSortTypeSelected: (LibraryViewModel.SortType) -> Unit
-) {
+private fun CardsFoundInfoRow(count: Int, sortType: LibraryViewModel.SortType, onSortTypeSelected: (LibraryViewModel.SortType) -> Unit) {
     var showSortDialog by remember { mutableStateOf(false) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = "$count cards found",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        IconButton(onClick = { showSortDialog = true }) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Sort,
-                contentDescription = "Sort results",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(text = "$count cards found", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        IconButton(onClick = { showSortDialog = true }) { Icon(Icons.AutoMirrored.Filled.Sort, "Sort results", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
     }
-
-    if (showSortDialog) {
-        SortTypeDialog(
-            sortType = sortType,
-            onSortTypeSelected = {
-                onSortTypeSelected(it)
-                showSortDialog = false
-            },
-            onDismiss = { showSortDialog = false }
-        )
-    }
+    if (showSortDialog) SortTypeDialog(sortType, { onSortTypeSelected(it); showSortDialog = false }, { showSortDialog = false })
 }
 
-/**
- * Sort type selection dialog.
- */
 @Composable
-private fun SortTypeDialog(
-    sortType: LibraryViewModel.SortType,
-    onSortTypeSelected: (LibraryViewModel.SortType) -> Unit,
-    onDismiss: () -> Unit
-) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-            usePlatformDefaultWidth = false
-        )
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 48.dp)
-                .widthIn(max = 400.dp),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 5.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Sort by",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
-                )
-
+private fun SortTypeDialog(sortType: LibraryViewModel.SortType, onSortTypeSelected: (LibraryViewModel.SortType) -> Unit, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true, usePlatformDefaultWidth = false)) {
+        Surface(modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp).widthIn(max = 400.dp), shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surface, tonalElevation = 5.dp) {
+            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Text(text = "Sort by", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 16.dp))
+                HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color)
                 LibraryViewModel.SortType.entries.forEach { sortOption ->
                     val isSelected = sortOption == sortType
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSortTypeSelected(sortOption) }
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = isSelected,
-                            onClick = { onSortTypeSelected(sortOption) }
-                        )
-                        Text(
-                            text = sortOption.text,
-                            modifier = Modifier.padding(start = 12.dp),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                    Row(modifier = Modifier.fillMaxWidth().clickable { onSortTypeSelected(sortOption) }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(isSelected, { onSortTypeSelected(sortOption) })
+                        Text(text = sortOption.text, modifier = Modifier.padding(start = 12.dp), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
@@ -594,20 +337,7 @@ private fun SortTypeDialog(
     }
 }
 
-/**
- * Radio button icon for sort dialog.
- */
 @Composable
-private fun RadioButton(
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Icon(
-        imageVector = if (selected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .padding(8.dp)
-            .clickable(onClick = onClick)
-    )
+private fun RadioButton(selected: Boolean, onClick: () -> Unit) {
+    Icon(imageVector = if (selected) Icons.Filled.CheckCircle else Icons.Outlined.Circle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(8.dp).clickable(onClick = onClick))
 }

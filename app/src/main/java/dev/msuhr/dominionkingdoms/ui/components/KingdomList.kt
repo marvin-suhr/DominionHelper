@@ -248,11 +248,9 @@ fun KingdomCard(
                             CardImage2(card = card)
                         }
                     }
-
                 }
             }
         }
-
     }
 }
 
