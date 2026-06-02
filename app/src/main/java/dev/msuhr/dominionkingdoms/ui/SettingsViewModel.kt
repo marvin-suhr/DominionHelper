@@ -19,7 +19,8 @@ sealed class SettingItem {
         val title: String,
         val description: String? = null,
         val isChecked: Boolean,
-        val onCheckedChange: (Boolean) -> Unit
+        val onCheckedChange: (Boolean) -> Unit,
+        val imageName: String = ""
     ) : SettingItem() {
         override fun toString(): String = "SwitchSetting(title='$title', isChecked=$isChecked)"
     }
@@ -157,6 +158,7 @@ class SettingsViewModel @Inject constructor(
             userPrefsRepository.darkAgesStarterCardsMode,
             userPrefsRepository.prosperityBasicCardsMode,
             userPrefsRepository.activeRules,
+            userPrefsRepository.landscapeRules,
             _uiState.map { it.currentSubScreen }.distinctUntilChanged()
         ) { values ->
             val darkModePreference = values[0] as Boolean?
@@ -172,7 +174,8 @@ class SettingsViewModel @Inject constructor(
             val currentDarkAgesMode = values[10] as DarkAgesMode
             val currentProsperityMode = values[11] as ProsperityMode
             val currentActiveRules = values[12] as Map<String, RuleOption>
-            val currentSubScreen = values[13] as SettingsSubScreen
+            val currentLandscapeRules = values[13] as Map<String, Boolean>
+            val currentSubScreen = values[14] as SettingsSubScreen
 
             val settings = mutableListOf<SettingItem>()
 
@@ -390,7 +393,7 @@ Don't reroll: just remove cards until there's only 10 left."""
 
                 SettingsSubScreen.LANDSCAPES -> {
                     settings.add(SettingItem.SectionHeader("Landscape types"))
-                    addRulesToSettings(settings, CardRules.LANDSCAPE_RULES, currentActiveRules)
+                    addLandscapeRulesToSettings(settings, CardRules.LANDSCAPE_RULES, currentLandscapeRules)
                 }
             }
 
@@ -411,9 +414,28 @@ Don't reroll: just remove cards until there's only 10 left."""
                     title = rule.name,
                     min = currentOption.min,
                     max = currentOption.max,
-                    onRangeChange = { newMin, newMax -> 
+                    onRangeChange = { newMin, newMax ->
                         setRuleOption(rule.id, RuleOption(newMin, newMax))
                     },
+                    imageName = rule.imageName
+                )
+            )
+        }
+    }
+
+    private fun addLandscapeRulesToSettings(
+        settings: MutableList<SettingItem>,
+        rules: List<GenerationRule>,
+        currentLandscapeRules: Map<String, Boolean>
+    ) {
+        rules.forEach { rule ->
+            val isEnabled = currentLandscapeRules[rule.id] ?: true
+
+            settings.add(
+                SettingItem.SwitchSetting(
+                    title = rule.name,
+                    isChecked = isEnabled,
+                    onCheckedChange = { enabled -> setLandscapeRule(rule.id, enabled) },
                     imageName = rule.imageName
                 )
             )
@@ -499,6 +521,12 @@ Don't reroll: just remove cards until there's only 10 left."""
     fun setRuleOption(ruleId: String, option: RuleOption) {
         viewModelScope.launch {
             userPrefsRepository.setRuleOption(ruleId, option)
+        }
+    }
+
+    fun setLandscapeRule(ruleId: String, enabled: Boolean) {
+        viewModelScope.launch {
+            userPrefsRepository.setLandscapeRule(ruleId, enabled)
         }
     }
 

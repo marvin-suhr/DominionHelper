@@ -42,6 +42,7 @@ object UserPreferencesKeys {
     val KINGDOM_SORT_TYPE = stringPreferencesKey("kingdom_sort_type")
 
     val GENERATION_RULES = stringPreferencesKey("generation_rules")
+    val LANDSCAPE_RULES = stringPreferencesKey("landscape_rules")
 }
 
 @Singleton
@@ -251,6 +252,55 @@ class UserPrefsRepository @Inject constructor(
             }
             currentMap[ruleId] = option
             settings[UserPreferencesKeys.GENERATION_RULES] = gson.toJson(currentMap)
+        }
+    }
+
+    // Landscape Rules (stored as Map<String, Boolean> - whether each landscape type is enabled)
+    // Default: all landscape types enabled
+    val landscapeRules: Flow<Map<String, Boolean>> = context.dataStore.data
+        .map { preferences ->
+            val jsonString = preferences[UserPreferencesKeys.LANDSCAPE_RULES] ?: null
+            if (jsonString == null) {
+                // Default: all landscape types enabled
+                mapOf(
+                    "landscape_event" to true,
+                    "landscape_landmark" to true,
+                    "landscape_project" to true,
+                    "landscape_trait" to true,
+                    "landscape_way" to true
+                )
+            } else {
+                try {
+                    val type = object : TypeToken<Map<String, Boolean>>() {}.type
+                    gson.fromJson<Map<String, Boolean>>(jsonString, type) ?: emptyMap()
+                } catch (e: Exception) {
+                    emptyMap()
+                }
+            }
+        }
+
+    suspend fun setLandscapeRule(ruleId: String, enabled: Boolean) {
+        context.dataStore.edit { settings ->
+            val currentJson = settings[UserPreferencesKeys.LANDSCAPE_RULES]
+            val currentMap: MutableMap<String, Boolean> = if (currentJson != null) {
+                try {
+                    val type = object : TypeToken<Map<String, Boolean>>() {}.type
+                    gson.fromJson<Map<String, Boolean>>(currentJson, type)?.toMutableMap() ?: mutableMapOf()
+                } catch (e: Exception) {
+                    mutableMapOf()
+                }
+            } else {
+                // Default: all landscape types enabled
+                mutableMapOf(
+                    "landscape_event" to true,
+                    "landscape_landmark" to true,
+                    "landscape_project" to true,
+                    "landscape_trait" to true,
+                    "landscape_way" to true
+                )
+            }
+            currentMap[ruleId] = enabled
+            settings[UserPreferencesKeys.LANDSCAPE_RULES] = gson.toJson(currentMap)
         }
     }
 }
