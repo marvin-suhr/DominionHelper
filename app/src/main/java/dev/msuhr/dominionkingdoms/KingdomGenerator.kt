@@ -2,13 +2,13 @@ package dev.msuhr.dominionkingdoms
 
 import android.util.Log
 import dev.msuhr.dominionkingdoms.model.*
-import dev.msuhr.dominionkingdoms.model.Set as CardSet
 import dev.msuhr.dominionkingdoms.data.CardDao
 import dev.msuhr.dominionkingdoms.data.ExpansionDao
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.ui.RandomMode
 import dev.msuhr.dominionkingdoms.ui.VetoMode
 import dev.msuhr.dominionkingdoms.ui.KingdomViewModel
+import dev.msuhr.dominionkingdoms.ui.PromoMode
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,533 +26,362 @@ class KingdomGenerator @Inject constructor(
 
     class GenerationException(message: String) : Exception(message)
 
-    /**
-     * Holds the available cards to draw from during generation.
-     */
-    private data class CandidatePool(
+    // Internal representation of a set of cards and their source expansions
+    // TODO Why use data class instead of class fields
+    private data class GenerationContext(
         val portraitPool: MutableSet<Card>,
-        val landscapePool: MutableSet<Card>
-    ) {
-        override fun toString(): String = "${portraitPool.size} portrait cards, ${landscapePool.size} landscape cards"
-    }
+        val landscapePool: MutableSet<Card>,
+        val expansionSource: List<ExpansionWithEditions>? = null,
+        val config: GenerationConfig,
+        var warning: String? = null
+    )
+
+    private data class GenerationConfig(
+        val totalPortraits: Int,
+        val totalLandscapes: Int,
+        val useDifferentLandscapes: Boolean,
+        val randomMode: RandomMode
+    )
 
     suspend fun generateKingdom(): Kingdom {
-        val totalCardsToGenerate = userPrefsRepository.numberOfCardsToGenerate.first()
-        val totalLandscapeCardsToGenerate = userPrefsRepository.landscapeCount.first()
-        val useDifferentLandscapeCategories = userPrefsRepository.landscapeDifferentCategories.first()
-        val pickLandscapesFromAnyOwned = userPrefsRepository.pickLandscapesFromAnyOwned.first()
-        val randomMode = userPrefsRepository.randomMode.first()
+        val config = GenerationConfig(
+            totalPortraits = userPrefsRepository.numberOfCardsToGenerate.first(),
+            totalLandscapes = userPrefsRepository.landscapeCount.first(),
+            useDifferentLandscapes = userPrefsRepository.landscapeDifferentCategories.first(),
+            randomMode = userPrefsRepository.randomMode.first()
+        )
+        
         val activeRulesMap = userPrefsRepository.activeRules.first()
         val landscapeRulesMap = userPrefsRepository.landscapeRules.first()
+        val promoMode = userPrefsRepository.promoMode.first()
 
         val activeRules = activeRulesMap.mapNotNull { (id, option) ->
             CardRules.getRuleById(id)?.copy(option = option)
         }
 
-        // Filter landscape pool based on enabled landscape types
-        val enabledLandscapeTypes = landscapeRulesMap
-            .filter { (_, enabled) -> enabled }
-            .keys
-            .mapNotNull { ruleId ->
-                // Get the rule and check its condition to find the Type
-                CardRules.getRuleById(ruleId)?.condition
-            }
+        // Pre-calculate allowed landscape types
+        val allowedLandscapeTypes = CardRules.LANDSCAPE_RULE_TO_TYPE
+            .filter { (id, _) -> landscapeRulesMap[id] ?: true }
+            .values
+            .toSet()
 
-        return when (randomMode) {
-
-            // Take cards completely randomly from all owned expansions
-            RandomMode.FULL_RANDOM -> {
-                val pool = getCandidatesFullRandom()
-                Log.i("Kingdom Generator", "Starting generation - Full random - pool: $pool")
-                finalizeKingdomGeneration(
-                    totalCardsToGenerate,
-                    totalLandscapeCardsToGenerate,
-                    useDifferentLandscapeCategories,
-                    activeRules,
-                    pool,
-                    enabledLandscapeTypes
-                )
-            }
-
-            // Take equal amounts of cards from random owned expansions
-            RandomMode.EVEN_AMOUNTS -> {
-                val numberOfExpansionsToPick = userPrefsRepository.randomExpansionAmount.first()
-                
-                val ownedExpansions = expansionDao.getOwnedExpansionsWithEditions()  // TODO fail early? ownedExpansions - numberOfExpansionsToPick
-                
-                // Randomly pick the specified number of UNIQUE expansions
-                // TODO fail early? ownedExpansions - numberOfExpansionsToPick
-                val randomExpansions = ownedExpansions.shuffled().take(min(numberOfExpansionsToPick, ownedExpansions.size))
-                
-                val pool = preparePoolWithLandscapeOption(
-                    landscapeFromAnyOwned = pickLandscapesFromAnyOwned,
-                    modeSpecificPoolProvider = { getCandidatesFromExpansionList(randomExpansions) }
-                )
-
-                Log.i("Kingdom Generator", "Starting generation - Even amounts $randomExpansions - pool: $pool")
-
-                finalizeKingdomGeneration(
-                    totalCardsToGenerate,
-                    totalLandscapeCardsToGenerate,
-                    useDifferentLandscapeCategories,
-                    activeRules,
-                    pool,
-                    enabledLandscapeTypes,
-                    fillPortraitsStrategy = { cardList, cardPool, rules ->
-                        fillPortraitsEvenly(totalCardsToGenerate, cardList, cardPool, randomExpansions, rules)
-                    },
-                    expansionSource = randomExpansions
-                )
-            }
-
-            // Take random cards from a random subset of owned expansions
-            RandomMode.LIMITED_RANDOM -> {
-                val numberOfExpansionsToPick = userPrefsRepository.randomExpansionAmount.first()
-
-                val ownedExpansions = expansionDao.getOwnedExpansionsWithEditions()
-                val randomExpansions = ownedExpansions.shuffled().take(min(numberOfExpansionsToPick, ownedExpansions.size))
-
-                val pool = preparePoolWithLandscapeOption(
-                    landscapeFromAnyOwned = pickLandscapesFromAnyOwned,
-                    modeSpecificPoolProvider = { getCandidatesFromExpansionList(randomExpansions) }
-                )
-
-                Log.i("Kingdom Generator", "Starting generation - Limited random $randomExpansions - pool: $pool")
-
-                finalizeKingdomGeneration(
-                    totalCardsToGenerate,
-                    totalLandscapeCardsToGenerate,
-                    useDifferentLandscapeCategories,
-                    activeRules,
-                    pool,
-                    enabledLandscapeTypes,
-                    expansionSource = randomExpansions
-                )
-            }
-        }
-    }
-
-    /**
-     * Shared logic to finalize the kingdom generation after the pool has been prepared.
-     */
-    private suspend fun finalizeKingdomGeneration(
-        totalCardsToGenerate: Int,
-        totalLandscapeCardsToGenerate: Int,
-        useDifferentLandscapeCategories: Boolean,
-        rules: List<GenerationRule>,
-        pool: CandidatePool,
-        enabledLandscapeTypes: List<(Card) -> Boolean> = emptyList(),
-        fillPortraitsStrategy: ((MutableSet<Card>, MutableSet<Card>, List<GenerationRule>) -> Unit)? = null,
-        expansionSource: List<ExpansionWithEditions>? = null
-    ): Kingdom {
-        val cardList = mutableSetOf<Card>()
-        val landscapeList = mutableSetOf<Card>()
-
-        // We don't even theoretically have enough cards to generate the kingdom. Abort
-        if (pool.portraitPool.size < totalCardsToGenerate) {
-            throw GenerationException("Not enough portrait cards owned / selected to meet $totalCardsToGenerate requirement. Only ${pool.portraitPool.size} cards available.")
-        }
-        if (pool.landscapePool.size < totalLandscapeCardsToGenerate) {
-            throw GenerationException("Not enough landscape cards owned / selected to meet $totalLandscapeCardsToGenerate requirement. Only ${pool.landscapePool.size} cards available.")
+        val enabledLandscapeFilter: (Card) -> Boolean = { card ->
+            card.types.any { it in allowedLandscapeTypes }
         }
 
-        Log.d("Kingdom Generator", "${pool.portraitPool.size} portrait and ${pool.landscapePool.size} landscape candidates found (goal: $totalCardsToGenerate / $totalLandscapeCardsToGenerate)")
+        val context = prepareContext(config, enabledLandscapeFilter)
+        Log.i("Kingdom Generator", "Starting generation - Mode: ${config.randomMode} - Pool: ${context.portraitPool.size} portraits, ${context.landscapePool.size} landscapes")
 
-        // 1. Filter landscape pool based on allowed landscape types
-        if (enabledLandscapeTypes.isNotEmpty()) {
-            val beforeFilter = pool.landscapePool.size
-            pool.landscapePool.retainAll { card ->
-                enabledLandscapeTypes.any { condition -> condition(card) }
-            }
-            Log.d("Kingdom Generator", "Filtered landscapes: $beforeFilter -> ${pool.landscapePool.size} (enabled types: ${enabledLandscapeTypes.size})")
-        }
-
-        // 2. Take landscape cards TODO die function ist overengineered
-        fillLandscapePool(totalLandscapeCardsToGenerate, pool.landscapePool, landscapeList, useDifferentLandscapeCategories)
-
-        // 3. Apply portrait rules
-        applyRules(pool.portraitPool, cardList, rules)
-
-        // 4. Fill remaining portrait slots
-        if (fillPortraitsStrategy != null) {
-            fillPortraitsStrategy(cardList, pool.portraitPool, rules)
-        } else {
-            val cardsLeft = totalCardsToGenerate - cardList.size
-            if (cardsLeft > 0) {
-                repeat(cardsLeft) {
-                    if (pool.portraitPool.isNotEmpty()) {
-                        val selected = pool.portraitPool.shuffled().first()
-                        cardList.add(selected)
-                        pool.portraitPool.remove(selected)
-                        prunePoolByLimitRules(pool.portraitPool, cardList, rules)
-                    }
-                }
-            }
-        }
-
-        // 5. Ensure mandatory landscape dependencies (Omen -> Prophecy, Liaison -> Ally)
-        ensureRequiredLandscapes(cardList, landscapeList)
-
-        if (cardList.size < totalCardsToGenerate) {
-            throw GenerationException("Not enough cards in the pool to reach $totalCardsToGenerate cards with the current rules. Only ${cardList.size} cards available.")
-        }
-
-        val expansionNames = if (expansionSource != null) {
-            expansionSource.map { it.name }.distinct()
-        } else {
-            cardList.mapNotNull { it.sets.firstOrNull()?.displayName }.distinct()
-        }
-        val kingdomName = generateKingdomNameFromExpansionsList(expansionNames)
-
-        // TODO Would be cooler to add Prophecy / Ally here. But it sucks since we have to randomize
-        // TODO: Check if it makes sense to just load ids instead of the whole card
-        val generatedKingdom = cardDependencyResolver.addDependentCards(cardList, landscapeList, kingdomName)
+        val generatedKingdom = runGenerationPipeline(context, activeRules, promoMode) // TODO add promoMode to context.config
 
         // Apply sorting before returning
         val sortTypeName = userPrefsRepository.kingdomSortType.first()
+
+        // TODO I don't like that we sort here
         val sortType = try {
             KingdomViewModel.SortType.valueOf(sortTypeName)
         } catch (e: Exception) {
-            KingdomViewModel.SortType.EXPANSION // Maybe always do this
+            KingdomViewModel.SortType.EXPANSION
         }
-        return sortKingdom(generatedKingdom, sortType)
+        return sortKingdom(generatedKingdom, sortType).copy(warningMessage = context.warning)
     }
 
-    private suspend fun preparePoolWithLandscapeOption(
-        landscapeFromAnyOwned: Boolean,
-        modeSpecificPoolProvider: suspend () -> CandidatePool
-    ): CandidatePool {
-        val pool = modeSpecificPoolProvider()  // So far this is always getCandidatesEvenAmounts
-        return if (landscapeFromAnyOwned) {
-            val globalCandidates = getCandidatesFullRandom() // Kinda weird, why not just get landscapes
-            pool.copy(
-                landscapePool = globalCandidates.landscapePool
-            )
+    private suspend fun prepareContext(
+        config: GenerationConfig,
+        landscapeFilter: (Card) -> Boolean
+    ): GenerationContext {
+        val pickLandscapesFromAny = userPrefsRepository.pickLandscapesFromAnyOwned.first()
+        var warning: String? = null
+
+        return when (config.randomMode) {
+            RandomMode.FULL_RANDOM -> {
+                val portraits = cardDao.getEnabledOwnedCards().toMutableSet()
+                val landscapes = cardDao.getEnabledOwnedSupplyLandscapes().filter(landscapeFilter).toMutableSet()
+                GenerationContext(portraits, landscapes, null, config, null)
+            }
+            else -> {
+                val requestedExpAmount = userPrefsRepository.randomExpansionAmount.first()
+                val ownedExpansions = expansionDao.getOwnedExpansionsWithEditions()
+
+                // Not enough expansions to satisfy config. Warn and continue
+                if (ownedExpansions.size < requestedExpAmount) {
+                    warning = "You only own ${ownedExpansions.size} expansions, but $requestedExpAmount were requested. Using all owned expansions."
+                }
+                
+                val selectedExpansions = ownedExpansions.shuffled().take(requestedExpAmount)
+                
+                val editionIds = selectedExpansions.flatMap { it.editions }.filter { it.isOwned }.map { it.id }.toSet()
+                val portraits = mutableSetOf<Card>()
+                val landscapes = mutableSetOf<Card>()
+                
+                for (id in editionIds) {
+                    portraits.addAll(cardDao.getPortraitsByExpansion(id))
+                    if (!pickLandscapesFromAny) {
+                        landscapes.addAll(cardDao.getSupplyLandscapesByExpansion(id).filter(landscapeFilter))
+                    }
+                }
+
+                if (pickLandscapesFromAny) {
+                    landscapes.addAll(cardDao.getEnabledOwnedSupplyLandscapes().filter(landscapeFilter))
+                }
+
+                GenerationContext(portraits, landscapes, selectedExpansions, config, /*editionIds,*/ warning)
+            }
+        }
+    }
+
+    // Shared logic to finalize the kingdom generation after the pool has been prepared
+    private suspend fun runGenerationPipeline(
+        context: GenerationContext,
+        rules: List<GenerationRule>,
+        promoMode: PromoMode
+    ): Kingdom {
+        val portraitList = mutableSetOf<Card>()
+        val landscapeList = mutableSetOf<Card>()
+
+        // 1. Validation
+        // Error and cancel if not enough portrait cards
+        if (context.portraitPool.size < context.config.totalPortraits) {
+            throw GenerationException("Not enough portrait cards available (${context.portraitPool.size}) to meet requirement (${context.config.totalPortraits}).")
+        }
+
+        // Warning and continue if not enough landscape cards
+        if (context.landscapePool.size < context.config.totalLandscapes) {
+            context.warning = "Not enough landscape cards available (${context.landscapePool.size}) to meet requirements (${context.config.totalLandscapes})."
+        }
+
+        // 2. Landscape Phase
+        fillRemainingLandscapes(
+            targetCount = context.config.totalLandscapes,
+            currentList = landscapeList,
+            pool = context.landscapePool,
+            useDifferentCategories = context.config.useDifferentLandscapes
+        )
+
+        // This should only happen due to useDifferentLandscapes
+        if (landscapeList.size < context.config.totalLandscapes && context.warning == null) {
+            context.warning = "Could only find ${landscapeList.size} of ${context.config.totalLandscapes} requested landscapes due to category constraints."
+        }
+
+        // 3. Promo Phase
+        if (promoMode != PromoMode.NEVER) {
+            val promoCards = cardDao.getEnabledCardsByExpansion("PROMO") // TODO how to circumvent this, it sucks
+            if (promoCards.isNotEmpty()) {
+                if (promoMode == PromoMode.ALWAYS_ONE) {
+                    val selected = promoCards.shuffled().first()
+                    portraitList.add(selected)
+                    // Promo cards should NEVER be in the pool at this point
+                    context.portraitPool.remove(selected)
+                } else if (promoMode == PromoMode.POOL) {
+                    context.portraitPool.addAll(promoCards)
+                }
+            }
+        }
+
+        // 4. Portrait Phase
+        val portraitRules = rules.filter { it.target == RuleTarget.PORTRAIT }.toMutableList()
+        applyRules(context.portraitPool, portraitList, portraitRules)
+        
+        if (context.config.randomMode == RandomMode.EVEN_AMOUNTS && context.expansionSource != null) { // TODO doesn't EVEN_AMOUNTS require expansionSource != null?
+            fillPortraitsEvenly(context.config.totalPortraits, portraitList, context.portraitPool, context.expansionSource, portraitRules, context)
         } else {
-            pool
+            fillRemainingPortraits(context.config.totalPortraits, portraitList, context.portraitPool, portraitRules)
         }
+
+        // 5. Final Material Check (Omen -> Prophecy, Liaison -> Ally)
+        ensureRequiredLandscapes(portraitList, landscapeList)
+
+        // 6. Naming
+        val expansionNames = context.expansionSource?.map { it.name }?.distinct() 
+            ?: portraitList.mapNotNull { it.sets.firstOrNull()?.displayName }.distinct()
+        val kingdomName = generateKingdomName(expansionNames)
+
+        return cardDependencyResolver.addDependentCards(portraitList, landscapeList, kingdomName)
     }
 
-    /**
-     * Filters the card pool based on EXCLUDE rules and attempts to satisfy AT_LEAST/EXACTLY rules.
-     */
     private fun applyRules(
-        cardPool: MutableSet<Card>,
-        cardList: MutableSet<Card>,
+        pool: MutableSet<Card>,
+        targetList: MutableSet<Card>,
         rules: List<GenerationRule>
     ) {
-        // 1. Filter out EXCLUDED cards from the pool
+        // Exclude rules first
         val excludedPredicates = rules.filter { it.option.isExclude() }.map { it.condition }
         if (excludedPredicates.isNotEmpty()) {
-            val toRemove = cardPool.filter { card -> excludedPredicates.any { it(card) } }
-            cardPool.removeAll(toRemove.toSet())
-            Log.d("Kingdom Generator", "Excluded ${toRemove.size} cards based on rules.")
+            pool.removeAll { card -> excludedPredicates.any { it(card) } }
         }
 
-        // 2. Identify rules that require certain counts (min > 0)
         val requirementRules = rules.filter { it.option.min > 0 }
-
-        // 3. Identify rules that LIMIT counts (max < MAX_CARDS)
-        val limitRules = rules.filter { it.option.max < RuleOption.MAX_CARDS }
-
-        // 4. Satisfy requirements
         var attempts = 0
-        val maxCardsFromRules = 20 // Safety limit
+        
+        while (attempts < 20) { // TODO can't we loop over unsatisfiedRules.notEmpty()? We throw an Exception if we have no candidates left anyway
 
-        while (attempts < maxCardsFromRules) {
-            // TODO I don't like this. This would be clearer: while (unsatisfiedRules.isNotEmpty())
-            // For every rule, check if any added card already satisfies it
-            val unsatisfiedRules = requirementRules.filter { rule ->
-                val currentCount = cardList.count { rule.condition(it) }
-                currentCount < rule.option.min
-            }
+            // Check if any previously satisfied rules randomly satisfied other rules
+            val unsatisfied = requirementRules.filter { rule -> targetList.count { rule.condition(it) } < rule.option.min }
+            if (unsatisfied.isEmpty()) break
 
-            if (unsatisfiedRules.isEmpty()) break // All rules are satisfied
-
-            // Pick an unsatisfied rule to work on (shuffled to avoid bias)
-            val ruleToSatisfy = unsatisfiedRules.shuffled().first()
-
-            // Filter pool for candidates that satisfy this rule AND don't violate any limit rules
-            val candidates = cardPool.filter { card ->
-                // Must satisfy the current rule
-                if (!ruleToSatisfy.condition(card)) return@filter false
-
-                // Must not violate any existing limits if added
-                limitRules.all { limitRule ->
-                    val currentCount = cardList.count { limitRule.condition(it) }
-                    val maxAllowed = limitRule.option.max
-                    val satisfiesLimit = limitRule.condition(card)
-                    if (satisfiesLimit) currentCount < maxAllowed else true
+            // Work on a random rule to avoid bias
+            val rule = unsatisfied.shuffled().first()
+            val candidates = pool.filter { card -> 
+                rule.condition(card) && rules.all { r -> // TODO Does it make sense to check against ALL rules here?
+                    val count = targetList.count { r.condition(it) }
+                    if (r.condition(card)) count < r.option.max else true // Kinda convuluted
                 }
             }
-            
+
             if (candidates.isEmpty()) {
-                throw GenerationException("Not enough cards to satisfy rule: ${ruleToSatisfy.name} (min ${ruleToSatisfy.option.min}) without violating other constraints.")
+                throw GenerationException("Cannot satisfy rule: ${rule.name} without violating other constraints.")
             }
 
-            // Draw a card RANDOMLY (no prioritization)
             val selected = candidates.shuffled().first()
-
-            cardList.add(selected)
-            cardPool.remove(selected)
-            prunePoolByLimitRules(cardPool, cardList, rules)
+            targetList.add(selected)
+            pool.remove(selected)
             attempts++
-
-            // Check if the chosen card randomly satisfies another rule
-            val otherSatisfied = unsatisfiedRules.filter { it != ruleToSatisfy && it.condition(selected) }
-            if (otherSatisfied.isNotEmpty()) {
-                Log.d("Kingdom Generator", "Added ${selected.name} to satisfy ${ruleToSatisfy.name}. This also fulfills: ${otherSatisfied.joinToString { it.name }}")
-            } else {
-                Log.d("Kingdom Generator", "Added ${selected.name} to satisfy ${ruleToSatisfy.name}.")
-            }
         }
-
-        // 5. Final pass: Remove any cards from pool that would violate limits during the fill phase
-        prunePoolByLimitRules(cardPool, cardList, rules)
+        
+        // Post-rule pool pruning: remove all cards from maxed categories
+        pool.removeAll { card -> 
+            rules.any { r -> r.option.max < RuleOption.MAX_CARDS && targetList.count { r.condition(it) } >= r.option.max && r.condition(card) }
+        }
     }
 
-    // TODO Can we get around running this a lot?
-    private fun prunePoolByLimitRules(
-        cardPool: MutableSet<Card>,
-        cardList: Set<Card>,
-        rules: List<GenerationRule>
+    private fun fillRemainingLandscapes(
+        targetCount: Int,
+        currentList: MutableSet<Card>,
+        pool: MutableSet<Card>,
+        useDifferentCategories: Boolean
     ) {
-        val limitRules = rules.filter { it.option.max < RuleOption.MAX_CARDS }
+        while (currentList.size < targetCount && pool.isNotEmpty()) {
+            val candidates = if (useDifferentCategories) {
+                val activeCats = currentList.flatMap { it.types.intersect(CardRules.LANDSCAPE_TYPES) }.toSet()
+                pool.filter { card -> card.types.intersect(CardRules.LANDSCAPE_TYPES).none { it in activeCats } }
+            } else pool.toList()
 
-        for (rule in limitRules) {
-            val currentCount = cardList.count { rule.condition(it) }
-            val maxAllowed = rule.option.max
-            
-            if (currentCount >= maxAllowed) {
-                val toRemove = cardPool.filter { rule.condition(it) }
-                cardPool.removeAll(toRemove.toSet())
-            }
+            if (candidates.isEmpty()) break
+
+            val selected = candidates.shuffled().first()
+            currentList.add(selected)
+            pool.remove(selected)
         }
     }
 
-    private fun fillLandscapePool(
-        landscapesLeft: Int,
-        landscapePool: MutableSet<Card>,
-        landscapeList: MutableSet<Card>,
-        useDifferentLandscapeCategories: Boolean
-    ) {
-        if (landscapesLeft > 0) {
-            var currentLandscapesLeft = landscapesLeft
-
-            while (currentLandscapesLeft > 0 && landscapePool.isNotEmpty()) {
-                val currentCategories = landscapeList.flatMap { card ->
-                    card.types.intersect(CardRules.LANDSCAPE_TYPES)
-                }.toSet()
-
-                // If useDifferentCategories, filter out any cards from used categories
-                val candidates = if (useDifferentLandscapeCategories) {
-                    landscapePool.filter { card ->
-                        // TODO Just check card.landscape == true here?
-                        val cardLandscapeTypes = card.types.intersect(CardRules.LANDSCAPE_TYPES)
-                        cardLandscapeTypes.isNotEmpty() && cardLandscapeTypes.none { it in currentCategories }
-                    }
-                } else {
-                    landscapePool.toList()
-                }
-
-                if (candidates.isEmpty()) break // TODO there are no candidates but we still need some. Exception here? -> Yes
-                val selected = candidates.shuffled().first() // Take random card
-                Log.d("Kingdom Generator", "Adding landscape card ${selected.name}")
-                landscapeList.add(selected)
-                landscapePool.remove(selected)
-                currentLandscapesLeft--
-            }
-        }
-    }
-
-    /**
-     * Ensures that if certain portraits are present, their mandatory landscape counterparts are added.
-     * This handles Omen -> Prophecy and Liaison -> Ally.
-     */
-    private suspend fun ensureRequiredLandscapes(
-        portraitCards: Set<Card>,
-        landscapeList: MutableSet<Card>
-    ) {
-        // If there are Omens, add one random Prophecy
-        if (portraitCards.any { it.types.contains(Type.OMEN) }) {
-            val selected = cardDao.getRandomEnabledProphecy()
-            if (selected != null) {
-                Log.d("Kingdom Generator", "Omen(s) detected. Adding Prophecy: ${selected.name}")
-                landscapeList.add(selected)
-            } else {
-                Log.w("Kingdom Generator", "Omen(s) detected but no Prophecies available!")
-            }
-        }
-
-        // If there are Liaisons, add one random Ally
-        if (portraitCards.any { it.types.contains(Type.LIAISON) }) {
-            val selected = cardDao.getRandomEnabledAlly()
-
-            if (selected != null) {
-                Log.d("Kingdom Generator", "Liaison(s) detected. Adding Ally: ${selected.name}")
-                landscapeList.add(selected)
-            } else {
-                Log.w("Kingdom Generator", "Liaison(s) detected but no Allies available!")
-            }
-        }
-    }
-
-    private fun generateKingdomNameFromExpansionsList(expansionNames: List<String>): String {
-        return when {
-            expansionNames.isEmpty() -> "Unnamed Kingdom"
-            expansionNames.size == 1 -> expansionNames[0]
-            expansionNames.size == 2 -> "${expansionNames[0]}, ${expansionNames[1]}"
-            else -> "${expansionNames[0]}, ${expansionNames[1]}, +${expansionNames.size - 2}"
-        }
-    }
-
+    // Fill evenly from selected expansions
     private fun fillPortraitsEvenly(
-        totalCardsToGenerate: Int,
+        targetCount: Int,
         cardList: MutableSet<Card>,
-        initialCardPool: MutableSet<Card>,
-        randomExpansions: List<ExpansionWithEditions>,
-        rules: List<GenerationRule>
+        pool: MutableSet<Card>,
+        expansions: List<ExpansionWithEditions>,
+        rules: List<GenerationRule>,
+        context: GenerationContext
     ) {
-        val cardsStillToSelectGlobally = totalCardsToGenerate - cardList.size
-        if (cardsStillToSelectGlobally <= 0) return
+        val exhaustedExpansions = mutableSetOf<String>()
 
-        val targetTotalCardsPerExpansion = (totalCardsToGenerate.toDouble() / randomExpansions.size).roundToInt()
+        // Group pool by expansion once
+        val cardsByExpansion = pool.groupBy { card -> card.sets.first().name }
+        val targetPerExpansion = (targetCount.toDouble() / expansions.size).roundToInt()
 
-        Log.d("Kingdom Generator", "Targeting $targetTotalCardsPerExpansion total cards per expansion for the remaining $cardsStillToSelectGlobally slots.")
+        for (expansion in expansions) {
+            if (cardList.size >= targetCount) break
 
-        for (expansionWithEditions in randomExpansions) {
-            val currentGlobalRemaining = totalCardsToGenerate - cardList.size
-            if (currentGlobalRemaining <= 0) break
+            // Check how many cards from that expansion are selected already
+            val editionIds = expansion.editions.filter { it.isOwned }.map { it.id }
+            val currentInExp = cardList.count { card -> card.sets.any { it.name in editionIds } }
+            // Take the minimum of <expansion cards left> and <total cards left>
+            val needed = min(targetPerExpansion - currentInExp, targetCount - cardList.size)
 
-            val editionIds = expansionWithEditions.editions.filter { it.isOwned }.map { it.id }.toSet()
-            
-            val cardsAlreadySelectedFromThisGroup = cardList.count { card ->
-                card.sets.any { set -> set.name in editionIds }
-            }
-            
-            var cardsNeededFromThisGroup = targetTotalCardsPerExpansion - cardsAlreadySelectedFromThisGroup
-            cardsNeededFromThisGroup = max(0, cardsNeededFromThisGroup)
-            cardsNeededFromThisGroup = min(cardsNeededFromThisGroup, currentGlobalRemaining)
-
-            if (cardsNeededFromThisGroup <= 0) continue
-
-            repeat(cardsNeededFromThisGroup) {
-                if (totalCardsToGenerate - cardList.size <= 0) return@repeat
-                
-                val candidateCardsFromThisGroup = initialCardPool
-                    .filter { card -> card.sets.any { set -> set.name in editionIds } }
-                    .shuffled()
-
-                val selected = candidateCardsFromThisGroup.firstOrNull() ?: return@repeat
+            repeat(needed) {
+                // Get cards of expansions from the map we made earlier, check if card still in pool
+                val candidates = editionIds.flatMap { id -> cardsByExpansion[id] ?: emptyList() }.filter { it in pool }
+                val selected = candidates.shuffled().firstOrNull() ?: run {
+                    // Another card from this expansion was requested, but not available
+                    exhaustedExpansions.add(expansion.name)
+                    return@repeat
+                }
                 cardList.add(selected)
-                initialCardPool.remove(selected)
-                prunePoolByLimitRules(initialCardPool, cardList, rules)
+                pool.remove(selected)
+                // Reactive pruning - remove all cards from maxed categories
+                pool.removeAll { c -> rules.any { r -> r.option.max < RuleOption.MAX_CARDS && cardList.count { r.condition(it) } >= r.option.max && r.condition(c) } }
             }
         }
-    }
 
-    private suspend fun getCandidatesFullRandom(): CandidatePool {
-        val portraitCandidates = cardDao.getEnabledOwnedCards().toMutableSet()
-        val landscapeCandidates = cardDao.getEnabledOwnedSupplyLandscapes().toMutableSet()
-        return CandidatePool(portraitCandidates, landscapeCandidates)
-    }
-
-    private suspend fun getCandidatesFromExpansionList(
-        expansions: List<ExpansionWithEditions>
-    ): CandidatePool {
-        val portraitCandidates = mutableSetOf<Card>()
-        val landscapeCandidates = mutableSetOf<Card>()
-
-        val editionIds = expansions.flatMap { it.editions }.filter { it.isOwned }.map { it.id }
-
-        Log.d("Kingdom Generator", "Getting candidates from editions $editionIds")
-
-        for (editionId in editionIds) {
-            portraitCandidates.addAll(cardDao.getPortraitsByExpansion(editionId))
-            landscapeCandidates.addAll(cardDao.getSupplyLandscapesByExpansion(editionId))
+        // TODO unsure about this. Can't we set warning any other way? I don't like passing the full context
+        if (exhaustedExpansions.isNotEmpty()) {
+            val names = exhaustedExpansions.joinToString(", ")
+            val msg = "Not enough cards to satisfy even distribution for: $names."
+            context.warning = context.warning?.let { "$it\n$msg" } ?: msg
         }
-        return CandidatePool(portraitCandidates, landscapeCandidates)
+
+        // Final fallback fill
+        fillRemainingPortraits(targetCount, cardList, pool, rules)
+    }
+
+    // Fill with random cards
+    private fun fillRemainingPortraits(
+        targetCount: Int,
+        currentList: MutableSet<Card>,
+        pool: MutableSet<Card>,
+        rules: List<GenerationRule> = emptyList()
+    ) {
+        while (currentList.size < targetCount && pool.isNotEmpty()) {
+            val selected = pool.shuffled().first()
+            currentList.add(selected)
+            pool.remove(selected)
+
+            // Reactive pruning - remove all cards from maxed categories
+            if (rules.isNotEmpty()) {
+                pool.removeAll { card ->
+                    rules.any { r -> r.option.max < RuleOption.MAX_CARDS && currentList.count { r.condition(it) } >= r.option.max && r.condition(card) }
+                }
+            }
+        }
+
+        // TODO: error here? When pool is empty
+    }
+
+    // Omen -> Prophecy, Liaison -> Ally
+    private suspend fun ensureRequiredLandscapes(portraits: Set<Card>, landscapes: MutableSet<Card>) {
+        if (portraits.any { it.types.contains(Type.OMEN) }) {
+            val omen = cardDao.getRandomEnabledProphecy()
+            omen?.let { landscapes.add(it) }
+            // TODO Add warning if no prophecy was enabled
+        }
+
+        if (portraits.any { it.types.contains(Type.LIAISON) }) {
+            val ally = cardDao.getRandomEnabledAlly()
+            ally?.let { landscapes.add(it) }
+            // TODO Add warning if no ally was enabled
+        }
+    }
+
+    private fun generateKingdomName(names: List<String>): String = when {
+        names.isEmpty() -> "Unnamed Kingdom"
+        names.size <= 2 -> names.joinToString(", ")
+        else -> "${names[0]}, ${names[1]}, +${names.size - 2}"
     }
 
     private fun sortKingdom(kingdom: Kingdom, sortType: KingdomViewModel.SortType): Kingdom {
-        val sortedRandomCards = sortCardMap(kingdom.randomCards, sortType)
-        val sortedLandscapeCards = sortCardMap(kingdom.landscapeCards, sortType)
-
         return kingdom.copy(
-            randomCards = sortedRandomCards,
-            landscapeCards = sortedLandscapeCards
+            randomCards = sortCardMap(kingdom.randomCards, sortType),
+            landscapeCards = sortCardMap(kingdom.landscapeCards, sortType)
         )
     }
 
-    private fun sortCardMap(
-        cards: LinkedHashMap<Card, Int>,
-        sortType: KingdomViewModel.SortType
-    ): LinkedHashMap<Card, Int> {
+    private fun sortCardMap(cards: LinkedHashMap<Card, Int>, sortType: KingdomViewModel.SortType): LinkedHashMap<Card, Int> {
         if (cards.isEmpty()) return LinkedHashMap()
-
-        val sortedEntries = when (sortType) {
+        val sorted = when (sortType) {
             KingdomViewModel.SortType.EXPANSION -> cards.entries.sortedBy { it.key.sets.first().displayName }
             KingdomViewModel.SortType.ALPHABETICAL -> cards.entries.sortedBy { it.key.name }
             KingdomViewModel.SortType.COST -> cards.entries.sortedBy { it.key.cost ?: Int.MAX_VALUE }
         }
-
-        val sortedCards = LinkedHashMap<Card, Int>()
-        sortedEntries.forEach { sortedCards[it.key] = it.value }
-        return sortedCards
-    }
-    // TODO review this v
-    suspend fun replaceCardInKingdom(
-        cardToRemove: Card,
-        cardsToExclude: Set<Card>
-    ): Card? {
-        val isLandscape = cardToRemove.landscape
-        val newCard: Card? = when (userPrefsRepository.vetoMode.first()) {
-            VetoMode.REROLL_SAME -> {
-                Log.i("KingdomGenerator", "Rerolling from the same expansion.")
-                generateSingleRandomCardFromExpansion(cardToRemove.sets, cardsToExclude, isLandscape)
-            }
-            VetoMode.REROLL_ANY -> {
-                // TODO: This rerolls from any OWNED expansion, but we need to reroll from any SELECTED expansion probably
-                Log.i("KingdomGenerator", "Rerolling from any expansions.")
-                generateSingleRandomCard(cardsToExclude, isLandscape)
-            }
-            // TODO: Veto mode NO_REROLL is checked beforehand. This is kind of messy tho.
-            // In this case, returning null is an error case. Throw Exception here?
-            VetoMode.NO_REROLL -> {
-                Log.i("KingdomGenerator", "Not rerolling.")
-                null
-            }
-        }
-        return newCard
+        return LinkedHashMap<Card, Int>().apply { sorted.forEach { put(it.key, it.value) } }
     }
 
-    suspend fun generateSingleRandomCard(
-        excludeCards: Set<Card> = emptySet(),
-        isLandscape: Boolean
-    ): Card? {
-        val excludedCardIds = excludeCards.map { it.id }.toSet()
-        Log.i("Kingdom Generator", "Generating random card from owned Expansions")
-        return cardDao.getSingleCardFromOwnedExpansionsWithExceptions(excludedCardIds, isLandscape)
-    }
-
-    suspend fun generateSingleRandomCardFromExpansion(
-        sets: List<CardSet>,
-        excludeCards: Set<Card> = emptySet(),
-        isLandscape: Boolean
-    ): Card? {
-        val excludedCardIds = excludeCards.map { it.id }.toSet()
-        val setName1: String? = sets.getOrNull(0)?.name
-        val setName2: String? = sets.getOrNull(1)?.name
-
-        return if (setName1 != null) {
-            val logMessage = "Generating random card from $setName1" +
-                    (if (setName2 != null) " and $setName2" else "")
-            Log.i("Kingdom Generator", logMessage)
-            cardDao.getSingleCardFromExpansionWithExceptions(setName1, setName2, excludedCardIds, isLandscape)
+    suspend fun replaceCardInKingdom(card: Card, exclude: Set<Card>): Card? {
+        val mode = userPrefsRepository.vetoMode.first()
+        if (mode == VetoMode.NO_REROLL) return null
+        return if (mode == VetoMode.REROLL_SAME) {
+            cardDao.getSingleCardFromExpansionWithExceptions(card.sets[0].name, card.sets.getOrNull(1)?.name, exclude.map { it.id }.toSet(), card.landscape)
         } else {
-            // No sets provided (sets list was empty), or set names were null
-            Log.w("Kingdom Generator", "Cannot generate card: No valid sets provided.")
-            null
+            cardDao.getSingleCardFromOwnedExpansionsWithExceptions(exclude.map { it.id }.toSet(), card.landscape)
         }
     }
 }

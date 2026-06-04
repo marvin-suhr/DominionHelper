@@ -103,6 +103,10 @@ class KingdomViewModel @Inject constructor(
     private val _isNewKingdom = MutableStateFlow(false)
     val isNewKingdom: StateFlow<Boolean> = _isNewKingdom.asStateFlow()
 
+    // Grid view toggle for kingdom cards
+    private val _isGridViewEnabled = MutableStateFlow(false)
+    val isGridViewEnabled: StateFlow<Boolean> = _isGridViewEnabled.asStateFlow()
+
     private val _selectedCard = MutableStateFlow<Card?>(null)
     val selectedCard: StateFlow<Card?> = _selectedCard.asStateFlow()
 
@@ -173,6 +177,11 @@ class KingdomViewModel @Inject constructor(
         Log.d("LibraryViewModel", "Cleared selected card")
     }
 
+    fun toggleGridView() {
+        _isGridViewEnabled.value = !_isGridViewEnabled.value
+        Log.d("KingdomViewModel", "Grid view toggled: ${_isGridViewEnabled.value}")
+    }
+
     fun getRandomKingdom() {
         viewModelScope.launch {
             if (expansionDao.getOwnedExpansionsWithEditions().isEmpty()) {
@@ -190,6 +199,11 @@ class KingdomViewModel @Inject constructor(
                 _kingdom.value = generatedKingdom
                 _isNewKingdom.value = true // Mark as new kingdom for UI purposes (vetoing)
                 switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
+
+                // Show warning message if present
+                generatedKingdom.warningMessage?.let { warning ->
+                    triggerError(warning)
+                }
             } catch (e: KingdomGenerator.GenerationException) {
                 Log.e("KingdomViewModel", "Generation failed", e)
                 triggerError(e.message ?: "Could not generate kingdom.")

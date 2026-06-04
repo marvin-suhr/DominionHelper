@@ -18557,7 +18557,7 @@
     "supply": false,
     "landscape": false,
     "types": ["TOKEN"],
-    "image_name": "token_adventured",
+    "image_name": "token_adventures",
     "basic": false,
     "debt": 0,
     "categories": [],
@@ -18603,7 +18603,7 @@
     "special_cost": false
   },
   {
-    "name": "Sun tokens",
+    "name": "Sun Tokens",
     "cost": null,
     "supply": false,
     "landscape": false,

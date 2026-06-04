@@ -261,6 +261,23 @@ fun LibraryScreen(
             )
         }
 
+        LibraryUiState.PROMO_CARDS -> {
+            LibraryCardList(
+                cardList = cardsToShow,
+                sortType = sortType,
+                includeEditionSelection = false,
+                selectedEdition = dev.msuhr.dominionkingdoms.model.OwnedEdition.NONE,
+                onEditionSelected = { _, _ -> },
+                onCardClick = { viewModel.selectCard(it) },
+                onToggleEnable = { viewModel.toggleCardEnabled(it) },
+                onFavorite = { viewModel.toggleCardFavorite(it) },
+                onBan = { viewModel.toggleCardEnabled(it) },
+                listState = cardListState,
+                paddingValues = calculatePadding(innerPadding),
+                onSortTypeSelected = { viewModel.updateSortType(dev.msuhr.dominionkingdoms.model.AppSortType.Library(it)) }
+            )
+        }
+
         // Show detail view of a single card
         LibraryUiState.CARD_DETAIL -> {
             Log.i("LibraryScreen", "View card detail: ${selectedCard?.name}")

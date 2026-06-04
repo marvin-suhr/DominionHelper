@@ -12,7 +12,7 @@ import dev.msuhr.dominionkingdoms.ui.DarkAgesMode
 import dev.msuhr.dominionkingdoms.ui.ProsperityMode
 import dev.msuhr.dominionkingdoms.utils.isPercentChance
 import dev.msuhr.dominionkingdoms.utils.listToMap
-import dev.msuhr.dominionkingdoms.model.Set
+import dev.msuhr.dominionkingdoms.model.Set as CardSet
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,21 +56,70 @@ class CardDependencyResolver @Inject constructor(
 
     private suspend fun getDependentCards(cards: kotlin.collections.Set<Card>): LinkedHashMap<String, Int> {
 
-        // TODO: If a trait is present, choose a random card
+        // Kingdom Signature - these are all the attributes we check for later
+        val namesInKingdom = cards.map { it.name }.toSet()
+        val typesInKingdom = cards.flatMap { it.types }.toSet()
+        val categoriesInKingdom = cards.flatMap { it.categories }.toSet()
+        val setsInKingdom = cards.flatMap { it.sets }.toSet()
 
-        val dependencyRules = CardDependencies().dependencyRules
         val dependentCardNames = mutableSetOf<String>()
 
-        // TODO Efficiency: When a dependencyRule is met, the other ones are still checked.
-        // We should not check further rules when one is found, as this is just a waste of resources.
-        // We can change this by using any().
-        // -> Is this true?
-        dependencyRules.forEach { rule ->
-            cards.forEach { card ->
-                if (rule.condition(card)) {
-                    dependentCardNames.addAll(rule.dependentCardNames)
-                }
-            }
+        // 1. Process Type-based triggers
+        CardDependencies.typeTriggers.forEach { (type, deps) ->
+            if (typesInKingdom.contains(type)) dependentCardNames.addAll(deps)
+        }
+
+        // 2. Process Category-based triggers
+        CardDependencies.categoryTriggers.forEach { (category, deps) ->
+            if (categoriesInKingdom.contains(category)) dependentCardNames.addAll(deps)
+        }
+
+        // 3. Process Name-based triggers
+        CardDependencies.nameTriggers.forEach { (name, deps) ->
+            if (namesInKingdom.contains(name)) dependentCardNames.addAll(deps)
+        }
+
+        // 4. Process Set-based triggers
+        CardDependencies.setTriggers.forEach { (set, deps) ->
+            if (setsInKingdom.contains(set)) dependentCardNames.addAll(deps)
+        }
+
+        // 5. Process List-based triggers (Loot, Spoils, etc.)
+        // TODO why not make nameTriggers and namesInKingdom?
+        if (namesInKingdom.any { it in CardNames.lootProviders }) {
+            dependentCardNames.add(CardNames.LOOT_PILE)
+        }
+
+        if (namesInKingdom.any { it in CardNames.horseCards }) {
+            dependentCardNames.add(CardNames.HORSE)
+        }
+
+        if (namesInKingdom.any { it in listOf(CardNames.BANDIT_CAMP, CardNames.MARAUDER, CardNames.PILLAGE) }) {
+            dependentCardNames.add(CardNames.SPOILS)
+        }
+
+        if (namesInKingdom.any { it in CardNames.CoffersGuildsCards }) {
+            dependentCardNames.add(CardNames.COFFERS_MAT)
+        }
+
+        if (namesInKingdom.any { it in (CardNames.CoffersRenaissanceCards + CardNames.VillagersCards) }) {
+            dependentCardNames.add(CardNames.COFFERS_VILLAGERS_MAT)
+        }
+
+        if (namesInKingdom.any { it in CardNames.AltVPCards }) {
+            dependentCardNames.addAll(listOf(CardNames.VICTORY_TOKEN_MAT, CardNames.VICTORY_TOKENS))
+        }
+
+        if (namesInKingdom.any { it in CardNames.CoinCards }) {
+            dependentCardNames.add(CardNames.COIN_TOKENS)
+        }
+
+        if (namesInKingdom.any { it in CardNames.AdventureTokenCards }) {
+            dependentCardNames.add(CardNames.ADVENTURES_TOKENS)
+        }
+
+        if (namesInKingdom.any { it in CardNames.DebtCards }) {
+            dependentCardNames.add(CardNames.DEBT_TOKENS)
         }
 
         dependentCardNames.addAll(checkProsperityBasicCards(cards))
@@ -83,13 +132,13 @@ class CardDependencyResolver @Inject constructor(
         return dependentCardMap
     }
 
-    private suspend fun checkProsperityBasicCards(randomCards: kotlin.collections.Set<Card>): List<String> {
+    private suspend fun checkProsperityBasicCards(randomCards: Set<Card>): List<String> {
 
         val prosperityCardsToAdd = mutableListOf<String>()
         val prosperityMode = userPrefsRepository.prosperityBasicCardsMode.first()
 
         val prosperityCount = randomCards.count {
-            it.sets.contains(Set.PROSPERITY_1E) || it.sets.contains(Set.PROSPERITY_2E)
+            it.sets.contains(CardSet.PROSPERITY_1E) || it.sets.contains(CardSet.PROSPERITY_2E)
         }
 
         when (prosperityMode) {
@@ -105,7 +154,7 @@ class CardDependencyResolver @Inject constructor(
                     if (isPercentChance(prosperityCount * 10.0)) {
                         Log.i(
                             "KingdomGenerator",
-                            "Adding Platinum and Colony - 10% per card ($prosperityCount)"
+                            "Adding Platinum and Colony - 10% per card ($prosperityCount) triggered"
                         )
                         prosperityCardsToAdd.add("Platinum")
                         prosperityCardsToAdd.add("Colony")
@@ -129,11 +178,11 @@ class CardDependencyResolver @Inject constructor(
         return prosperityCardsToAdd
     }
 
-    private suspend fun getStartingCards(randomCards: kotlin.collections.Set<Card>): Map<String, Int> {
+    private suspend fun getStartingCards(randomCards: Set<Card>): Map<String, Int> {
 
         val cards = mutableMapOf<String, Int>()
         val darkAgesMode = userPrefsRepository.darkAgesStarterCardsMode.first()
-        val darkAgesCount = randomCards.count { it.sets.contains(Set.DARK_AGES) }
+        val darkAgesCount = randomCards.count { it.sets.contains(CardSet.DARK_AGES) }
 
         when (darkAgesMode) {
 
@@ -145,7 +194,7 @@ class CardDependencyResolver @Inject constructor(
             // 10% per Dark Ages card to use Shelters instead of Estates
             DarkAgesMode.TEN_PERCENT_PER_CARD -> {
                 if (isPercentChance(darkAgesCount * 10.0)) {
-                    Log.i("KingdomGenerator", "Adding Shelters - 10% per card ($darkAgesCount)")
+                    Log.i("KingdomGenerator", "Adding Shelters - 10% per card ($darkAgesCount) triggered")
                     cards["Overgrown Estate"] = 1
                     cards["Hovel"] = 1
                     cards["Necropolis"] = 1
@@ -213,381 +262,73 @@ class CardDependencyResolver @Inject constructor(
     }
 }
 
-class CardDependencies {
+object CardDependencies {
 
-    // Data class to represent a dependency rule
-    data class DependencyRule(
-        val condition: (Card) -> Boolean,
-        val dependentCardNames: List<String>
+    val typeTriggers = mapOf(
+        Type.FATE to listOf(CardNames.BOON_PILE, CardNames.WILL_O_WISP),
+        Type.DOOM to listOf(
+            CardNames.HEX_PILE,
+            CardNames.CURSE,
+            CardNames.DELUDED,
+            CardNames.ENVIOUS,
+            CardNames.MISERABLE,
+            CardNames.TWICE_MISERABLE
+        ),
+        Type.LOOTER to listOf(CardNames.RUINS_PILE),
+        Type.RESERVE to listOf(CardNames.TAVERN_MAT),
+        Type.LIAISON to listOf(CardNames.FAVORS_MAT),
+        Type.PROJECT to listOf(CardNames.WOODEN_CUBES),
+        Type.OMEN to listOf(CardNames.SUN_TOKENS)
     )
 
-    val dependencyRules = listOf(
+    val categoryTriggers = mapOf(
+        Category.CURSER to listOf(CardNames.CURSE),
+        Category.TRASHER to listOf(CardNames.TRASH_MAT),
+        Category.TRASH_FOR_BENEFIT to listOf(CardNames.TRASH_MAT),
+        Category.EXILE to listOf(CardNames.EXILE_MAT)
+    )
 
-        // TODO Schwierig: Ferryman, Young Witch, Black Market, Riverboat, Approaching Army, Divine Wind, Inherited, Way of the Mouse
-        // -> Data driven? Store dependencies in db?
+    val nameTriggers = mapOf(
+        CardNames.TOURNAMENT to listOf(CardNames.PRIZE_PILE),
+        CardNames.JOUST to listOf(CardNames.REWARD_PILE),
+        CardNames.BORDER_GUARD to listOf(CardNames.LANTERN, CardNames.HORN),
+        CardNames.FLAG_BEARER to listOf(CardNames.FLAG),
+        CardNames.SWASHBUCKLER to listOf(CardNames.TREASURE_CHEST),
+        CardNames.TREASURER to listOf(CardNames.KEY),
+        CardNames.PAGE to listOf(
+            CardNames.TREASURE_HUNTER,
+            CardNames.WARRIOR,
+            CardNames.HERO,
+            CardNames.CHAMPION
+        ),
+        CardNames.PEASANT to listOf(
+            CardNames.SOLDIER,
+            CardNames.FUGITIVE,
+            CardNames.DISCIPLE,
+            CardNames.TEACHER
+        ),
+        CardNames.EXORCIST to listOf(CardNames.WILL_O_WISP, CardNames.IMP, CardNames.GHOST),
+        CardNames.FOOL to listOf(CardNames.LOST_IN_THE_WOODS),
+        CardNames.NECROMANCER to listOf(
+            CardNames.ZOMBIE_APPRENTICE,
+            CardNames.ZOMBIE_MASON,
+            CardNames.ZOMBIE_SPY
+        ),
+        CardNames.VAMPIRE to listOf(CardNames.BAT),
+        CardNames.SECRET_CAVE to listOf(CardNames.WISH),
+        CardNames.LEPRECHAUN to listOf(CardNames.WISH),
+        CardNames.HERMIT to listOf(CardNames.MADMAN),
+        CardNames.URCHIN to listOf(CardNames.MERCENARY),
+        CardNames.DEVILS_WORKSHOP to listOf(CardNames.IMP),
+        CardNames.TORMENTOR to listOf(CardNames.IMP),
+        CardNames.ISLAND to listOf(CardNames.ISLAND_MAT),
+        CardNames.PIRATE_SHIP to listOf(CardNames.PIRATE_SHIP_MAT),
+        CardNames.NATIVE_VILLAGE to listOf(CardNames.NATIVE_VILLAGE_MAT),
+        CardNames.TRADE_ROUTE to listOf(CardNames.TRADE_ROUTE_MAT),
+        CardNames.EMBARGO to listOf(CardNames.EMBARGO_TOKENS)
+    )
 
-        // If there is a Curser present, add Curse card
-        DependencyRule(
-            condition = { it.categories.contains(Category.CURSER) },
-            dependentCardNames = listOf(CardNames.CURSE)
-        ),
-
-        // If there is an Alchemy card present, add Potion
-        DependencyRule(
-            condition = { it.sets.contains(Set.ALCHEMY) },
-            dependentCardNames = listOf(CardNames.POTION)
-        ),
-
-        // If there is a Fate card present, add all Boons
-        DependencyRule(
-            condition = { it.types.contains(Type.FATE) },
-            dependentCardNames = listOf(CardNames.BOON_PILE, CardNames.WILL_O_WISP)
-        ),
-
-        // If there is a Doom card present, add all Hexes and corresponding States
-        DependencyRule(
-            condition = { it.types.contains(Type.DOOM) },
-            dependentCardNames = listOf(
-                CardNames.HEX_PILE,
-                CardNames.CURSE,
-                CardNames.DELUDED,
-                CardNames.ENVIOUS,
-                CardNames.MISERABLE,
-                CardNames.TWICE_MISERABLE // -> State Pile
-            )
-        ),
-
-        // If there is a card present that rewards loot, add all Loots
-        DependencyRule(
-            condition = { card ->
-                listOf(
-                    CardNames.JEWELLED_EGG,
-                    CardNames.PERIL,
-                    CardNames.SEARCH,
-                    CardNames.FORAY,
-                    CardNames.PICKAXE,
-                    CardNames.WEALTHY_VILLAGE,
-                    CardNames.CUTTHROAT,
-                    CardNames.LOOTING,
-                    CardNames.SACK_OF_LOOT,
-                    CardNames.INVASION,
-                    CardNames.PROSPER,
-                    CardNames.CURSED
-                ).contains(card.name)
-            },
-            dependentCardNames = listOf(CardNames.LOOT_PILE)
-        ),
-
-        // If there is a Looter card present, add Ruins cards
-        DependencyRule(
-            condition = { it.types.contains(Type.LOOTER) },
-            dependentCardNames = listOf(CardNames.RUINS_PILE)
-        ),
-
-        // Tournament -> add Prizes
-        DependencyRule(
-            condition = { it.name == CardNames.TOURNAMENT },
-            dependentCardNames = listOf(CardNames.PRIZE_PILE)
-        ),
-        // Joust -> Add Rewards
-        DependencyRule(
-            condition = { it.name == CardNames.JOUST },
-            dependentCardNames = listOf(CardNames.REWARD_PILE)
-        ),
-
-        // If there is a Bandit Camp, Marauder or Pillage card present, add Spoils cards
-        DependencyRule(
-            condition = { card ->
-                listOf(
-                    CardNames.BANDIT_CAMP, CardNames.MARAUDER, CardNames.PILLAGE
-                ).contains(card.name)
-            },
-            dependentCardNames = listOf(CardNames.SPOILS)
-        ),
-
-        // ARTIFACTS
-        // If there is Border Guard present, add Lantern and Horn
-        DependencyRule(
-            condition = { it.name == CardNames.BORDER_GUARD },
-            dependentCardNames = listOf(CardNames.LANTERN, CardNames.HORN)
-        ),
-        // If there is Flag Bearer present, add Flag
-        DependencyRule(
-            condition = { it.name == CardNames.FLAG_BEARER },
-            dependentCardNames = listOf(CardNames.FLAG)
-        ),
-        // If there is Swashbuckler present, add Treasure Chest
-        DependencyRule(
-            condition = { it.name == CardNames.SWASHBUCKLER },
-            dependentCardNames = listOf(CardNames.TREASURE_CHEST)
-        ),
-        // If there is Treasurer present, add Key
-        DependencyRule(
-            condition = { it.name == CardNames.TREASURER },
-            dependentCardNames = listOf(CardNames.KEY)
-        ),
-
-        // Travellers
-        DependencyRule(
-            condition = { it.name == CardNames.PAGE },
-            dependentCardNames = listOf(
-                CardNames.TREASURE_HUNTER,
-                CardNames.WARRIOR,
-                CardNames.HERO,
-                CardNames.CHAMPION
-            )
-        ),
-        DependencyRule(
-            condition = { it.name == CardNames.PEASANT },
-            dependentCardNames = listOf(
-                CardNames.SOLDIER,
-                CardNames.FUGITIVE,
-                CardNames.DISCIPLE,
-                CardNames.TEACHER
-            )
-        ),
-
-        // Spirits
-        DependencyRule(
-            condition = { it.name == CardNames.EXORCIST },
-            dependentCardNames = listOf(
-                CardNames.WILL_O_WISP,
-                CardNames.IMP,
-                CardNames.GHOST
-            )
-        ),
-
-        // Horse
-        DependencyRule(
-            condition = { card ->
-                listOf(
-                    CardNames.SLEIGH,
-                    CardNames.SUPPLIES,
-                    CardNames.SCRAP,
-                    CardNames.CAVALRY,
-                    CardNames.GROOM,
-                    CardNames.HOSTELRY,
-                    CardNames.LIVERY,
-                    CardNames.PADDOCK,
-                    CardNames.RIDE,
-                    CardNames.BARGAIN,
-                    CardNames.DEMAND,
-                    CardNames.STAMPEDE
-                ).contains(card.name)
-            },
-            dependentCardNames = listOf(CardNames.HORSE)
-        ),
-
-        // Specific card interactions
-        DependencyRule(
-            condition = { it.name == CardNames.FOOL },
-            dependentCardNames = listOf(CardNames.LOST_IN_THE_WOODS)
-        ),
-        DependencyRule(
-            condition = { it.name == CardNames.NECROMANCER },
-            dependentCardNames = listOf(
-                CardNames.ZOMBIE_APPRENTICE,
-                CardNames.ZOMBIE_MASON,
-                CardNames.ZOMBIE_SPY
-            )
-        ),
-        DependencyRule(
-            condition = { it.name == CardNames.VAMPIRE },
-            dependentCardNames = listOf(CardNames.BAT)
-        ),
-        DependencyRule(
-            condition = { it.name == CardNames.SECRET_CAVE || it.name == CardNames.LEPRECHAUN },
-            dependentCardNames = listOf(CardNames.WISH)
-        ),
-        DependencyRule(
-            condition = { it.name == CardNames.HERMIT },
-            dependentCardNames = listOf(CardNames.MADMAN)
-        ),
-        DependencyRule(
-            condition = { it.name == CardNames.URCHIN },
-            dependentCardNames = listOf(CardNames.MERCENARY)
-        ),
-        DependencyRule(
-            condition = { it.name == CardNames.DEVILS_WORKSHOP || it.name == CardNames.TORMENTOR },
-            dependentCardNames = listOf(CardNames.IMP)
-        ),
-
-        //////////
-        // MATS //
-        //////////
-
-        // If there is a trasher present, add Trash Mat
-        DependencyRule(
-            condition = {
-                it.categories.contains(Category.TRASHER) || it.categories.contains(Category.TRASH_FOR_BENEFIT)
-            },
-            dependentCardNames = listOf(CardNames.TRASH_MAT) // Trash card??
-        ),
-
-        // If Island is present, add Island Mat
-        DependencyRule(
-            condition = {
-                it.name == CardNames.ISLAND
-            },
-            dependentCardNames = listOf(CardNames.ISLAND_MAT)
-        ),
-
-        // If Pirate Ship is present, add Pirate Ship Mat
-        DependencyRule(
-            condition = {
-                it.name == CardNames.PIRATE_SHIP
-            },
-            dependentCardNames = listOf(CardNames.PIRATE_SHIP_MAT)
-        ),
-
-        // If Native Village is present, add Native Village Mat
-        DependencyRule(
-            condition = {
-                it.name == CardNames.NATIVE_VILLAGE
-            },
-            dependentCardNames = listOf(CardNames.NATIVE_VILLAGE_MAT)
-        ),
-
-        // If Trade Route is present, add Trade Route Mat
-        DependencyRule(
-            condition = {
-                it.name == CardNames.TRADE_ROUTE
-            },
-            dependentCardNames = listOf(CardNames.TRADE_ROUTE_MAT)
-        ),
-
-        // VP Tokens
-        DependencyRule(
-            condition = {
-                it.categories.contains(Category.TRASHER) || it.categories.contains(Category.TRASH_FOR_BENEFIT)
-            },
-            dependentCardNames = listOf(CardNames.TRASH_MAT)
-        ),
-
-        // If any Reserve card is present, add Tavern Mat
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.RESERVE)
-            },
-            dependentCardNames = listOf(CardNames.TAVERN_MAT)
-        ),
-
-        // If any coffers card from Guilds is present, add Coffers Mat
-        DependencyRule(
-            condition = { card ->
-                listOf(
-                    CardNames.BAKER,
-                    CardNames.BUTCHER,
-                    CardNames.CANDLESTICK_MAKER,
-                    CardNames.FOOTPAD,
-                    CardNames.JOUST, // -> Huge Turnip (lazy)
-                    CardNames.MERCHANT_GUILD,
-                    CardNames.PLAZA
-                ).contains(card.name)
-            },
-            dependentCardNames = listOf(CardNames.COFFERS_MAT)
-        ),
-
-        // TODO ^v if category = ... and sets contains ...
-
-        // If any coffers card from Renaissance or any villagers card is present, add Coffers / Villagers Mat
-        DependencyRule(
-            condition = { card ->
-                listOf(
-                    CardNames.DUCAT,
-                    CardNames.PATRON,
-                    CardNames.SILK_MERCHANT,
-                    CardNames.SPICES,
-                    CardNames.SWASHBUCKLER,
-                    CardNames.VILLAIN,
-                    CardNames.EXPLORATION,
-                    CardNames.GUILDHALL,
-                    CardNames.PAGEANT,
-                    CardNames.ACTING_TROUPE,
-                    CardNames.LACKEYS,
-                    CardNames.RECRUITER,
-                    CardNames.SCULPTOR,
-                    CardNames.ACADEMY
-                ).contains(card.name)
-            },
-            dependentCardNames = listOf(CardNames.COFFERS_VILLAGERS_MAT)
-        ),
-
-        // If any exile card is present, add Exile Mat
-        DependencyRule(
-            condition = {
-                it.categories.contains(Category.EXILE)
-            },
-            dependentCardNames = listOf(CardNames.EXILE_MAT)
-        ),
-
-        // If any Liaison card is present, add Favors Mat
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        ),
-
-        ////////////
-        // TOKENS //
-        ////////////
-        // TODO
-
-        // If any alt VP card is present, add Victory tokens
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        ),
-
-        // Coin tokens
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        ),
-
-        // If Embargo is present, add embargo tokens
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        ),
-
-        // Adventures tokens
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        ),
-
-        // Debt tokens
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        ),
-
-        // Renaissance cubes
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        ),
-
-        // Prophecy tokens
-        DependencyRule(
-            condition = {
-                it.types.contains(Type.LIAISON)
-            },
-            dependentCardNames = listOf(CardNames.FAVORS_MAT)
-        )
+    val setTriggers = mapOf(
+        CardSet.ALCHEMY to listOf(CardNames.POTION)
     )
 }

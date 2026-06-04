@@ -18,7 +18,8 @@ data class Kingdom(
     val uuid: String = UUID.randomUUID().toString(),
     val creationTimeStamp: Long = System.currentTimeMillis(),
     var isFavorite: Boolean = false,
-    var name: String = "Unnamed Kingdom"
+    var name: String = "Unnamed Kingdom",
+    val warningMessage: String? = null // TODO do we need this on the kingdom object?
 ) {
 
     fun hasDependentCards(): Boolean {

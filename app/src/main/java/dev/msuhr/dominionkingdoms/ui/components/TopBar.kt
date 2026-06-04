@@ -1,11 +1,14 @@
 package dev.msuhr.dominionkingdoms.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.outlined.ViewModule
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,10 +38,13 @@ fun TopBar(
     title: String,
     showBackButton: Boolean,
     onBackButtonClicked: () -> Unit,
-    currentScreen: CurrentScreen, // TODO: Needed?
+    currentScreen: CurrentScreen,
     onSortTypeSelected: (AppSortType) -> Unit,
     selectedSortType: AppSortType?,
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    showGridViewToggle: Boolean = false,
+    isGridViewEnabled: Boolean = false,
+    onGridViewToggle: () -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -63,11 +69,24 @@ fun TopBar(
         },
         actions = {
             var expanded by remember { mutableStateOf(false) }
-            IconButton(onClick = { expanded = !expanded }) {
-                Icon(
-                    Icons.AutoMirrored.Filled.Sort,
-                    contentDescription = "Localized description"
-                )
+
+            // Grid view toggle icon (only shown when viewing a kingdom)
+            if (showGridViewToggle) {
+                IconButton(onClick = onGridViewToggle) {
+                    Icon(
+                        if (isGridViewEnabled) Icons.Outlined.ViewModule else Icons.Filled.ViewList,
+                        contentDescription = if (isGridViewEnabled) "Show list view" else "Show grid view"
+                    )
+                }
+            }
+
+            if (currentScreen != CurrentScreen.Settings) {
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Sort,
+                        contentDescription = "Localized description"
+                    )
+                }
             }
 
             SortDropdownMenu(
@@ -77,6 +96,7 @@ fun TopBar(
                 onSortTypeSelected = onSortTypeSelected,
                 currentScreen = currentScreen
             )
+
         },
         scrollBehavior = scrollBehavior
     )

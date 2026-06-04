@@ -13,6 +13,7 @@ import dev.msuhr.dominionkingdoms.ui.RandomMode
 import dev.msuhr.dominionkingdoms.ui.VetoMode
 import dev.msuhr.dominionkingdoms.utils.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.msuhr.dominionkingdoms.ui.PromoMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -38,6 +39,7 @@ object UserPreferencesKeys {
 
     val DARK_AGES_STARTER_CARDS = stringPreferencesKey("dark_ages_starter_preference")
     val PROSPERITY_BASIC_CARDS = stringPreferencesKey("prosperity_basic_preference")
+    val PROMO_MODE = stringPreferencesKey("promo_mode_preference")
 
     val KINGDOM_SORT_TYPE = stringPreferencesKey("kingdom_sort_type")
 
@@ -49,7 +51,7 @@ object UserPreferencesKeys {
 
 @Singleton
 class UserPrefsRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @ApplicationContext private val context: Context, // TODO check what the warning means
     private val gson: Gson
 ) {
 
@@ -217,6 +219,22 @@ class UserPrefsRepository @Inject constructor(
     suspend fun setProsperityBasicCardsMode(newMode: ProsperityMode) {
         context.dataStore.edit { settings ->
             settings[UserPreferencesKeys.PROSPERITY_BASIC_CARDS] = newMode.name
+        }
+    }
+
+    val promoMode: Flow<PromoMode> = context.dataStore.data
+        .map { preferences ->
+            val modeName = preferences[UserPreferencesKeys.PROMO_MODE] ?: Constants.DEFAULT_PROMO_MODE.name
+            try {
+                PromoMode.valueOf(modeName)
+            } catch (e: IllegalArgumentException) {
+                Constants.DEFAULT_PROMO_MODE
+            }
+        }
+
+    suspend fun setPromoMode(newMode: PromoMode) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.PROMO_MODE] = newMode.name
         }
     }
 

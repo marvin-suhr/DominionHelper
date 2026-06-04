@@ -113,6 +113,12 @@ enum class DarkModeSetting(val displayName: String) {
     LIGHT("Light")
 }
 
+enum class PromoMode(val displayName: String) {
+    NEVER("Never add promo cards"),
+    ALWAYS_ONE("Always add a promo card (if owned)"),
+    POOL("Add to pool of available cards")
+}
+
 enum class SettingsSubScreen {
     MAIN,
     CARD_TYPES,
@@ -157,6 +163,7 @@ class SettingsViewModel @Inject constructor(
             userPrefsRepository.pickLandscapesFromAnyOwned,
             userPrefsRepository.darkAgesStarterCardsMode,
             userPrefsRepository.prosperityBasicCardsMode,
+            userPrefsRepository.promoMode,
             userPrefsRepository.activeRules,
             userPrefsRepository.landscapeRules,
             _uiState.map { it.currentSubScreen }.distinctUntilChanged()
@@ -173,9 +180,10 @@ class SettingsViewModel @Inject constructor(
             val currentPickLandscapesAny = values[9] as Boolean
             val currentDarkAgesMode = values[10] as DarkAgesMode
             val currentProsperityMode = values[11] as ProsperityMode
-            val currentActiveRules = values[12] as Map<String, RuleOption>
-            val currentLandscapeRules = values[13] as Map<String, Boolean>
-            val currentSubScreen = values[14] as SettingsSubScreen
+            val currentPromoMode = values[12] as PromoMode
+            val currentActiveRules = values[13] as Map<String, RuleOption>
+            val currentLandscapeRules = values[14] as Map<String, Boolean>
+            val currentSubScreen = values[15] as SettingsSubScreen
 
             val settings = mutableListOf<SettingItem>()
 
@@ -314,14 +322,15 @@ Don't reroll: just remove cards until there's only 10 left."""
                     )
 
                     // Expansions Section
-                    settings.add(SettingItem.SectionHeader("Dark Ages and Prosperity cards"))
+                    settings.add(SettingItem.SectionHeader("Dark Ages, Prosperity, Promo cards"))
                     settings.add(
                         SettingItem.ChoiceSetting(
                             title = "Dark Ages Shelters",
                             selectedOption = currentDarkAgesMode,
                             allOptions = DarkAgesMode.entries.toList(),
                             optionDisplayFormatter = { it.displayName },
-                            onOptionSelected = { setDarkAgesStarterCardsMode(it) }
+                            onOptionSelected = { setDarkAgesStarterCardsMode(it) },
+                            imageName = "set_dark_ages"
                         )
                     )
                     settings.add(
@@ -330,7 +339,18 @@ Don't reroll: just remove cards until there's only 10 left."""
                             selectedOption = currentProsperityMode,
                             allOptions = ProsperityMode.entries.toList(),
                             optionDisplayFormatter = { it.displayName },
-                            onOptionSelected = { setProsperityBasicCardsMode(it) }
+                            onOptionSelected = { setProsperityBasicCardsMode(it) },
+                            imageName = "set_prosperity_2e"
+                        )
+                    )
+                    settings.add(
+                        SettingItem.ChoiceSetting(
+                            title = "Promo Cards",
+                            selectedOption = currentPromoMode,
+                            allOptions = PromoMode.entries.toList(),
+                            optionDisplayFormatter = { it.displayName },
+                            onOptionSelected = { setPromoMode(it) },
+                            imageName = "set_promo"
                         )
                     )
 
@@ -515,6 +535,12 @@ Don't reroll: just remove cards until there's only 10 left."""
     fun setProsperityBasicCardsMode(newMode: ProsperityMode) {
         viewModelScope.launch {
             userPrefsRepository.setProsperityBasicCardsMode(newMode)
+        }
+    }
+
+    fun setPromoMode(newMode: PromoMode) {
+        viewModelScope.launch {
+            userPrefsRepository.setPromoMode(newMode)
         }
     }
 

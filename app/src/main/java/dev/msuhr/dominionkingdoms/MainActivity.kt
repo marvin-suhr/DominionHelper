@@ -170,7 +170,10 @@ class MainActivity : ComponentActivity() {
                                 currentScreen = currentScreen,
                                 onSortTypeSelected = { currentViewModel?.onSortTypeSelected(it) },
                                 selectedSortType = currentViewModel?.currentAppSortType?.collectAsState()?.value,
-                                scrollBehavior = scrollBehavior
+                                scrollBehavior = scrollBehavior,
+                                showGridViewToggle = currentScreen == CurrentScreen.Kingdoms,
+                                isGridViewEnabled = currentKingdomViewModel?.isGridViewEnabled?.collectAsState()?.value ?: false,
+                                onGridViewToggle = { currentKingdomViewModel?.toggleGridView() }
                             )
                         }
                     },

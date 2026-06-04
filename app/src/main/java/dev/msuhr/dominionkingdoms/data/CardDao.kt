@@ -54,7 +54,10 @@ interface CardDao {
     @Query("SELECT * FROM cards WHERE sets LIKE '%' || :id || '%'")
     suspend fun getCardsByExpansion(id: String): List<Card>
 
-    @Query("SELECT * FROM cards WHERE sets LIKE '%' || :id || '%'")
+    @Query("SELECT * FROM cards AS c WHERE sets LIKE '%' || :id || '%' AND c.isEnabled = 1")
+    suspend fun getEnabledCardsByExpansion(id: String): List<Card>
+
+    @Query("SELECT * FROM cards WHERE supply = 1 AND sets LIKE '%' || :id || '%'")
     fun getCardsByExpansionFlow(id: String): Flow<List<Card>>
 
 
@@ -81,32 +84,6 @@ interface CardDao {
         """
     )
     suspend fun getSupplyLandscapesByExpansion(id: String): List<Card>
-
-    @Query(
-        """
-        SELECT * FROM cards AS c
-        WHERE c.isEnabled = 1
-        AND c.landscape = 1
-        AND c.basic = 0
-        AND c.types LIKE '%"PROPHECY"%'
-        ORDER BY RANDOM()
-        LIMIT 1
-        """
-    )
-    suspend fun getRandomProphecy(): Card?
-
-    @Query(
-        """
-        SELECT * FROM cards AS c
-        WHERE c.isEnabled = 1
-        AND c.landscape = 1
-        AND c.basic = 0
-        AND c.types LIKE '%"ALLY"%'
-        ORDER BY RANDOM()
-        LIMIT 1
-        """
-    )
-    suspend fun getRandomAlly(): Card?
 
     @Query("SELECT * FROM cards ORDER BY RANDOM() LIMIT :amount")
     suspend fun getRandomCards(amount: Int): List<Card>

@@ -35,29 +35,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Circle
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,11 +57,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import android.view.HapticFeedbackConstants
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle.Companion.Italic
 import androidx.compose.ui.text.style.TextAlign
@@ -97,6 +97,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import dev.msuhr.dominionkingdoms.utils.getDrawableId
 import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.model.CardDisplayCategory
@@ -105,7 +106,6 @@ import dev.msuhr.dominionkingdoms.model.OwnedEdition
 import dev.msuhr.dominionkingdoms.model.Type
 import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
 import dev.msuhr.dominionkingdoms.utils.Constants
-import dev.msuhr.dominionkingdoms.utils.getDrawableId
 import dev.msuhr.dominionkingdoms.model.Set
 import dev.msuhr.dominionkingdoms.utils.ui.horizontalFadingEdges
 import kotlin.math.cos
@@ -306,75 +306,6 @@ fun EditionSelectionButtons(
     }
 }
 
-// Displays a list of cards
-@Composable
-fun SearchResultsCardList( // TODO RAUS?
-    modifier: Modifier = Modifier,
-    cardList: List<Card>,
-    onCardClick: (Card) -> Unit,
-    onToggleEnable: (Card) -> Unit,
-    listState: LazyListState = rememberLazyListState(),
-    paddingValues: PaddingValues,
-    sortType: LibraryViewModel.SortType = LibraryViewModel.SortType.TYPE,
-    onSortTypeSelected: (LibraryViewModel.SortType) -> Unit = {}
-) {
-    Log.i("CardList", "${cardList.size} cards")
-
-    var showSortDialog by remember { mutableStateOf(false) }
-
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = paddingValues,
-        verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL),
-        state = listState
-    ) {
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "${cardList.size} cards found",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                // Sort button
-                IconButton(onClick = { showSortDialog = true }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Sort,
-                        contentDescription = "Sort results",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        items(cardList) { card ->
-            CardView(
-                card,
-                onCardClick,
-                showIcon = true,
-                onToggleEnable = { onToggleEnable(card) })
-        }
-    }
-
-    if (showSortDialog) {
-        SortTypeDialog(
-            sortType = sortType,
-            onSortTypeSelected = {
-                onSortTypeSelected(it)
-                showSortDialog = false
-            },
-            onDismiss = { showSortDialog = false }
-        )
-    }
-}
-
-
 @OptIn(
     ExperimentalMaterial3Api::class,
     ExperimentalFoundationApi::class,
@@ -392,11 +323,12 @@ fun KingdomCardList(
     onCardDismissed: (Card) -> Unit,
     onFavorite: (Card) -> Unit = { },
     onBan: (Card) -> Unit = { },
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    isGridViewEnabled: Boolean = false
 ) {
     Log.i(
         "KingdomList",
-        "randomCards: ${kingdom.randomCards.size}, basicCards: ${kingdom.basicCards.size}, dependentCards: ${kingdom.dependentCards.size}, startingCards: ${kingdom.startingCards.size}, landscapeCards: ${kingdom.landscapeCards.size}"
+        "randomCards: ${kingdom.randomCards.size}, basicCards: ${kingdom.basicCards.size}, dependentCards: ${kingdom.dependentCards.size}, startingCards: ${kingdom.startingCards.size}, landscapeCards: ${kingdom.landscapeCards.size}, gridView: $isGridViewEnabled"
     )
 
     LazyColumn(
@@ -417,22 +349,36 @@ fun KingdomCardList(
         item {
             CardSpacer("Supply Cards")
         }
-        items(
-            items = kingdom.randomCards.keys.toList(),
-            key = { card -> card.id }
-        ) { card ->
-            if (isDismissEnabled)
-                DismissableCard(card, onCardDismissed, onCardClick, card.isEnabled, onFavorite, onBan, Modifier.animateItem())
-            else {
-                CardView(
-                    card,
-                    onCardClick,
-                    enabled = card.isEnabled,
-                    showIcon = true,
-                    kingdom.randomCards[card]!!,
-                    onFavorite = { onFavorite(card) },
-                    onBan = { onBan(card) }
+
+        if (isGridViewEnabled) {
+            // Grid view: 2 columns x 5 rows
+            item {
+                KingdomCardGridView(
+                    cards = kingdom.randomCards,
+                    onCardClick = onCardClick,
+                    onFavorite = onFavorite,
+                    onBan = onBan
                 )
+            }
+        } else {
+            // List view
+            items(
+                items = kingdom.randomCards.keys.toList(),
+                key = { card -> card.id }
+            ) { card ->
+                if (isDismissEnabled)
+                    DismissableCard(card, onCardDismissed, onCardClick, card.isEnabled, onFavorite, onBan, Modifier.animateItem())
+                else {
+                    CardView(
+                        card,
+                        onCardClick,
+                        enabled = card.isEnabled,
+                        showIcon = true,
+                        kingdom.randomCards[card]!!,
+                        onFavorite = { onFavorite(card) },
+                        onBan = { onBan(card) }
+                    )
+                }
             }
         }
 
@@ -534,6 +480,118 @@ fun PlayerSelectionButtons(selectedPlayers: Int, onPlayerSelected: (Int) -> Unit
             }
         }
         item { Spacer(modifier = Modifier.width(0.dp)) }
+    }
+}
+
+/**
+ * Grid view for kingdom supply cards (2 columns x 5 rows)
+ * Shows card image cutout with name below
+ */
+@Composable
+fun KingdomCardGridView(
+    cards: Map<Card, Int>,
+    onCardClick: (Card) -> Unit,
+    onFavorite: (Card) -> Unit,
+    onBan: (Card) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val cardList = cards.keys.toList()
+    val rows = cardList.chunked(2)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+            //.padding(horizontal = 20.dp), // Height-management trick: more horizontal padding forces items to be narrower, which shrinks their vertical footprint
+        verticalArrangement = Arrangement.spacedBy(8.dp) // Clean vertical separation between the 5 rows
+    ) {
+        rows.forEach { rowCards ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp) // Space between the left and right column items
+            ) {
+                rowCards.forEach { card ->
+                    KingdomGridCardItem(
+                        card = card,
+                        onCardClick = onCardClick,
+                        onFavorite = { onFavorite(card) },
+                        onBan = { onBan(card) },
+                        modifier = Modifier.weight(1f) // Ensures 50/50 horizontal column splitting
+                    )
+                }
+                // If odd number of cards, add empty spacer to keep grid alignment intact
+                if (rowCards.size < 2) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun KingdomGridCardItem(
+    card: Card,
+    onCardClick: (Card) -> Unit,
+    onFavorite: (Card) -> Unit, // TODO?
+    onBan: (Card) -> Unit, // TODO?
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.clickable { onCardClick(card) },
+        shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp), // Reduced padding
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Expansion icon on the left
+            Image(
+                painter = painterResource(id = card.expansionImageId),
+                contentDescription = card.sets.first().displayName,
+                modifier = Modifier
+                    .padding(Constants.PADDING_SMALL) // Small padding around the icon
+                    .size(30.dp),
+                colorFilter = ColorFilter.tint(Color.White)
+            )
+
+            // Card image with dynamic aspect locking
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1.3f) // Forces a strict landscape canvas structure (3:2) which prevents vertical overflow across the 5 rows
+                    .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
+            ) {
+                AsyncImage( //BLUB
+                    model = getDrawableId(LocalContext.current, card.imageName),
+                    contentDescription = stringResource(
+                        id = R.string.card_image_content_description,
+                        card.name
+                    ),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = 2.5f
+                            scaleY = 2.5f
+                        }
+                        .offset {
+                            IntOffset(x = 0, y = 45)
+                        },
+                    //contentScale = ContentScale.Crop // Prevents texture leaking beyond the rounded clip layout boundary
+                )
+            }
+        }
+
+        // Card name
+        Text(
+            text = card.name,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

@@ -40,6 +40,7 @@ fun KingdomsScreen(
     val isDismissEnabled by viewModel.isCardDismissalEnabled.collectAsState()
     val selectedCard by viewModel.selectedCard.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val isGridViewEnabled by viewModel.isGridViewEnabled.collectAsState()
 
     val allKingdoms by viewModel.allKingdoms.collectAsState()
     val hasOwnedExpansions by viewModel.hasOwnedExpansions.collectAsState()
@@ -123,7 +124,8 @@ fun KingdomsScreen(
                 onCardDismissed = { viewModel.onCardDismissed(it) },
                 onFavorite = { viewModel.toggleCardFavorite(it) },
                 onBan = { viewModel.toggleCardEnabled(it) },
-                paddingValues = calculatePadding(innerPadding)
+                paddingValues = calculatePadding(innerPadding),
+                isGridViewEnabled = isGridViewEnabled
             )
         }
 

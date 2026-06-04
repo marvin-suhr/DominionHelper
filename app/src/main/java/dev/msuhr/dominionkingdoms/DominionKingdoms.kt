@@ -39,7 +39,8 @@ class DominionKingdoms : Application() {
 
                 // Load and insert expansions/editions
                 val expansionData = loadExpansionsFromAssets(applicationContext)
-                expansionDao.insertAll(expansionData.expansions, expansionData.editions)
+                expansionDao.insertExpansions(expansionData.expansions)
+                expansionDao.insertEditions(expansionData.editions)
 
                 Log.i("Application", "Database pre-populated.")
             }

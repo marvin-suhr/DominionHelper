@@ -1,69 +1,77 @@
-// TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
+TODO KINGDOM GENERATION: How to display it when we have a warning AND an error? currentl, one is skipped
+For example - not enough portraits = error and cancel; not enough landscapes = warning and continue
 
+ADd explanation to each dependent card
+
+
+// TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
+Think about loading all the cards in RAM for library and search (i think it does so for kingdom generation)
+Think about making a map for drawables: "witch" to R.drawable.witch ...
+rename Base to Dominion?
+Range slider: Remove 0 -> none selected = exclude? + default mode all selected + onclick advanced slider?
+
+
+hints / popup system
+rethink trash / save edit position
+favorite / premade kingdoms tab
+save card counts somewhere? they usually never change -> but they can be disabled hm
+
+Align YEAR bottom right
+
+Cornucopia guilds
+- change name when 2nd edition is selected
+- use first edition icon by default?
+- Check ownership stuff
 
 GetRandomAlly vs getRandomEnabledAlly (/Prophecy)
-KingdomGenerator
-check cornucopia guilds owership stuff
-Think about loading all the cards in RAM for library and search (i think it does so for kingdom generation)
-
-Island, pirate ship, native village are sorted wrong
-tokens dependency
-tokens mats in kingdomlist
+KingdomGenerator - i think fillportraitsevenly can fuck up. if the rules have already added > target cards for an expansion
+for example, require 3 treasures + 3 cost 6 cards. select base and prosperity. generation will sometimes be forced to make 6 prosp cards
 
 TOP PRIO
+- Fix token and mat image placement
+- Also check abstract piles like Loot and Boon
+- Tokens dependency + tokens in kingdom
 - Make landscape rules more chill, or at least give the option + option
 + Currently, when we require 2 landscapes, 1 is fine for the kingdom to pass
 + Check if we can generate more
 + There is no way to force a landscape type?
-Range slider: Remove 0 -> none selected = exclude? + default mode all selected + onclick advanced slider?
++ maybe let landscapes be on / off / force?
 
 MID PRIO
-- tell user what rule is fucking him up
-- Add portrait / landscape counts to expansions
+- Tell user what rule is fucking him up
+- 5-6 players
+- Fehlende Kartenkategorien hinzufügen
 
 LOW PRIO
 - Traits need to apply to a card
-- If only first edition is owned, always display first edition icon
+- If only first edition is owned, always display first edition icon in card list
+- Fix UI for promo cards
+- Island, pirate ship, native village are sorted wrong
 - Text(styling = ...
   - MaterialTheme.typography.headlineLarge/Medium/Small
   - MaterialTheme.typography.titleLarge/Medium/Small
   - MaterialTheme.typography.bodyLarge/Medium/Small
   - MaterialTheme.typography.labelLarge/Medium/Small
+- Search for can rip results in cantrip
 
-Fix UI for promo cards
-add logic to randomize promo cards
-ensure that promo owned is always false
-disable promo cards per default (through json?)
-Remove promo cards from blacklisted cards?
-Remove Promo cards "not owned" text
 
-Custom build kingdom
-- fab -> modal bottom sheet
-    🎲 Generate Random Kingdom: (Subtitle: "Based on your current expansion settings")
-    🛠️ Build Custom Kingdom: (Subtitle: "Hand-pick 10 cards for a specific setup")
-- recommended sets
+AFTER RELEASE?
+- Custom build kingdom
+    - fab -> modal bottom sheet
+        🎲 Generate Random Kingdom: (Subtitle: "Based on your current expansion settings")
+        🛠️ Build Custom Kingdom: (Subtitle: "Hand-pick 10 cards for a specific setup")
+    - recommended sets
+- VP counter
+- Dominion wiki link (dominionstrategy.com)
 
 
 Can't reroll after banning in kingdom view
-5-6 players
-dominion wiki link (dominionstrategy.com)
-VP counter
 veto toast
 prosperity dark ages: set%, % per card
-
-light mode text on buttons(?)
-
-Expansions for random cards is only respected when random mode is set to even amounts
-
-search for can rip results in cantrip
-
-rename Base to Dominion
 
 sort type favorite?
 remove unban "+"? nur in blacklisted cards zeigen
 
-bei expansions: kartenzahl portrait / landscape
-Show Name / year of second edition if owned
 veto vs pick + reroll
 more compact view
 andere sprachen? db prep / migration
@@ -71,52 +79,19 @@ andere sprachen? db prep / migration
 
 landscape detail view no rounded corners
 
-Adding mat to base game shows it as a landscape card
-
-Mats: + icons
-Island / Pirate ship / Native Village (Seaside
-Trade Route (Prosperity 1st)
-Victory token mat (Prosperity 1st)
-Tavern mat (Adventures)
-Coffers mat (Cornucopia & Guilds)
-Coffers / Villagers mat (Renaissance)
-Exile mat (Menagerie)
-Favors mat (Allies)
-
-Tokens:
-Victory tokens
-Coin tokens
-Embargo tokens
-Adventures tokens
-Debt tokens
-Wooden cubes
-Sun tokens
 
 1 message for version code 4
 Warning
 This App Bundle contains native code, and you've not uploaded debug symbols. We recommend you upload a symbol file to make your crashes and ANRs easier to analyze and debug. Learn More
 
 
-Think about making a map for drawables: "witch" to R.drawable.witch ...
-
 return to "home" when tapping nav bar icon while in submenu
-
-fehlende Kartenkategorien hinzufügen
 
 Instead of hiding veto mode, just show as disabled?
 
 disable veto after switching screen when a kingdom has been generated -> set new to false
 
 when selecting a different expansion, the expansion card list state doesnt reset
-
-Split piles:
-Actual split pile cards have supply set to false. This means they will not be randomized
-and they do not have a disable button next to them in the library. In a way, split
-piles are part of the supply, but for all intents and purposes, the "main" card suffices
-
-I think logic says that you can generate a kingdom if at least 1 expansion is owned. check:
- - does promo count? - yes
- - does it take banned cards into account? - no - less than 10 cards is possible
 
 ------------------------------
 
@@ -127,7 +102,7 @@ TODO NEXT:
 LinkedHashSets?
 
 
-    sort kingdom list items by cost like in app
+    sort kingdom list items by cost like in app!! Landscape
 
     Make sure theres only 10 cards per saved kingdom? Or only show 10?
 

@@ -36,24 +36,26 @@ object CardNames {
     const val ENVIOUS = "Envious"
     const val MISERABLE = "Miserable"
     const val TWICE_MISERABLE = "Twice Miserable"
+
     const val ISLAND = "Island"
     const val PIRATE_SHIP = "Pirate Ship"
     const val NATIVE_VILLAGE = "Native Village"
     const val TRADE_ROUTE = "Trade Route"
 
-    // For Loot providers
-    const val JEWELLED_EGG = "Jewelled Egg"
-    const val PERIL = "Peril"
-    const val SEARCH = "Search"
-    const val FORAY = "Foray"
-    const val PICKAXE = "Pickaxe"
-    const val WEALTHY_VILLAGE = "Wealthy Village"
-    const val CUTTHROAT = "Cutthroat"
-    const val LOOTING = "Looting"
-    const val SACK_OF_LOOT = "Sack of Loot"
-    const val INVASION = "Invasion"
-    const val PROSPER = "Prosper"
-    const val CURSED = "Cursed"
+    val lootProviders = listOf(
+        "Jewelled Egg",
+        "Peril",
+        "Search",
+        "Foray",
+        "Pickaxe",
+        "Wealthy Village",
+        "Cutthroat",
+        "Looting",
+        "Sack of Loot",
+        "Invasion",
+        "Prosper",
+        "Cursed"
+    )
 
     // For Spoils providers
     const val BANDIT_CAMP = "Bandit Camp"
@@ -72,35 +74,38 @@ object CardNames {
     const val TREASURER = "Treasurer"
     const val KEY = "Key"
 
-    // Coffers Guilds
-    const val BAKER = "Baker"
-    const val BUTCHER = "Butcher"
-    const val CANDLESTICK_MAKER = "Candlestick Maker"
-    const val FOOTPAD = "Footpad"
-    // const val JOUST = "Joust"
-    const val MERCHANT_GUILD = "Merchant Guild"
-    const val PLAZA = "Plaza"
+    val CoffersGuildsCards = listOf(
+        "Baker",
+        "Butcher",
+        "Candlestick Maker",
+        "Footpad",
+        "Joust",
+        "Merchant Guild",
+        "Plaza"
+    )
 
-    // Coffers Renaissance
-    const val DUCAT = "Ducat"
-    const val PATRON = "Patron"
-    const val SILK_MERCHANT = "Silk Merchant"
-    const val SPICES = "Spices"
-    // const val SWASHBUCKLER= "Swashbuckler"
-    const val VILLAIN = "Villain"
-    const val EXPLORATION = "Exploration"
-    const val GUILDHALL = "Guildhall"
-    const val PAGEANT = "Pageant"
+    val CoffersRenaissanceCards = listOf(
+        "Ducat",
+        "Patron",
+        "Silk Merchant",
+        "Spices",
+        "Swashbuckler",
+        "Villain",
+        "Exploration",
+        "Guildhall",
+        "Pageant"
+    )
 
-    // Villagers
-    const val ACTING_TROUPE = "Acting Troupe"
-    const val LACKEYS = "Lackeys"
-    //const val PATRON = "Patron"
-    const val RECRUITER = "Recruiter"
-    const val SCULPTOR = "Sculptor"
-    //const val SILK_MERCHANT = "Silk Merchant"
-    const val ACADEMY = "Academy"
-    //const val EXPLORATION = "Exploration"
+    val VillagersCards = listOf(
+        "Acting Troupe",
+        "Lackeys",
+        "Patron",
+        "Recruiter",
+        "Sculptor",
+        "Silk Merchant",
+        "Academy",
+        "Exploration"
+    )
 
     // Specific card interactions
     const val FOOL = "Fool"
@@ -139,18 +144,20 @@ object CardNames {
     const val TEACHER = "Teacher"
 
     // Horse
-    const val SLEIGH = "Sleigh"
-    const val SUPPLIES = "Supplies"
-    const val SCRAP = "Scrap"
-    const val CAVALRY = "Cavalry"
-    const val GROOM = "Groom"
-    const val HOSTELRY = "Hostelry"
-    const val LIVERY = "Livery"
-    const val PADDOCK = "Paddock"
-    const val RIDE = "Ride"
-    const val BARGAIN = "Bargain"
-    const val DEMAND = "Demand"
-    const val STAMPEDE = "Stampede"
+    val horseCards = listOf(
+        "Sleigh",
+        "Supplies",
+        "Scrap",
+        "Cavalry",
+        "Groom",
+        "Hostelry",
+        "Livery",
+        "Paddock",
+        "Ride",
+        "Bargain",
+        "Demand",
+        "Stampede"
+    )
     const val HORSE = "Horse"
 
     // Mats
@@ -165,6 +172,107 @@ object CardNames {
     const val COFFERS_VILLAGERS_MAT = "Coffers / Villagers Mat"
     const val EXILE_MAT = "Exile Mat"
     const val FAVORS_MAT = "Favors Mat"
+
+    // Tokens
+    const val VICTORY_TOKENS = "Victory Tokens"
+    val AltVPCards = listOf(
+        "Triumph",
+        "Chariot Race",
+        "Farmers' Market",
+        "Bishop",
+        "Crumbling Castle",
+        "Investment",
+        "Monument",
+        "Ritual",
+        "Sacrifice",
+        "Salt the Earth",
+        "Temple",
+        "Wedding",
+        "Collection",
+        "Emporium",
+        "Groundskeeper",
+        "Plunder",
+        "Wild Hunt",
+        "Conquest",
+        "Goons",
+        "Grand Castle",
+        "Dominate",
+        "Aqueduct",
+        "Arena",
+        "Basilica",
+        "Baths",
+        "Battlefield",
+        "Colonnade",
+        "Defiled Shrine",
+        "Labyrinth",
+        "Mountain Pass",
+        "Tomb"
+    )
+
+    const val COIN_TOKENS = "Coin Tokens"
+    val CoinCards = listOf(
+        "Pirate Ship",
+        "Trade Route",
+        "Sinister Plot",
+        "Garrison"
+    ) + CoffersGuildsCards + CoffersRenaissanceCards + VillagersCards
+
+    const val EMBARGO_TOKENS = "Embargo Tokens"
+    const val EMBARGO = "Embargo"
+
+    const val ADVENTURES_TOKENS = "Adventures Tokens"
+    val AdventureTokenCards = listOf(
+        "Teacher",
+        "Lost Arts",
+        "Seaway",
+        "Pathfinding",
+        "Training",
+        "Ferry",
+        "Plan",
+        "Relic",
+        "Borrow",
+        "Raid",
+        "Bridge Troll",
+        "Ball",
+        "Ranger",
+        "Giant",
+        "Pilgrimage",
+        "Inheritance"
+    )
+
+    const val DEBT_TOKENS = "Debt Tokens"
+    val DebtCards = listOf(
+        "Engineer",
+        "Mountain Shrine",
+        "Triumph",
+        "Daimyo",
+        "Annex",
+        "Artist",
+        "City Quarter",
+        "Continue",
+        "Donate",
+        "Overlord",
+        "Royal Blacksmith",
+        "Wedding",
+        "Fortune",
+        "Change",
+        "Craftsman",
+        "Gold Mine",
+        "Imperial Envoy",
+        "Litter",
+        "Root Cellar",
+        "Capital",
+        "Credit",
+        "Tax",
+        "Harsh Winter",
+        "Mountain Pass"
+    )
+
+    const val WOODEN_CUBES = "Wooden Cubes"
+    // -> Projects
+
+    const val SUN_TOKENS = "Sun Tokens"
+    // -> Omen / Prophecy
 
     // Placeholders for entire piles
     const val BOON_PILE = "Boon pile"

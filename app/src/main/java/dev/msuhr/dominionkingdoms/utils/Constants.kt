@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.msuhr.dominionkingdoms.CurrentScreen
 import dev.msuhr.dominionkingdoms.ui.DarkAgesMode
+import dev.msuhr.dominionkingdoms.ui.PromoMode
 import dev.msuhr.dominionkingdoms.ui.ProsperityMode
 import dev.msuhr.dominionkingdoms.ui.RandomMode
 import dev.msuhr.dominionkingdoms.ui.VetoMode
@@ -43,6 +44,7 @@ object Constants {
     const val DEFAULT_LANDSCAPE_DIFFERENT_CATEGORIES = true
     val DEFAULT_DARK_AGES_STARTER_CARDS = DarkAgesMode.TEN_PERCENT_PER_CARD
     val DEFAULT_PROSPERITY_BASIC_CARDS = ProsperityMode.TEN_PERCENT_PER_CARD
+    val DEFAULT_PROMO_MODE = PromoMode.NEVER
 
     val START_DESTINATION = CurrentScreen.Kingdoms
 
