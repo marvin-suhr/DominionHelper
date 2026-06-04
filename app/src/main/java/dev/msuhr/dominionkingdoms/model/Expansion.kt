@@ -64,7 +64,6 @@ data class ExpansionWithEditions(
 ) {
     val name: String get() = expansion.name
     val id: String get() = expansion.id
-    val conceptImage: String get() = expansion.imageName
     
     // Helpers to maintain compatibility with existing UI logic
     val firstEdition: Edition? get() = editions.find { it.editionNumber == 1 }

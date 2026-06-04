@@ -367,7 +367,7 @@ fun KingdomCardList(
                 key = { card -> card.id }
             ) { card ->
                 if (isDismissEnabled)
-                    DismissableCard(card, onCardDismissed, onCardClick, card.isEnabled, onFavorite, onBan, Modifier.animateItem())
+                    DismissableCard(card, onCardDismissed, onCardClick,  onFavorite, onBan, Modifier.animateItem(), card.isEnabled)
                 else {
                     CardView(
                         card,
@@ -392,7 +392,7 @@ fun KingdomCardList(
                 key = { card -> card.id }
             ) { card ->
                 if (isDismissEnabled)
-                    DismissableCard(card, onCardDismissed, onCardClick, card.isEnabled, onFavorite, onBan, Modifier.animateItem())
+                    DismissableCard(card, onCardDismissed, onCardClick, onFavorite, onBan, Modifier.animateItem(), card.isEnabled)
                 else {
                     CardView(
                         card,
@@ -600,10 +600,10 @@ fun DismissableCard(
     card: Card,
     onCardDismissed: (Card) -> Unit,
     onCardClick: (Card) -> Unit,
-    isEnabled: Boolean = true,
     onFavorite: (Card) -> Unit,
     onBan: (Card) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true
 ) {
     val view = LocalView.current
 

@@ -92,7 +92,6 @@ fun KingdomsScreen(
             KingdomList(
                 kingdomList = allKingdoms,
                 hasOwnedExpansions = hasOwnedExpansions,
-                onGenerateKingdom = { viewModel.getRandomKingdom() },
                 onKingdomClicked = { viewModel.selectKingdom(it) },
                 onDeleteClick = { viewModel.deleteKingdom(it.uuid) },
                 onFavoriteClick = { viewModel.toggleFavorite(it) },

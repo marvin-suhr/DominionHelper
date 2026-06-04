@@ -78,7 +78,6 @@ import kotlin.text.ifEmpty
 fun KingdomList(
     kingdomList: List<Kingdom>,
     hasOwnedExpansions: Boolean,
-    onGenerateKingdom: () -> Unit,
     onKingdomClicked: (Kingdom) -> Unit,
     onDeleteClick: (Kingdom) -> Unit,
     onFavoriteClick: (Kingdom) -> Unit,
@@ -121,25 +120,6 @@ fun KingdomList(
                     onKingdomNameChange = { uuid, newName -> onKingdomNameChange(uuid, newName) },
                     modifier = Modifier.animateItem()
                 )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun GenerateKingdomButton(
-    onGenerateKingdom: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxWidth(), // To center the button within the available width
-        contentAlignment = Alignment.Center
-    ) {
-        Button(
-            onClick = { onGenerateKingdom() },
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Generate a new kingdom ")
             }
         }
     }

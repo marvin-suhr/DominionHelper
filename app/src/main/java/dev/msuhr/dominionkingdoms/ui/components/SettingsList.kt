@@ -50,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,7 +59,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -581,7 +581,7 @@ private fun RadioButton(
 
 @Composable
 fun RangeRuleSettingItem(setting: SettingItem.RangeRuleSetting) {
-    var componentWidth by remember { mutableStateOf(0f) }
+    var componentWidth by remember { mutableFloatStateOf(0f) }
 
     // Helper to get step index from X offset
     fun getStepIndex(x: Float): Int {

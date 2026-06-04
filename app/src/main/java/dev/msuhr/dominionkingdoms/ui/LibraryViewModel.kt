@@ -240,13 +240,6 @@ class LibraryViewModel @Inject constructor(
         Log.d("LibraryViewModel", "Switched UI state to $newState")
     }
 
-    // Update ownership of an expansion
-    fun updateExpansionOwnership(edition: Edition, newIsOwned: Boolean) {
-        viewModelScope.launch {
-            expansionDao.updateEditionOwnership(edition.id, newIsOwned)
-        }
-    }
-
     fun getOwnedEdition(expansion: ExpansionWithEditions): OwnedEdition {
         val editions = expansion.editions
         val firstOwned = editions.find { it.editionNumber == 1 }?.isOwned == true

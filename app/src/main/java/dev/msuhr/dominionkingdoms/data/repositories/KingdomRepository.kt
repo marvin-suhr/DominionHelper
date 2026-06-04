@@ -31,7 +31,7 @@ class KingdomRepository @Inject constructor(
         return kingdomDao.getAllKingdomsFlow().map { kingdomEntities ->
             // Map each KingdomEntity to the Kingdom domain model
             // This requires cardDao for fetching associated cards.
-            kingdomEntities.mapNotNull { entity ->
+            kingdomEntities.map { entity ->
                 // Ensure toDomainModel can handle potential nulls if a card ID is invalid,
                 // or filter out kingdoms that can't be fully constructed.
                 entity.toDomainModel(cardDao)
@@ -41,7 +41,7 @@ class KingdomRepository @Inject constructor(
 
     /**
      * Retrieves a specific kingdom by its database ID.
-     * @param kingdomId The Int ID of the kingdom in the database.
+     * @param uuid The Int ID of the kingdom in the database.
      * @return The Kingdom domain model if found, null otherwise.
      */
     suspend fun getKingdomById(uuid: String): Kingdom? {
@@ -64,13 +64,6 @@ class KingdomRepository @Inject constructor(
             kingdomDao.insertKingdom(kingdomEntity)
         }
     }
-
-    suspend fun saveKingdomEntity(kingdom: KingdomEntity): Long {
-        return withContext(defaultDispatcher) {
-            kingdomDao.insertKingdom(kingdom)
-        }
-    }
-
 
     /**
      * Deletes a kingdom from the database by its ID.

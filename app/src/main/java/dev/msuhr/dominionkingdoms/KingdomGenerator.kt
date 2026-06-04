@@ -12,7 +12,6 @@ import dev.msuhr.dominionkingdoms.ui.PromoMode
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 

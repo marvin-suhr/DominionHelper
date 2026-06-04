@@ -263,7 +263,7 @@ class KingdomViewModel @Inject constructor(
     fun getCardAmounts(cards: LinkedHashMap<Card, Int>, playerCount: Int): LinkedHashMap<Card, Int> {
         require(playerCount in 2..4) { "Invalid player count: $playerCount" }
         val cardAmounts = linkedMapOf<Card, Int>()
-        cards.forEach { card, _ ->
+        cards.forEach { (card, _) ->
             val amount = if (card.types.contains(Type.VICTORY)) {
                 when (playerCount) {
                     2 -> 8
