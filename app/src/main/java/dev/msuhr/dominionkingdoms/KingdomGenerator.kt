@@ -274,8 +274,14 @@ class KingdomGenerator @Inject constructor(
     ) {
         val exhaustedExpansions = mutableSetOf<String>()
 
-        // Group pool by expansion once
-        val cardsByExpansion = pool.groupBy { card -> card.sets.first().name }
+        // Group pool by expansion once. Note: a card can belong to multiple editions!
+        val cardsByExpansion = mutableMapOf<String, MutableList<Card>>()
+        pool.forEach { card ->
+            card.sets.forEach { set ->
+                cardsByExpansion.getOrPut(set.name) { mutableListOf() }.add(card)
+            }
+        }
+
         val targetPerExpansion = (targetCount.toDouble() / expansions.size).roundToInt()
 
         for (expansion in expansions) {
@@ -289,7 +295,10 @@ class KingdomGenerator @Inject constructor(
 
             repeat(needed) {
                 // Get cards of expansions from the map we made earlier, check if card still in pool
-                val candidates = editionIds.flatMap { id -> cardsByExpansion[id] ?: emptyList() }.filter { it in pool }
+                val candidates = editionIds.flatMap { id -> cardsByExpansion[id] ?: emptyList() }
+                    .filter { it in pool }
+                    .distinct()
+
                 val selected = candidates.shuffled().firstOrNull() ?: run {
                     // Another card from this expansion was requested, but not available
                     exhaustedExpansions.add(expansion.name)

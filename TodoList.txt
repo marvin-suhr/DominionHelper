@@ -1,38 +1,30 @@
 TODO KINGDOM GENERATION: How to display it when we have a warning AND an error? currentl, one is skipped
 For example - not enough portraits = error and cancel; not enough landscapes = warning and continue
 
-ADd explanation to each dependent card
+ADd explanation to each dependent card (dependency)
 
-show bunte borders option in kingdomlist
+SPLIT PILES NICHT DRIN ALARM - wait das war schon so oder? Might make sense to add them to be able to plan / understand the kingdom
 
-SPLIT PILES NICHT DRIN ALARM
-
-
-// TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
-Think about loading all the cards in RAM for library and search (i think it does so for kingdom generation)
-Think about making a map for drawables: "witch" to R.drawable.witch ...
-rename Base to Dominion?
-Range slider: Remove 0 -> none selected = exclude? + default mode all selected + onclick advanced slider?
+shouldnt be able to ban split cards or leveled up cards separately
 
 
-hints / popup system
-rethink trash / save edit position
-favorite / premade kingdoms tab
-save card counts somewhere? they usually never change -> but they can be disabled hm
+MAKE POTION UNDISABLEABLE + money + vp cards
 
-Align YEAR bottom right
 
 Cornucopia guilds
 - change name when 2nd edition is selected
 - use first edition icon by default?
 - Check ownership stuff
 
-GetRandomAlly vs getRandomEnabledAlly (/Prophecy)
+
 KingdomGenerator - i think fillportraitsevenly can fuck up. if the rules have already added > target cards for an expansion
 for example, require 3 treasures + 3 cost 6 cards. select base and prosperity. generation will sometimes be forced to make 6 prosp cards
+idk iif this can and should be fixed?
 
 TOP PRIO
-- Fix token and mat image placement
+- Even amounts seemed to be bugged when lots of cards are disabled?? i think when cards needed > cards enabled, the whole expansion is just skipped
+-> This ONLY happens if the second edition is owned and those cards are limites
+- Fix mat image placement
 - Also check abstract piles like Loot and Boon
 - Tokens dependency + tokens in kingdom
 - Make landscape rules more chill, or at least give the option + option
@@ -40,6 +32,7 @@ TOP PRIO
 + Check if we can generate more
 + There is no way to force a landscape type?
 + maybe let landscapes be on / off / force?
+- rethink trash / save edit position
 
 MID PRIO
 - Tell user what rule is fucking him up
@@ -58,8 +51,9 @@ LOW PRIO
   - MaterialTheme.typography.labelLarge/Medium/Small
 - Search for can rip results in cantrip
 
-
-AFTER RELEASE?
+LATER
+hints / popup system
+favorite / premade kingdoms tab
 - Custom build kingdom
     - fab -> modal bottom sheet
         🎲 Generate Random Kingdom: (Subtitle: "Based on your current expansion settings")
@@ -67,6 +61,21 @@ AFTER RELEASE?
     - recommended sets
 - VP counter
 - Dominion wiki link (dominionstrategy.com)
+
+
+
+OPTIONAL / IDK
+// TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
+Think about loading all the cards in RAM for library and search (i think it does so for kingdom generation)
+Think about making a map for drawables: "witch" to R.drawable.witch ...
+rename Base to Dominion?
+Range slider: Remove 0 -> none selected = exclude? + default mode all selected + onclick advanced slider?
+show bunte borders option in kingdomlist
+Align YEAR bottom right
+save card counts somewhere? they usually never change -> but they can be disabled hm
+
+---
+
 
 
 Can't reroll after banning in kingdom view

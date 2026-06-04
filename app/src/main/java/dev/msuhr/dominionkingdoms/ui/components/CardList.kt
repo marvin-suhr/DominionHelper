@@ -884,7 +884,15 @@ fun CardImage(card: Card) {
                             scaleX = 1.25f
                             scaleY = 1.25f
                         }
-                    } else {
+                    } else if (card.types.contains(Type.MAT)) {
+                        scaleX = 1.4f
+                        scaleY = 1.4f
+                    } else if (card.types.contains(Type.TOKEN)) {
+                        scaleX = 1.9f
+                        scaleY = 1.9f
+                    }
+
+                    else {
                         scaleX = if (card.landscape) 2.1f else 2.5f
                         scaleY = if (card.landscape) 2.1f else 2.5f
                     }
@@ -900,6 +908,7 @@ fun CardImage(card: Card) {
                                     && !card.types.contains(Type.SHELTER)
                                     && !card.types.contains(Type.HEIRLOOM) -> 26
 
+                            card.types.contains(Type.TOKEN) -> 0
                             else -> 31
                         }
                     )

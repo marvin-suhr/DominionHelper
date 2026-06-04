@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,7 +36,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,13 +49,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.model.Type
+import dev.msuhr.dominionkingdoms.utils.Constants
 import dev.msuhr.dominionkingdoms.utils.getDrawableId
 import dev.msuhr.dominionkingdoms.utils.ui.horizontalFadingEdges
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -132,6 +138,9 @@ fun CardDetail(
 ) {
     val drawableId = getDrawableId(LocalContext.current, card.imageName)
 
+    // Dynamically track the loaded asset's aspect ratio
+    var imageAspectRatio by remember { mutableFloatStateOf(1f) }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -139,22 +148,33 @@ fun CardDetail(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(30f), // TODO is there another way other than weight?
+                .weight(1f), // Keeps the layout clean and adaptable
             contentAlignment = Alignment.Center
         ) {
             AsyncImage(
                 model = drawableId,
                 contentDescription = "Card Image",
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable {
-                        onClick()
+                contentScale = ContentScale.Fit,
+                onState = { state ->
+                    if (state is AsyncImagePainter.State.Success) {
+                        val size = state.painter.intrinsicSize
+                        if (size.width > 0 && size.height > 0) {
+                            imageAspectRatio = size.width / size.height
+                        }
                     }
+                },
+                modifier = Modifier
+                    .padding(Constants.PADDING_SMALL)
+                    .aspectRatio(
+                        ratio = imageAspectRatio,
+                        matchHeightConstraintsFirst = imageAspectRatio < 1f
+                    )
+                    .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
+                    .clickable { onClick() }
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(16.dp))
 
         val interceptor = rememberHorizontalScrollInterception()
 
@@ -168,7 +188,6 @@ fun CardDetail(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
             // This the only way I can get it to look the way I want
             item { Spacer(modifier = Modifier.width(0.dp)) }
             items(card.categories) { category ->
@@ -177,13 +196,14 @@ fun CardDetail(
             item { Spacer(modifier = Modifier.width(0.dp)) }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Second Row: (Un)favorite and (Un)ban buttons
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -220,38 +240,40 @@ fun CardDetail(
                     }
                 }
 
-                // Ban toggle
-                if (!card.isEnabled) {
-                    Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { onBan(card) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,//Color(0xFFE57373), // TODO: Light mode colors
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer//Color(0xFF121212)
-                        )
-                    ) {
-                        Icon(Icons.Filled.Block, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Unban", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                } else {
-                    OutlinedButton(
-                        modifier = Modifier.weight(1f),
-                        onClick = { onBan(card) },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
-                        ),
-                        border = BorderStroke(1.dp, Color(0xFF424242))
-                    ) {
-                        Icon(Icons.Outlined.Block, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Ban", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // Can't ban basic cards
+                if (!card.basic) {
+
+                    // Ban toggle
+                    if (!card.isEnabled) {
+                        Button(
+                            modifier = Modifier.weight(1f),
+                            onClick = { onBan(card) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,//Color(0xFFE57373), // TODO: Light mode colors
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer//Color(0xFF121212)
+                            )
+                        ) {
+                            Icon(Icons.Filled.Block, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Unban", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    } else {
+                        OutlinedButton(
+                            modifier = Modifier.weight(1f),
+                            onClick = { onBan(card) },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
+                            ),
+                            border = BorderStroke(1.dp, Color(0xFF424242))
+                        ) {
+                            Icon(Icons.Outlined.Block, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Ban", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
                     }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.weight(1f))
     }
 }
 
