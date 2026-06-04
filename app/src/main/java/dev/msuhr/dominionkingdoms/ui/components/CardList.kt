@@ -57,8 +57,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import android.view.HapticFeedbackConstants
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.border
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -542,56 +544,83 @@ fun KingdomGridCardItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp), // Reduced padding
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(Constants.PADDING_SMALL),
+            horizontalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL),
+            verticalAlignment = Alignment.CenterVertically // Centers both columns
         ) {
-            // Expansion icon on the left
-            Image(
-                painter = painterResource(id = card.expansionImageId),
-                contentDescription = card.sets.first().displayName,
+            // Left Column: Expansion Icon + Price Badge
+            Column(
                 modifier = Modifier
-                    .padding(Constants.PADDING_SMALL) // Small padding around the icon
-                    .size(30.dp),
-                colorFilter = ColorFilter.tint(Color.White)
-            )
-
-            // Card image with dynamic aspect locking
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .aspectRatio(1.3f) // Forces a strict landscape canvas structure (3:2) which prevents vertical overflow across the 5 rows
-                    .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
+                    .width(44.dp)
+                    .align(Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL)
             ) {
-                AsyncImage( //BLUB
-                    model = getDrawableId(LocalContext.current, card.imageName),
-                    contentDescription = stringResource(
-                        id = R.string.card_image_content_description,
-                        card.name
-                    ),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            scaleX = 2.5f
-                            scaleY = 2.5f
-                        }
-                        .offset {
-                            IntOffset(x = 0, y = 45)
-                        },
-                    //contentScale = ContentScale.Crop // Prevents texture leaking beyond the rounded clip layout boundary
+                // Expansion icon
+                Image(
+                    painter = painterResource(id = card.expansionImageId),
+                    contentDescription = card.sets.first().displayName,
+                    modifier = Modifier.size(30.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )
+
+                Spacer(Modifier.height(Constants.PADDING_SMALL))
+
+                // Price Indicator
+                NumberCircle(card.cost.toString())
+            }
+
+            // Card image with text on it
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1.3f)
+                        .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
+                        .border(
+                            border = BorderStroke(
+                                2.5.dp,
+                                MaterialTheme.colorScheme.outlineVariant
+                            ),
+                            shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+                        )
+                ) {
+                    AsyncImage(
+                        model = getDrawableId(LocalContext.current, card.imageName),
+                        contentDescription = stringResource(
+                            id = R.string.card_image_content_description,
+                            card.name
+                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                scaleX = 2.5f
+                                scaleY = 2.5f
+                            }
+                            .offset {
+                                IntOffset(x = 0, y = 45)
+                            }
+                    )
+
+                    // Card name
+                    Text(
+                        text = card.name,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .background(Color.Black.copy(alpha = 0.65f))
+                            .padding(vertical = Constants.PADDING_MINI)
+                    )
+                }
             }
         }
-
-        // Card name
-        Text(
-            text = card.name,
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 

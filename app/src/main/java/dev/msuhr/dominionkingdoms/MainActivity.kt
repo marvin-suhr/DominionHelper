@@ -24,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.ui.text.font.FontWeight
@@ -32,8 +33,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.ui.theme.DominionKingdomsTheme
 import dev.msuhr.dominionkingdoms.ui.theme.ThemeColorProvider
@@ -44,6 +48,7 @@ import dev.msuhr.dominionkingdoms.ui.ScreenViewModel
 import dev.msuhr.dominionkingdoms.ui.KingdomUiState
 import dev.msuhr.dominionkingdoms.ui.components.TopBar
 import dagger.hilt.android.AndroidEntryPoint
+import dev.msuhr.dominionkingdoms.utils.Constants
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -182,13 +187,15 @@ class MainActivity : ComponentActivity() {
                         if (currentScreen == CurrentScreen.Kingdoms) {
                             val kingdomUiState by currentKingdomViewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
                             if (kingdomUiState == KingdomUiState.KINGDOM_LIST) {
-                                FloatingActionButton(
+                                ExtendedFloatingActionButton(
                                     onClick = { currentKingdomViewModel?.getRandomKingdom() },
                                 ) {
                                     Icon(
                                         Icons.Filled.Add,
-                                        contentDescription = "FAB to generate a new kingdom"
+                                        contentDescription = "FAB to generate a new kingdom",
+                                        modifier = Modifier.padding(end = Constants.PADDING_SMALL)
                                     )
+                                    Text("Generate Kingdom")
                                 }
                             }
                         }

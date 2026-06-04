@@ -3,6 +3,10 @@ For example - not enough portraits = error and cancel; not enough landscapes = w
 
 ADd explanation to each dependent card
 
+show bunte borders option in kingdomlist
+
+SPLIT PILES NICHT DRIN ALARM
+
 
 // TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
 Think about loading all the cards in RAM for library and search (i think it does so for kingdom generation)

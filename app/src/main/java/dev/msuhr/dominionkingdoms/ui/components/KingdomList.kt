@@ -1,7 +1,9 @@
 package dev.msuhr.dominionkingdoms.ui.components
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -30,10 +32,8 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Casino
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
@@ -56,7 +57,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -66,7 +66,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.model.Kingdom
 import dev.msuhr.dominionkingdoms.utils.Constants
@@ -88,14 +87,9 @@ fun KingdomList(
     LazyColumn(
         contentPadding = paddingValues,
         state = listState,
-        verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL),
+        verticalArrangement = Arrangement.spacedBy(Constants.PADDING_MEDIUM),
         modifier = Modifier.fillMaxSize()
     ) {
-
-        item {
-            //GenerateKingdomButton(onGenerateKingdom)
-            Spacer(Modifier) // This forces the list to stay on top
-        }
 
         if (kingdomList.isEmpty()) {
             item {
@@ -189,7 +183,7 @@ fun KingdomCard(
     val cardsToDisplay = kingdom.randomCards.entries.take(10).toList()
     val numColumns = 5
 
-    if (cardsToDisplay.isEmpty()) return
+    if (cardsToDisplay.isEmpty()) return // TODO throw error
 
     Card(
         modifier = modifier
@@ -200,9 +194,11 @@ fun KingdomCard(
             //}
         }
     ) {
-        Column {
+        Column (
+            verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL),
+            modifier = Modifier.padding(Constants.PADDING_SMALL)
+        ) {
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 EditableKingdomName(
@@ -216,31 +212,22 @@ fun KingdomCard(
 
             cardsToDisplay.chunked(numColumns).forEach { rowItems ->
                 Row(
+                    horizontalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp),
+                        .height(64.dp),
                 ) {
                     rowItems.forEach { (card, _) ->
                         Box(
                             modifier = Modifier.weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
-                            CardImage2(card = card)
+                            CardImageKingdomList(card = card)
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun FavoriteButton(onFavoriteClick: () -> Unit, isFavorite: Boolean) {
-    IconButton(onClick = onFavoriteClick) {
-        Icon(
-            imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
-            contentDescription = "Favorite kingdom"
-        )
     }
 }
 
@@ -359,22 +346,36 @@ fun EditableKingdomName(
 }
 
 @Composable
-fun CardImage2(card: Card) {
+fun CardImageKingdomList(card: Card) {
 
     val context = LocalContext.current
     val drawableId = getDrawableId(context, card.imageName)
 
+    // 1. Fetch the type colors list from your card entity
+    val typeColors = card.getColorByTypes()
+
+    // 2. Build a dynamic Brush depending on the count of types
+    val borderBrush = remember(typeColors) {
+        if (typeColors.size == 1) {
+            SolidColor(typeColors.first())
+        } else {
+            // For multi-type cards, create a premium linear gradient running from top-left to bottom-right
+            Brush.linearGradient(colors = typeColors)
+        }
+    }
+
     Box(
         modifier = Modifier
-            .padding(Constants.PADDING_SMALL)
+            .border(
+                //border = BorderStroke(1.5.dp, borderBrush), // Colored variant. too loud
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+            )
             .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
     ) {
         AsyncImage(
             model = drawableId,
-            contentDescription = stringResource(
-                id = R.string.card_image_content_description,
-                card.name,
-            ),
+            contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
@@ -393,26 +394,36 @@ fun CardImage2(card: Card) {
 }
 
 @Composable
+fun FavoriteButton(onFavoriteClick: () -> Unit, isFavorite: Boolean) {
+    Icon(
+        imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
+        contentDescription = "Favorite kingdom",
+        modifier = Modifier
+            .clip(CircleShape) // Caps the touch ripple to a clean circle
+            .clickable { onFavoriteClick() }
+            .padding(4.dp)
+    )
+}
+
+@Composable
 fun DeleteButton(onDeleteClick: () -> Unit, isEditing: Boolean, commitNameChange: () -> Unit) {
-
     if (isEditing) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-
-            IconButton(onClick = commitNameChange) {
-                Icon(
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = "Done editing name"
-                )
-            }
-        }
-
+        Icon(
+            imageVector = Icons.Filled.Check,
+            contentDescription = "Done editing name",
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { commitNameChange() }
+                .padding(4.dp)
+        )
     } else {
-        IconButton(onClick = onDeleteClick) {
-            Icon(
-                imageVector = Icons.Outlined.Delete,
-                contentDescription = "Delete kingdom"
-            )
-        }
+        Icon(
+            imageVector = Icons.Outlined.Delete,
+            contentDescription = "Delete kingdom",
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { onDeleteClick() }
+                .padding(4.dp)
+        )
     }
-
 }
