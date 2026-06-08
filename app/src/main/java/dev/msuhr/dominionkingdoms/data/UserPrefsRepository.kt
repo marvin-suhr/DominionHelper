@@ -47,6 +47,8 @@ object UserPreferencesKeys {
     val LANDSCAPE_RULES = stringPreferencesKey("landscape_rules")
 
     val SHOW_DATABASE_RESET_DIALOG = booleanPreferencesKey("show_database_reset_dialog")
+
+    val KINGDOM_GRID_VIEW = booleanPreferencesKey("kingdom_grid_view")
 }
 
 @Singleton
@@ -74,7 +76,7 @@ class UserPrefsRepository @Inject constructor(
     // Use system theme: true = use system colors, false = use custom app colors
     val useSystemTheme: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferencesKeys.USE_SYSTEM_THEME] ?: false // Default to false
+            preferences[UserPreferencesKeys.USE_SYSTEM_THEME] ?: true // Default to true
         }
 
     suspend fun setUseSystemTheme(useSystem: Boolean) {
@@ -132,7 +134,7 @@ class UserPrefsRepository @Inject constructor(
     // Allow vetoing
     val allowVetoing: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferencesKeys.ALLOW_VETOING] ?: true // Default to true
+            preferences[UserPreferencesKeys.ALLOW_VETOING] ?: false // Default to false
         }
 
     suspend fun setAllowVetoing(allow: Boolean) {
@@ -179,7 +181,7 @@ class UserPrefsRepository @Inject constructor(
 
     val pickLandscapesFromAnyOwned: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferencesKeys.PICK_LANDSCAPES_FROM_ANY_OWNED] ?: false
+            preferences[UserPreferencesKeys.PICK_LANDSCAPES_FROM_ANY_OWNED] ?: true
         }
 
     suspend fun setPickLandscapesFromAnyOwned(pickAny: Boolean) {
@@ -246,6 +248,18 @@ class UserPrefsRepository @Inject constructor(
     suspend fun setKingdomSortType(newSortType: String) {
         context.dataStore.edit { settings ->
             settings[UserPreferencesKeys.KINGDOM_SORT_TYPE] = newSortType
+        }
+    }
+
+    // Kingdom grid view preference
+    val kingdomGridView: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.KINGDOM_GRID_VIEW] ?: true // Default to grid view
+        }
+
+    suspend fun setKingdomGridView(enabled: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.KINGDOM_GRID_VIEW] = enabled
         }
     }
 
@@ -321,6 +335,13 @@ class UserPrefsRepository @Inject constructor(
             }
             currentMap[ruleId] = enabled
             settings[UserPreferencesKeys.LANDSCAPE_RULES] = gson.toJson(currentMap)
+        }
+    }
+
+    suspend fun resetGenerationRules() {
+        context.dataStore.edit { settings ->
+            settings.remove(UserPreferencesKeys.GENERATION_RULES)
+            settings.remove(UserPreferencesKeys.LANDSCAPE_RULES)
         }
     }
 

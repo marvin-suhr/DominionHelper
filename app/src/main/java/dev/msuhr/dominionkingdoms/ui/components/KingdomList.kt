@@ -29,7 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Casino
+import androidx.compose.material.icons.outlined.Castle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
@@ -129,7 +129,7 @@ fun EmptyKingdomsListMessage(hasOwnedExpansions: Boolean) {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Outlined.Casino,
+            imageVector = Icons.Outlined.Castle,
             contentDescription = null,
             modifier = Modifier
                 .size(80.dp)
@@ -147,18 +147,11 @@ fun EmptyKingdomsListMessage(hasOwnedExpansions: Boolean) {
 
         if (hasOwnedExpansions) {
             Text(
-                text = "You have expansions selected! Tap the + button to generate your first kingdom",
+                text = "Tap the + button to generate your first kingdom.\n\nCustomize generation rules and constraints in the Settings tab",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 4.dp)
-            )
-
-            Text(
-                text = "Customize generation rules and constraints in the Settings tab",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center
             )
         } else {
             Text(

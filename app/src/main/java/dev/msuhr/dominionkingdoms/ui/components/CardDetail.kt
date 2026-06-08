@@ -209,7 +209,7 @@ fun CardDetail(
         ) {
 
             // No favorite / ban buttons for tokens and mats
-            if (!card.types.contains(Type.TOKEN) && !card.types.contains(Type.MAT)) {
+            if (!card.types.contains(Type.TOKEN) && !card.types.contains(Type.MAT) && !card.types.contains(Type.PILE)) {
 
                 // Favorite toggle
                 if (card.isFavorite) {
@@ -241,7 +241,7 @@ fun CardDetail(
                 }
 
                 // Can't ban basic cards
-                if (!card.basic) {
+                if (!card.basic && card.supply) {
 
                     // Ban toggle
                     if (!card.isEnabled) {

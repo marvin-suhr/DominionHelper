@@ -71,6 +71,15 @@ sealed class SettingItem {
         override fun toString(): String = "NavigationSetting(title='$title')"
     }
 
+    data class ActionSetting(
+        val title: String,
+        val description: String? = null,
+        val onClick: () -> Unit,
+        val isDangerous: Boolean = false
+    ) : SettingItem() {
+        override fun toString(): String = "ActionSetting(title='$title')"
+    }
+
     data class RangeRuleSetting(
         val title: String,
         val min: Int,
@@ -114,9 +123,9 @@ enum class DarkModeSetting(val displayName: String) {
 }
 
 enum class PromoMode(val displayName: String) {
+    POOL("Add to pool of available cards"),
     NEVER("Never add promo cards"),
-    ALWAYS_ONE("Always add a promo card (if owned)"),
-    POOL("Add to pool of available cards")
+    ALWAYS_ONE("Always add a promo card (if owned)")
 }
 
 enum class SettingsSubScreen {
@@ -134,7 +143,8 @@ class SettingsViewModel @Inject constructor(
 
     data class SettingsUiState(
         val settings: List<SettingItem> = emptyList(),
-        val currentSubScreen: SettingsSubScreen = SettingsSubScreen.MAIN
+        val currentSubScreen: SettingsSubScreen = SettingsSubScreen.MAIN,
+        val showResetRulesDialog: Boolean = false
     )
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -225,16 +235,6 @@ class SettingsViewModel @Inject constructor(
                     settings.add(SettingItem.SectionHeader("Kingdom generation"))
 
                     settings.add(
-                        SettingItem.NumberSetting(
-                            title = "Number of cards to generate",
-                            number = currentNumCardsToGen,
-                            min = 10,
-                            max = 20,
-                            onNumberChange = { setNumberOfCardsToGenerate(it) }
-                        )
-                    )
-
-                    settings.add(
                         SettingItem.ChoiceSetting(
                             title = "Random mode",
                             selectedOption = currentRandomMode,
@@ -243,11 +243,11 @@ class SettingsViewModel @Inject constructor(
                             onOptionSelected = { setRandomMode(it) },
                             description =
                             """Choose how cards are selected.
-                        
+
 Full Random: select cards completely randomly from selected expansions.
 
 Limited Random: select a fixed number of expansions and randomly draw cards from them.
-                        
+
 Even Amounts: select equal card amounts from each selected expansion."""
                         )
                     )
@@ -266,10 +266,10 @@ Even Amounts: select equal card amounts from each selected expansion."""
                     // Switch to allow or disallow vetoing cards
                     settings.add(
                         SettingItem.SwitchSetting(
-                            title = "Allow vetoing cards",
-                            description = "Allow striking cards after generating",
+                            title = "Allow striking cards",
+                            description = "Strike cards by swiping them away",
                             isChecked = currentAllowVetoing,
-                            onCheckedChange = { setAllowVetoing(it) }
+                            onCheckedChange = { setAllowVetoing(it); setNumberOfCardsToGenerate(10) }
                         )
                     )
 
@@ -280,7 +280,7 @@ Even Amounts: select equal card amounts from each selected expansion."""
                                 selectedOption = currentVetoMode,
                                 allOptions = VetoMode.entries.toList(),
                                 optionDisplayFormatter = { it.displayName },
-                                onOptionSelected = { setVetoMode(it) },
+                                onOptionSelected = { setVetoMode(it); setNumberOfCardsToGenerate(10) },
                                 description =
                                 """Choose what happens when a card is vetoed.
 
@@ -291,6 +291,18 @@ Reroll from any: select cards completely randomly from selected expansions.
 Don't reroll: just remove cards until there's only 10 left."""
                             )
                         )
+
+                        if (currentVetoMode == VetoMode.NO_REROLL) {
+                            settings.add(
+                                SettingItem.NumberSetting(
+                                    title = "Number of cards to generate",
+                                    number = currentNumCardsToGen,
+                                    min = 10,
+                                    max = 20,
+                                    onNumberChange = { setNumberOfCardsToGenerate(it) }
+                                )
+                            )
+                        }
                     }
 
                     // Landscapes Section
@@ -382,6 +394,14 @@ Don't reroll: just remove cards until there's only 10 left."""
                             title = "Landscape types",
                             description = "Specify rules for Events, Landmarks, Projects and more",
                             onClick = { navigateToSubScreen(SettingsSubScreen.LANDSCAPES) }
+                        )
+                    )
+
+                    settings.add(
+                        SettingItem.ActionSetting(
+                            title = "Reset generation rules",
+                            description = "Set all card and landscape type rules to default",
+                            onClick = { setShowResetRulesDialog(true) }
                         )
                     )
 
@@ -553,6 +573,17 @@ Don't reroll: just remove cards until there's only 10 left."""
     fun setLandscapeRule(ruleId: String, enabled: Boolean) {
         viewModelScope.launch {
             userPrefsRepository.setLandscapeRule(ruleId, enabled)
+        }
+    }
+
+    fun setShowResetRulesDialog(show: Boolean) {
+        _uiState.update { it.copy(showResetRulesDialog = show) }
+    }
+
+    fun resetGenerationRules() {
+        viewModelScope.launch {
+            userPrefsRepository.resetGenerationRules()
+            setShowResetRulesDialog(false)
         }
     }
 

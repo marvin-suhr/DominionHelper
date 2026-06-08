@@ -76,6 +76,25 @@ data class ExpansionWithEditions(
 
     val hasMultipleEditions: Boolean get() = editions.size >= 2
 
+    // Special logic for Cornucopia and Guilds
+    val displayImageName: String get() =
+        if (isSharedSecondEdition && !isSecondEditionOwned) {
+            firstEdition?.imageName ?: ""
+        } else { activeEdition?.imageName ?: "" }
+
+    // TODO:  I REALLY don't like this
+    val displayName: String
+        get() = when {
+            isSecondEditionOwned && secondEdition?.expansionId != id -> {
+                // When second edition is owned and belongs to a different expansion, use that expansion's name
+                when (secondEdition?.expansionId) {
+                    "CORNUCOPIA_GUILDS" -> "Cornucopia & Guilds"
+                    else -> name
+                }
+            }
+            else -> name
+        }
+
     fun isAnyOwned(): Boolean = editions.any { it.isOwned }
     fun isBothOwned(): Boolean = editions.count { it.isOwned } >= 2
 

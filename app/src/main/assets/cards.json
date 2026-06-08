@@ -5185,7 +5185,7 @@
     "basic": false,
     "debt": 0,
     "categories": [
-      "Trasher"
+      "Trasher", "Gainer"
     ],
     "potion": false,
     "sets": [
@@ -18180,12 +18180,12 @@
     "special_cost": false
   },
   {
-    "name": "Boon pile",
+    "name": "Boon Pile",
     "cost": null,
     "supply": false,
-    "landscape": true,
+    "landscape": false,
     "types": [
-      "Boon"
+      "Pile"
     ],
     "image_name": "placeholder_boon",
     "basic": false,
@@ -18193,18 +18193,18 @@
     "categories": [],
     "potion": false,
     "sets": [
-      "PLACEHOLDER"
+      "Nocturne"
     ],
     "overpay": false,
     "special_cost": false
   },
   {
-    "name": "Hex pile",
+    "name": "Hex Pile",
     "cost": null,
     "supply": false,
-    "landscape": true,
+    "landscape": false,
     "types": [
-      "Hex"
+      "Pile"
     ],
     "image_name": "placeholder_hex",
     "basic": false,
@@ -18212,18 +18212,18 @@
     "categories": [],
     "potion": false,
     "sets": [
-      "PLACEHOLDER"
+      "Nocturne"
     ],
     "overpay": false,
     "special_cost": false
   },
   {
-    "name": "Loot pile",
+    "name": "Loot Pile",
     "cost": null,
     "supply": false,
-    "landscape": true,
+    "landscape": false,
     "types": [
-      "Loot"
+      "Pile"
     ],
     "image_name": "placeholder_loot",
     "basic": false,
@@ -18231,18 +18231,18 @@
     "categories": [],
     "potion": false,
     "sets": [
-      "PLACEHOLDER"
+      "Plunder"
     ],
     "overpay": false,
     "special_cost": false
   },
   {
-    "name": "Ruins pile",
+    "name": "Ruins Pile",
     "cost": null,
     "supply": false,
-    "landscape": true,
+    "landscape": false,
     "types": [
-      "Ruins"
+      "Pile"
     ],
     "image_name": "placeholder_ruins",
     "basic": false,
@@ -18250,62 +18250,45 @@
     "categories": [],
     "potion": false,
     "sets": [
-      "PLACEHOLDER"
+      "Dark_Ages"
     ],
     "overpay": false,
     "special_cost": false
   },
   {
-    "name": "Prizes",
-    "cost": 0,
-    "supply": false,
-    "landscape": true,
-    "types": [
-      "Prize"
-    ],
-    "image_name": "placeholder_prizes",
-    "basic": false,
-    "debt": 0,
-    "categories": [],
-    "potion": false,
-    "sets": [
-      "PLACEHOLDER"
-    ],
-    "overpay": false,
-    "special_cost": false
-  },
-  {
-    "name": "Rewards",
-    "cost": null,
-    "supply": false,
-    "landscape": true,
-    "types": [
-      "Reward"
-    ],
-    "image_name": "placeholder_rewards",
-    "basic": false,
-    "debt": 0,
-    "categories": [],
-    "potion": false,
-    "sets": [
-      "PLACEHOLDER"
-    ],
-    "overpay": false,
-    "special_cost": false
-  },
-  {
-    "name": "Trash Card",
+    "name": "Prize Pile",
     "cost": null,
     "supply": false,
     "landscape": false,
-    "types": ["MAT"],
-    "image_name": "trash_card",
+    "types": [
+      "Pile"
+    ],
+    "image_name": "placeholder_prize",
     "basic": false,
     "debt": 0,
     "categories": [],
     "potion": false,
     "sets": [
-      "BASE_1E"
+      "Cornucopia_1E"
+    ],
+    "overpay": false,
+    "special_cost": false
+  },
+  {
+    "name": "Reward Pile",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": [
+      "Pile"
+    ],
+    "image_name": "placeholder_reward",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "Cornucopia_Guilds_2E"
     ],
     "overpay": false,
     "special_cost": false
@@ -18450,12 +18433,12 @@
     "special_cost": false
   },
   {
-    "name": "Coffers / Villagers Mat",
+    "name": "Villagers Mat",
     "cost": null,
     "supply": false,
     "landscape": false,
     "types": ["MAT"],
-    "image_name": "mat_coffers_villagers",
+    "image_name": "mat_villagers",
     "basic": false,
     "debt": 0,
     "categories": [],

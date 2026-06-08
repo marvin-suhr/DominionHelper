@@ -1,6 +1,7 @@
 package dev.msuhr.dominionkingdoms
 
 import android.util.Log
+import com.google.common.primitives.Doubles.min
 import dev.msuhr.dominionkingdoms.data.CardDao
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.model.Card
@@ -79,9 +80,9 @@ class CardDependencyResolver @Inject constructor(
             if (namesInKingdom.contains(name)) dependentCardNames.addAll(deps)
         }
 
-        // 4. Process Set-based triggers
-        CardDependencies.setTriggers.forEach { (set, deps) ->
-            if (setsInKingdom.contains(set)) dependentCardNames.addAll(deps)
+        // 4. Potion
+        if (cards.any { it.potion }) {
+            dependentCardNames.add(CardNames.POTION)
         }
 
         // 5. Process List-based triggers (Loot, Spoils, etc.)
@@ -98,12 +99,12 @@ class CardDependencyResolver @Inject constructor(
             dependentCardNames.add(CardNames.SPOILS)
         }
 
-        if (namesInKingdom.any { it in CardNames.CoffersGuildsCards }) {
+        if (namesInKingdom.any { it in CardNames.CoffersCards }) {
             dependentCardNames.add(CardNames.COFFERS_MAT)
         }
 
-        if (namesInKingdom.any { it in (CardNames.CoffersRenaissanceCards + CardNames.VillagersCards) }) {
-            dependentCardNames.add(CardNames.COFFERS_VILLAGERS_MAT)
+        if (namesInKingdom.any { it in (CardNames.VillagersCards) }) {
+            dependentCardNames.add(CardNames.VILLAGERS_MAT)
         }
 
         if (namesInKingdom.any { it in CardNames.AltVPCards }) {
@@ -151,7 +152,7 @@ class CardDependencyResolver @Inject constructor(
             // 10% chance per prosperity card
             ProsperityMode.TEN_PERCENT_PER_CARD -> {
                 if (prosperityCount > 0) {
-                    if (isPercentChance(prosperityCount * 10.0)) {
+                    if (isPercentChance(min(prosperityCount * 10.0, 100.0))) {
                         Log.i(
                             "KingdomGenerator",
                             "Adding Platinum and Colony - 10% per card ($prosperityCount) triggered"
@@ -193,7 +194,7 @@ class CardDependencyResolver @Inject constructor(
 
             // 10% per Dark Ages card to use Shelters instead of Estates
             DarkAgesMode.TEN_PERCENT_PER_CARD -> {
-                if (isPercentChance(darkAgesCount * 10.0)) {
+                if (isPercentChance(min(darkAgesCount * 10.0, 100.0))) {
                     Log.i("KingdomGenerator", "Adding Shelters - 10% per card ($darkAgesCount) triggered")
                     cards["Overgrown Estate"] = 1
                     cards["Hovel"] = 1
@@ -326,9 +327,5 @@ object CardDependencies {
         CardNames.NATIVE_VILLAGE to listOf(CardNames.NATIVE_VILLAGE_MAT),
         CardNames.TRADE_ROUTE to listOf(CardNames.TRADE_ROUTE_MAT),
         CardNames.EMBARGO to listOf(CardNames.EMBARGO_TOKENS)
-    )
-
-    val setTriggers = mapOf(
-        CardSet.ALCHEMY to listOf(CardNames.POTION)
     )
 }

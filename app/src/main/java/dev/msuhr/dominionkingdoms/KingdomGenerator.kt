@@ -32,8 +32,15 @@ class KingdomGenerator @Inject constructor(
         val landscapePool: MutableSet<Card>,
         val expansionSource: List<ExpansionWithEditions>? = null,
         val config: GenerationConfig,
-        var warning: String? = null
-    )
+        val warnings: MutableList<GenerationWarning> = mutableListOf()
+    ) {
+        fun addWarning(tag: GenerationWarningTag, message: String) {
+            // Only keep one warning of each tag
+            if (!warnings.any { it.tag == tag }) warnings.add(GenerationWarning(tag, message))
+        }
+        
+        fun getJoinedWarnings(): String? = if (warnings.isEmpty()) null else warnings.joinToString("\n") { it.message }
+    }
 
     private data class GenerationConfig(
         val totalPortraits: Int,
@@ -42,6 +49,20 @@ class KingdomGenerator @Inject constructor(
         val randomMode: RandomMode
     )
 
+    private data class GenerationWarning(
+        val tag: GenerationWarningTag,
+        val message: String
+    )
+
+    private enum class GenerationWarningTag {
+        EXPANSION,
+        PORTRAIT,
+        LANDSCAPE,
+        PROPHECY,
+        ALLY,
+        DISTRIBUTION
+    }
+
     suspend fun generateKingdom(): Kingdom {
         val config = GenerationConfig(
             totalPortraits = userPrefsRepository.numberOfCardsToGenerate.first(),
@@ -49,6 +70,8 @@ class KingdomGenerator @Inject constructor(
             useDifferentLandscapes = userPrefsRepository.landscapeDifferentCategories.first(),
             randomMode = userPrefsRepository.randomMode.first()
         )
+
+        val warnings: MutableList<GenerationWarning> = mutableListOf()
         
         val activeRulesMap = userPrefsRepository.activeRules.first()
         val landscapeRulesMap = userPrefsRepository.landscapeRules.first()
@@ -64,11 +87,16 @@ class KingdomGenerator @Inject constructor(
             .values
             .toSet()
 
+        // TODO define warnings including message somewhere?
+        if (config.useDifferentLandscapes && allowedLandscapeTypes.count() < config.totalLandscapes) {
+            warnings.add(GenerationWarning(GenerationWarningTag.LANDSCAPE, "${config.totalLandscapes} different landscape cards requested, but only ${allowedLandscapeTypes.count()} landscape types are allowed."))
+        }
+
         val enabledLandscapeFilter: (Card) -> Boolean = { card ->
             card.types.any { it in allowedLandscapeTypes }
         }
 
-        val context = prepareContext(config, enabledLandscapeFilter)
+        val context = prepareContext(config, warnings, enabledLandscapeFilter)
         Log.i("Kingdom Generator", "Starting generation - Mode: ${config.randomMode} - Pool: ${context.portraitPool.size} portraits, ${context.landscapePool.size} landscapes")
 
         val generatedKingdom = runGenerationPipeline(context, activeRules, promoMode) // TODO add promoMode to context.config
@@ -82,21 +110,21 @@ class KingdomGenerator @Inject constructor(
         } catch (e: Exception) {
             KingdomViewModel.SortType.EXPANSION
         }
-        return sortKingdom(generatedKingdom, sortType).copy(warningMessage = context.warning)
+        return sortKingdom(generatedKingdom, sortType).copy(warningMessage = context.getJoinedWarnings())
     }
 
     private suspend fun prepareContext(
         config: GenerationConfig,
+        warnings: MutableList<GenerationWarning>,
         landscapeFilter: (Card) -> Boolean
     ): GenerationContext {
         val pickLandscapesFromAny = userPrefsRepository.pickLandscapesFromAnyOwned.first()
-        var warning: String? = null
 
         return when (config.randomMode) {
             RandomMode.FULL_RANDOM -> {
                 val portraits = cardDao.getEnabledOwnedCards().toMutableSet()
                 val landscapes = cardDao.getEnabledOwnedSupplyLandscapes().filter(landscapeFilter).toMutableSet()
-                GenerationContext(portraits, landscapes, null, config, null)
+                GenerationContext(portraits, landscapes, null, config, warnings)
             }
             else -> {
                 val requestedExpAmount = userPrefsRepository.randomExpansionAmount.first()
@@ -104,8 +132,7 @@ class KingdomGenerator @Inject constructor(
 
                 // Not enough expansions to satisfy config. Warn and continue
                 if (ownedExpansions.size < requestedExpAmount) {
-                    warning = "You only own ${ownedExpansions.size} expansions, but $requestedExpAmount were requested. Using all owned expansions."
-                }
+                    warnings.add(GenerationWarning(GenerationWarningTag.EXPANSION, "You only own ${ownedExpansions.size} expansions, but $requestedExpAmount were requested. Using all owned expansions."))                }
                 
                 val selectedExpansions = ownedExpansions.shuffled().take(requestedExpAmount)
                 
@@ -124,7 +151,7 @@ class KingdomGenerator @Inject constructor(
                     landscapes.addAll(cardDao.getEnabledOwnedSupplyLandscapes().filter(landscapeFilter))
                 }
 
-                GenerationContext(portraits, landscapes, selectedExpansions, config, /*editionIds,*/ warning)
+                GenerationContext(portraits, landscapes, selectedExpansions, config, warnings)
             }
         }
     }
@@ -140,13 +167,13 @@ class KingdomGenerator @Inject constructor(
 
         // 1. Validation
         // Error and cancel if not enough portrait cards
-        if (context.portraitPool.size < context.config.totalPortraits) {
+        if (context.portraitPool.size < 10) {
             throw GenerationException("Not enough portrait cards available (${context.portraitPool.size}) to meet requirement (${context.config.totalPortraits}).")
         }
 
         // Warning and continue if not enough landscape cards
         if (context.landscapePool.size < context.config.totalLandscapes) {
-            context.warning = "Not enough landscape cards available (${context.landscapePool.size}) to meet requirements (${context.config.totalLandscapes})."
+            context.addWarning(GenerationWarningTag.LANDSCAPE,"Not enough landscape cards available (${context.landscapePool.size}) to meet requirements (${context.config.totalLandscapes}).")
         }
 
         // 2. Landscape Phase
@@ -156,11 +183,6 @@ class KingdomGenerator @Inject constructor(
             pool = context.landscapePool,
             useDifferentCategories = context.config.useDifferentLandscapes
         )
-
-        // This should only happen due to useDifferentLandscapes
-        if (landscapeList.size < context.config.totalLandscapes && context.warning == null) {
-            context.warning = "Could only find ${landscapeList.size} of ${context.config.totalLandscapes} requested landscapes due to category constraints."
-        }
 
         // 3. Promo Phase
         if (promoMode != PromoMode.NEVER) {
@@ -187,8 +209,15 @@ class KingdomGenerator @Inject constructor(
             fillRemainingPortraits(context.config.totalPortraits, portraitList, context.portraitPool, portraitRules)
         }
 
+        if (portraitList.size < 10) {
+            // Why isn't this triggered
+            throw GenerationException("Not enough portrait cards available (${portraitList.size}) to meet requirement (${context.config.totalPortraits}).")
+        } else if (portraitList.size < context.config.totalPortraits) {
+            context.addWarning(GenerationWarningTag.PORTRAIT,"Not enough portrait cards available (${portraitList.size}) to meet requirement (${context.config.totalPortraits}).")
+        }
+
         // 5. Final Material Check (Omen -> Prophecy, Liaison -> Ally)
-        ensureRequiredLandscapes(portraitList, landscapeList)
+        ensureRequiredLandscapes(portraitList, landscapeList, context)
 
         // 6. Naming
         val expansionNames = context.expansionSource?.map { it.name }?.distinct() 
@@ -203,16 +232,10 @@ class KingdomGenerator @Inject constructor(
         targetList: MutableSet<Card>,
         rules: List<GenerationRule>
     ) {
-        // Exclude rules first
-        val excludedPredicates = rules.filter { it.option.isExclude() }.map { it.condition }
-        if (excludedPredicates.isNotEmpty()) {
-            pool.removeAll { card -> excludedPredicates.any { it(card) } }
-        }
-
         val requirementRules = rules.filter { it.option.min > 0 }
         var attempts = 0
         
-        while (attempts < 20) { // TODO can't we loop over unsatisfiedRules.notEmpty()? We throw an Exception if we have no candidates left anyway
+        while (attempts < 20) {
 
             // Check if any previously satisfied rules randomly satisfied other rules
             val unsatisfied = requirementRules.filter { rule -> targetList.count { rule.condition(it) } < rule.option.min }
@@ -220,15 +243,32 @@ class KingdomGenerator @Inject constructor(
 
             // Work on a random rule to avoid bias
             val rule = unsatisfied.shuffled().first()
-            val candidates = pool.filter { card -> 
-                rule.condition(card) && rules.all { r -> // TODO Does it make sense to check against ALL rules here?
+
+            // 1. Check if any card in the pool satisfies the current rule at all
+            // We don't prune the pool for exclusions/max limits yet so we can report them as blockers if needed
+            val satisfyingCards = pool.filter { rule.condition(it) }
+            if (satisfyingCards.isEmpty()) {
+                throw GenerationException("Cannot satisfy rule: ${rule.name}.")
+            }
+
+            // 2. Filter these cards further to ensure they don't violate other constraints (max limits & exclusions)
+            val candidates = satisfyingCards.filter { card ->
+                rules.all { r ->
                     val count = targetList.count { r.condition(it) }
-                    if (r.condition(card)) count < r.option.max else true // Kinda convuluted
+                    if (r.condition(card)) count < r.option.max else true
                 }
             }
 
             if (candidates.isEmpty()) {
-                throw GenerationException("Cannot satisfy rule: ${rule.name} without violating other constraints.")
+                val blockingRules = satisfyingCards.flatMap { card ->
+                    rules.filter { r ->
+                        val count = targetList.count { r.condition(it) }
+                        r.condition(card) && count >= r.option.max
+                    }
+                }.distinctBy { it.id }
+
+                val blockingRuleNames = blockingRules.joinToString(", ") { it.name }
+                throw GenerationException("Cannot satisfy rule: ${rule.name} because all potential candidates violate other constraints: $blockingRuleNames.")
             }
 
             val selected = candidates.shuffled().first()
@@ -237,9 +277,9 @@ class KingdomGenerator @Inject constructor(
             attempts++
         }
         
-        // Post-rule pool pruning: remove all cards from maxed categories
+        // Final pool pruning: remove all cards that are now ineligible for any reason (maxed or excluded)
         pool.removeAll { card -> 
-            rules.any { r -> r.option.max < RuleOption.MAX_CARDS && targetList.count { r.condition(it) } >= r.option.max && r.condition(card) }
+            rules.any { r -> targetList.count { r.condition(it) } >= r.option.max && r.condition(card) }
         }
     }
 
@@ -312,10 +352,9 @@ class KingdomGenerator @Inject constructor(
         }
 
         // TODO unsure about this. Can't we set warning any other way? I don't like passing the full context
-        if (exhaustedExpansions.isNotEmpty()) {
+        if (exhaustedExpansions.isNotEmpty() && expansions.size > 1) {
             val names = exhaustedExpansions.joinToString(", ")
-            val msg = "Not enough cards to satisfy even distribution for: $names."
-            context.warning = context.warning?.let { "$it\n$msg" } ?: msg
+            context.addWarning(GenerationWarningTag.DISTRIBUTION,"Not enough cards to satisfy even distribution for: $names.")
         }
 
         // Final fallback fill
@@ -346,17 +385,23 @@ class KingdomGenerator @Inject constructor(
     }
 
     // Omen -> Prophecy, Liaison -> Ally
-    private suspend fun ensureRequiredLandscapes(portraits: Set<Card>, landscapes: MutableSet<Card>) {
+    private suspend fun ensureRequiredLandscapes(portraits: Set<Card>, landscapes: MutableSet<Card>, context: GenerationContext) {
         if (portraits.any { it.types.contains(Type.OMEN) }) {
             val omen = cardDao.getRandomEnabledProphecy()
-            omen?.let { landscapes.add(it) }
-            // TODO Add warning if no prophecy was enabled
+            if (omen != null) {
+                landscapes.add(omen)
+            } else {
+                context.addWarning(GenerationWarningTag.PROPHECY,"A card with Omen type was generated, but no Prophecy cards are available or enabled.")
+            }
         }
 
         if (portraits.any { it.types.contains(Type.LIAISON) }) {
             val ally = cardDao.getRandomEnabledAlly()
-            ally?.let { landscapes.add(it) }
-            // TODO Add warning if no ally was enabled
+            if (ally != null) {
+                landscapes.add(ally)
+            } else {
+                context.addWarning(GenerationWarningTag.ALLY, "A card with Liaison type was generated, but no Ally cards are available or enabled.")
+            }
         }
     }
 

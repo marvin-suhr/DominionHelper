@@ -32,16 +32,24 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -64,6 +72,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Block
@@ -85,7 +94,12 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle.Companion.Italic
@@ -146,7 +160,7 @@ fun LibraryCardList(
     }
 
     val materialCards = remember(cardList) {
-        cardList.filter { it.types.contains(Type.TOKEN) || it.types.contains(Type.MAT) }
+        cardList.filter { it.getDisplayCategory() == CardDisplayCategory.MATERIAL }
     }
 
     LazyColumn(
@@ -320,27 +334,31 @@ fun KingdomCardList(
     onCardClick: (Card) -> Unit,
     selectedPlayers: Int,
     onPlayerCountChange: (Int) -> Unit,
-    listState: LazyListState = rememberLazyListState(),
-    isDismissEnabled: Boolean,
+    listState: LazyGridState = rememberLazyGridState(),
+    isCardDismissEnabled: Boolean,
+    isLandscapeDismissEnabled: Boolean,
     onCardDismissed: (Card) -> Unit,
-    onFavorite: (Card) -> Unit = { },
-    onBan: (Card) -> Unit = { },
     paddingValues: PaddingValues,
     isGridViewEnabled: Boolean = false
 ) {
+    // 1. Track the specific ID of the card being swiped instead of a boolean
+    var activeSwipingCardId by remember { mutableStateOf<Any?>(null) }
+
     Log.i(
         "KingdomList",
         "randomCards: ${kingdom.randomCards.size}, basicCards: ${kingdom.basicCards.size}, dependentCards: ${kingdom.dependentCards.size}, startingCards: ${kingdom.startingCards.size}, landscapeCards: ${kingdom.landscapeCards.size}, gridView: $isGridViewEnabled"
     )
 
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
         modifier = modifier,
         state = listState,
         contentPadding = paddingValues,
-        verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL)
+        verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL),
+        horizontalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL)
     ) {
 
-        item {
+        item(span = { GridItemSpan(2) }) {
             PlayerSelectionButtons(
                 selectedPlayers = selectedPlayers,
                 onPlayerSelected = { onPlayerCountChange(it) }
@@ -348,37 +366,57 @@ fun KingdomCardList(
         }
 
         // RANDOM CARDS
-        item {
-            CardSpacer("Supply Cards")
+        item(span = { GridItemSpan(2) }) {
+            CardSpacer("Supply Cards" + if (kingdom.randomCards.size > 10) " (${kingdom.randomCards.size} / 10)" else "")
         }
 
-        if (isGridViewEnabled) {
-            // Grid view: 2 columns x 5 rows
-            item {
-                KingdomCardGridView(
-                    cards = kingdom.randomCards,
+        // TODO REVIEW
+        itemsIndexed(
+            items = kingdom.randomCards.keys.toList(),
+            key = { _, card -> "random_${card.id}" },
+            span = { _, _ -> GridItemSpan(if (isGridViewEnabled) 1 else 2) }
+        ) { index, card ->
+            val currentCardId = card.id
+            val isLeftColumn = index % 2 == 0
+
+            if (isCardDismissEnabled) {
+                DismissableCard(
+                    card = card,
+                    onCardDismissed = onCardDismissed,
                     onCardClick = onCardClick,
-                    onFavorite = onFavorite,
-                    onBan = onBan
+                    modifier = Modifier.animateItem(),
+                    isEnabled = card.isEnabled,
+                    useGridView = isGridViewEnabled,
+                    enableDismissFromStartToEnd = !isGridViewEnabled || !isLeftColumn,
+                    enableDismissFromEndToStart = !isGridViewEnabled || isLeftColumn,
+                    isLockedByOthers = { activeSwipingCardId != null && activeSwipingCardId != currentCardId },
+                    onSwipeStart = {
+                        if (activeSwipingCardId == null) {
+                            activeSwipingCardId = currentCardId
+                        }
+                    },
+                    onSwipeEnd = {
+                        if (activeSwipingCardId == currentCardId) {
+                            activeSwipingCardId = null
+                        }
+                    }
                 )
-            }
-        } else {
-            // List view
-            items(
-                items = kingdom.randomCards.keys.toList(),
-                key = { card -> card.id }
-            ) { card ->
-                if (isDismissEnabled)
-                    DismissableCard(card, onCardDismissed, onCardClick,  onFavorite, onBan, Modifier.animateItem(), card.isEnabled)
-                else {
+            } else {
+                if (isGridViewEnabled) {
+                    KingdomGridCardItem(
+                        card = card,
+                        onCardClick = onCardClick,
+                        modifier = Modifier.animateItem()
+                    )
+                } else {
                     CardView(
                         card,
                         onCardClick,
                         enabled = card.isEnabled,
                         showIcon = true,
-                        kingdom.randomCards[card]!!,
-                        onFavorite = { onFavorite(card) },
-                        onBan = { onBan(card) }
+                        amount = kingdom.randomCards[card]!!,
+                        isContextMenuEnabled = false,
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -386,24 +424,44 @@ fun KingdomCardList(
 
         // LANDSCAPE CARDS
         if (kingdom.hasLandscapeCards()) {
-            item {
+            item(span = { GridItemSpan(2) }) {
                 CardSpacer("Landscape Cards")
             }
             items(
                 items = kingdom.landscapeCards.keys.toList(),
-                key = { card -> card.id }
+                key = { card -> "landscape_${card.id}" },
+                span = { GridItemSpan(2) }
             ) { card ->
-                if (isDismissEnabled)
-                    DismissableCard(card, onCardDismissed, onCardClick, onFavorite, onBan, Modifier.animateItem(), card.isEnabled)
-                else {
+                if (isLandscapeDismissEnabled) {
+                    val currentCardId = card.id
+
+                    DismissableCard(
+                        card = card,
+                        onCardDismissed = onCardDismissed,
+                        onCardClick = onCardClick,
+                        modifier = Modifier.animateItem(),
+                        isEnabled = card.isEnabled,
+                        isLockedByOthers = { activeSwipingCardId != null && activeSwipingCardId != currentCardId },
+                        onSwipeStart = {
+                            if (activeSwipingCardId == null) {
+                                activeSwipingCardId = card.id
+                            }
+                        },
+                        onSwipeEnd = {
+                            if (activeSwipingCardId == card.id) {
+                                activeSwipingCardId = null
+                            }
+                        }
+                    )
+                } else {
                     CardView(
                         card,
                         onCardClick,
                         enabled = card.isEnabled,
                         showIcon = true,
-                        kingdom.landscapeCards[card]!!,
-                        onFavorite = { onFavorite(card) },
-                        onBan = { onBan(card) }
+                        amount = kingdom.landscapeCards[card]!!,
+                        isContextMenuEnabled = false,
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -411,40 +469,44 @@ fun KingdomCardList(
 
         // DEPENDENT CARDS
         if (kingdom.hasDependentCards()) {
-            item {
+            item(span = { GridItemSpan(2) }) {
                 CardSpacer("Additional Material")
             }
-            items(kingdom.dependentCards.keys.toList()) { card ->
+            items(kingdom.dependentCards.keys.toList(), key = { "dependent_${it.id}" }, span = { GridItemSpan(2) }) { card ->
                 CardView(
                     card,
                     onCardClick,
                     enabled = card.isEnabled,
                     showIcon = true,
-                    kingdom.dependentCards[card]!!
+                    amount = kingdom.dependentCards[card]!!,
+                    isContextMenuEnabled = false,
+                    modifier = Modifier.animateItem() // I think that's only needed for dismissable cards?
                 )
             }
         }
 
         // STARTING CARDS
-        item {
+        item(span = { GridItemSpan(2) }) {
             CardSpacer("Starting Cards")
         }
-        items(kingdom.startingCards.keys.toList()) { card ->
+        items(kingdom.startingCards.keys.toList(), key = { "starting_${it.id}" }, span = { GridItemSpan(2) }) { card ->
             CardView(
                 card,
                 onCardClick,
                 enabled = card.isEnabled,
                 showIcon = true,
-                kingdom.startingCards[card]!!
+                amount = kingdom.startingCards[card]!!,
+                isContextMenuEnabled = false,
+                modifier = Modifier.animateItem()
             )
         }
 
         // BASIC CARDS
-        item {
+        item(span = { GridItemSpan(2) }) {
             CardSpacer("Basic Cards")
         }
-        items(kingdom.basicCards.keys.toList()) { card ->
-            CardView(card, onCardClick, enabled = card.isEnabled, showIcon = true, kingdom.basicCards[card]!!)
+        items(kingdom.basicCards.keys.toList(), key = { "basic_${it.id}" }, span = { GridItemSpan(2) }) { card ->
+            CardView(card, onCardClick, enabled = card.isEnabled, showIcon = true, amount = kingdom.basicCards[card]!!, isContextMenuEnabled = false, modifier = Modifier.animateItem())
         }
     }
 }
@@ -485,60 +547,28 @@ fun PlayerSelectionButtons(selectedPlayers: Int, onPlayerSelected: (Int) -> Unit
     }
 }
 
-/**
- * Grid view for kingdom supply cards (2 columns x 5 rows)
- * Shows card image cutout with name below
- */
-@Composable
-fun KingdomCardGridView(
-    cards: Map<Card, Int>,
-    onCardClick: (Card) -> Unit,
-    onFavorite: (Card) -> Unit,
-    onBan: (Card) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val cardList = cards.keys.toList()
-    val rows = cardList.chunked(2)
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth(),
-            //.padding(horizontal = 20.dp), // Height-management trick: more horizontal padding forces items to be narrower, which shrinks their vertical footprint
-        verticalArrangement = Arrangement.spacedBy(8.dp) // Clean vertical separation between the 5 rows
-    ) {
-        rows.forEach { rowCards ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp) // Space between the left and right column items
-            ) {
-                rowCards.forEach { card ->
-                    KingdomGridCardItem(
-                        card = card,
-                        onCardClick = onCardClick,
-                        onFavorite = { onFavorite(card) },
-                        onBan = { onBan(card) },
-                        modifier = Modifier.weight(1f) // Ensures 50/50 horizontal column splitting
-                    )
-                }
-                // If odd number of cards, add empty spacer to keep grid alignment intact
-                if (rowCards.size < 2) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-    }
-}
-
 @Composable
 fun KingdomGridCardItem(
     card: Card,
     onCardClick: (Card) -> Unit,
-    onFavorite: (Card) -> Unit, // TODO?
-    onBan: (Card) -> Unit, // TODO?
     modifier: Modifier = Modifier
 ) {
+
+    val typeColors = card.getColorByTypes()
+
+    // 2. Build a dynamic Brush depending on the count of types
+    val borderBrush = remember(typeColors) {
+        if (typeColors.size == 1) {
+            SolidColor(typeColors.first())
+        } else {
+            // For multi-type cards, create a premium linear gradient running from top-left to bottom-right
+            Brush.linearGradient(colors = typeColors)
+        }
+    }
+
     Card(
-        modifier = modifier.clickable { onCardClick(card) },
+        onClick = { onCardClick(card) },
+        modifier = modifier.border( border = BorderStroke(3.dp, borderBrush), shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)),
         shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(
@@ -567,7 +597,8 @@ fun KingdomGridCardItem(
                 Spacer(Modifier.height(Constants.PADDING_SMALL))
 
                 // Price Indicator
-                NumberCircle(card.cost.toString())
+                if (card.cost != null) { NumberCircle(card.cost.toString()) }
+                if (card.debt != 0) {NumberHexagon(card.debt) }
             }
 
             // Card image with text on it
@@ -624,17 +655,24 @@ fun KingdomGridCardItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DismissableCard(
     card: Card,
     onCardDismissed: (Card) -> Unit,
     onCardClick: (Card) -> Unit,
-    onFavorite: (Card) -> Unit,
-    onBan: (Card) -> Unit,
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    useGridView: Boolean = false,
+    enableDismissFromStartToEnd: Boolean = true,
+    enableDismissFromEndToStart: Boolean = true,
+    isLockedByOthers: () -> Boolean, // Changed from canSwipe: Boolean
+    onSwipeStart: () -> Unit = {},
+    onSwipeEnd: () -> Unit = {}
 ) {
     val view = LocalView.current
+    var isLocalSwipeInProgress by remember { mutableStateOf(false) }
+    var touchStartedOnThisItem by remember { mutableStateOf(false) }
 
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { dismissValue ->
@@ -642,18 +680,64 @@ fun DismissableCard(
             if (dismissed) {
                 view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 onCardDismissed(card)
+                onSwipeEnd()
             }
             dismissed
         },
-        positionalThreshold = { it * 0.25f } // Distance to be dismissed
+        positionalThreshold = { it * 0.25f }
     )
+
+    DisposableEffect(card.id) {
+        onDispose {
+            if (isLocalSwipeInProgress) {
+                onSwipeEnd()
+            }
+        }
+    }
+
+    LaunchedEffect(dismissState) {
+        snapshotFlow { dismissState.targetValue }
+            .collect { targetValue ->
+                val isCurrentlySwiping = targetValue != SwipeToDismissBoxValue.Settled
+                if (isCurrentlySwiping && !isLocalSwipeInProgress) {
+                    isLocalSwipeInProgress = true
+                } else if (!isCurrentlySwiping && isLocalSwipeInProgress) {
+                    isLocalSwipeInProgress = false
+                    onSwipeEnd()
+                }
+            }
+    }
 
     SwipeToDismissBox(
         state = dismissState,
-        modifier = modifier,
-        backgroundContent = {
+        modifier = modifier.pointerInput(card.id) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
 
-            // Change scale of icon depending on position
+                    if (isLockedByOthers() || (event.changes.any { it.pressed } && !touchStartedOnThisItem && !event.changes.any { it.changedToDown() })) {
+                        // If locked by others OR if we see a touch that didn't start here (no changedToDown seen first)
+                        // completely eat this touch event.
+                        event.changes.forEach { it.consume() }
+                    } else {
+                        // If a finger touches down on THIS card, claim the lock immediately
+                        if (event.changes.any { it.changedToDown() }) {
+                            touchStartedOnThisItem = true
+                            onSwipeStart()
+                        }
+
+                        // If all fingers leave this specific card, release the lock cleanly
+                        if (event.changes.all { !it.pressed }) {
+                            touchStartedOnThisItem = false
+                            onSwipeEnd()
+                        }
+                    }
+                }
+            }
+        },
+        enableDismissFromStartToEnd = touchStartedOnThisItem && !isLockedByOthers() && enableDismissFromStartToEnd,
+        enableDismissFromEndToStart = touchStartedOnThisItem && !isLockedByOthers() && enableDismissFromEndToStart,
+        backgroundContent = {
             val scale by animateDpAsState(
                 targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0.75.dp else 1.dp,
                 label = "icon scale"
@@ -665,7 +749,6 @@ fun DismissableCard(
                     .padding(horizontal = 20.dp),
                 contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) Alignment.CenterEnd else Alignment.CenterStart
             ) {
-                // Icon  behind the swipe
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Dismiss Icon",
@@ -675,10 +758,13 @@ fun DismissableCard(
             }
         }
     ) {
-        CardView(card, onCardClick, isEnabled, onFavorite = { onFavorite(card) }, onBan = { onBan(card) } )
+        if (useGridView) {
+            KingdomGridCardItem(card, onCardClick)
+        } else {
+            CardView(card, onCardClick, isEnabled, isContextMenuEnabled = false )
+        }
     }
 }
-
 
 @Composable
 fun CardSpacer(text: String) {
@@ -707,7 +793,9 @@ fun CardView(
     amount: Int = 1,
     onToggleEnable: () -> Unit = { },
     onFavorite: () -> Unit = { },
-    onBan: () -> Unit = { }
+    onBan: () -> Unit = { },
+    isContextMenuEnabled: Boolean = true,
+    modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var showPopupMenu by remember { mutableStateOf(false) }
@@ -715,9 +803,10 @@ fun CardView(
     val view = LocalView.current
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .height(Constants.CARD_HEIGHT_CARDS)
             .fillMaxWidth()
+            .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
             .alpha(if (enabled) 1f else 0.6f)
             .indication(interactionSource, LocalIndication.current) // Ripple
             // Use pointerInput to distinguish between Tap and LongPress
@@ -762,16 +851,18 @@ fun CardView(
         }
 
         // The "Actual" Context Menu element
-        CardContextMenu(
-            expanded = showPopupMenu,
-            offset = touchOffset,
-            onDismiss = { showPopupMenu = false },
-            onFavorite = onFavorite,
-            onBan = onBan,
-            isFavorite = card.isFavorite,
-            isEnabled = card.isEnabled,
-            hasSupply = card.supply
-        )
+        if (isContextMenuEnabled) {
+            CardContextMenu(
+                expanded = showPopupMenu,
+                offset = touchOffset,
+                onDismiss = { showPopupMenu = false },
+                onFavorite = onFavorite,
+                onBan = onBan,
+                isFavorite = card.isFavorite,
+                isEnabled = card.isEnabled,
+                hasSupply = card.supply && !card.basic && !card.types.contains(Type.PILE)
+            )
+        }
     }
 }
 
@@ -804,15 +895,13 @@ fun CardContextMenu(
                 onFavorite()
                 onDismiss()
             },
-            leadingIcon = { Icon(Icons.Default.Star, contentDescription = null) }
+            leadingIcon = { Icon(Icons.Default.Star, contentDescription = null) },
         )
         DropdownMenuItem(
             text = { Text(if (isEnabled) "Ban Card" else "Unban Card") },
             onClick = {
-                if (hasSupply) {
-                    onBan()
-                    onDismiss()
-                }
+                onBan()
+                onDismiss()
             },
             leadingIcon = { Icon(Icons.Default.Block, contentDescription = null) },
             enabled = hasSupply
@@ -875,18 +964,25 @@ fun CardImage(card: Card) {
             ),
             modifier = Modifier
                 .fillMaxSize()
+                // TODO - Too much logic - Put this elsewhere
                 .graphicsLayer {
-                    if (card.sets.contains(Set.PLACEHOLDER)) {
-                        if (card.name == "Trash Mat") {
-                            scaleX = 1.75f
-                            scaleY = 1.75f
-                        } else {
-                            scaleX = 1.25f
-                            scaleY = 1.25f
-                        }
+                    if (card.types.contains(Type.PILE)) {
+                        scaleX = 1.25f
+                        scaleY = 1.25f
                     } else if (card.types.contains(Type.MAT)) {
-                        scaleX = 1.4f
-                        scaleY = 1.4f
+                        if (card.name == "Tavern Mat" || card.name == "Villagers Mat") {
+                            scaleX = 1.1f
+                            scaleY = 1.1f
+                        } else if (card.name == "Coffers Mat" || card.name == "Favors Mat") {
+                            scaleX = 1.2f
+                            scaleY = 1.2f
+                        } else if (card.name in listOf("Island Mat", "Pirate Ship Mat", "Native Village Mat")) {
+                            scaleX = 2.05f
+                            scaleY = 2.05f
+                        } else {
+                            scaleX = 1.4f
+                            scaleY = 1.4f
+                        }
                     } else if (card.types.contains(Type.TOKEN)) {
                         scaleX = 1.9f
                         scaleY = 1.9f
@@ -901,14 +997,14 @@ fun CardImage(card: Card) {
                     IntOffset(
                         x = 0,
                         y = when {
-                            card.name == "Potion" || card.sets.contains(Set.PLACEHOLDER) -> 0
+                            card.name == "Native Village Mat" -> -40
+                            card.name in listOf("Island Mat", "Trade Route Mat") -> -15
+                            card.name == "Potion" || card.types.contains(Type.TOKEN) || card.types.contains(Type.PILE) || card.types.contains(Type.MAT) -> 0
                             card.landscape || card.name == "Curse" -> 13
                             card.basic
                                     && !card.types.contains(Type.RUINS)
                                     && !card.types.contains(Type.SHELTER)
                                     && !card.types.contains(Type.HEIRLOOM) -> 26
-
-                            card.types.contains(Type.TOKEN) -> 0
                             else -> 31
                         }
                     )
@@ -1140,22 +1236,19 @@ fun CardIcon(imageId: Int, setName: String) {
     }
 }
 
-// TODO this was lazy and bad, rework
+// Specific toggle for Promo cards (individual ownership)
 @Composable
 fun PromoToggle(card: Card, onToggleOwned: () -> Unit) {
-    // Specific toggle for Promo cards (individual ownership)
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            //.size(Constants.ICON_SIZE)
-            .fillMaxHeight()
-            .padding(Constants.PADDING_MEDIUM)
-            .clickable { onToggleOwned() }
+            .aspectRatio(1f)
+            .padding(8.dp)
     ) {
         Icon(
             imageVector = if (card.isEnabled) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
             contentDescription = if (card.isEnabled) "Owned" else "Unowned",
-            modifier = Modifier.size(Constants.CHECKMARK_SIZE),
+            modifier = Modifier.size(35.dp).clip(CircleShape).clickable { onToggleOwned() },
             tint = if (card.isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -1167,12 +1260,11 @@ fun CardButton(onToggleEnable: () -> Unit) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .aspectRatio(1f)
-            .clickable { onToggleEnable() }
     ) {
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = "Unban card",
-            modifier = Modifier.size(Constants.ICON_SIZE),
+            modifier = Modifier.size(Constants.ICON_SIZE).clip(CircleShape).clickable { onToggleEnable() },
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
         )
     }
@@ -1240,7 +1332,7 @@ fun SortTypeDialog(
 }
 
 @Composable
-private fun RadioButton(
+private fun RadioButton( // TODO huh where is this
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -1254,6 +1346,7 @@ private fun RadioButton(
         tint = MaterialTheme.colorScheme.primary,
         modifier = Modifier
             .padding(8.dp)
+            .clip(CircleShape)
             .clickable(onClick = onClick)
     )
 }

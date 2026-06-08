@@ -3,6 +3,7 @@ package dev.msuhr.dominionkingdoms.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.ColorFilter
@@ -48,9 +50,8 @@ fun ExpansionListItem(
     onOwnershipToggle: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(
@@ -72,8 +73,7 @@ fun ExpansionListItem(
 @Composable
 fun ExpansionImage(expansion: ExpansionWithEditions) {
     val context = LocalContext.current
-    val imageName = expansion.activeEdition?.imageName ?: ""
-    val drawableId = getDrawableId(context, imageName)
+    val drawableId = getDrawableId(context, expansion.displayImageName)
 
     Image(
         painter = painterResource(id = drawableId),
@@ -103,7 +103,7 @@ fun ExpansionLabels(
             // Constructs card amount text with icons
             text = buildAnnotatedString {
                 withStyle(SpanStyle(fontSize = Constants.CARD_NAME_FONT_SIZE, fontWeight = FontWeight.Bold)) {
-                    append("${expansion.name} ")
+                    append(expansion.displayName)
                 }
                 if (expansion.isAnyOwned()) {
                     withStyle(SpanStyle(fontSize = 14.sp/*Constants.TEXT_SMALL*/, fontStyle = FontStyle.Italic, color = LocalContentColor.current.copy(alpha = 0.6f))) {
@@ -135,18 +135,10 @@ fun ExpansionOwnershipIcon(
     expansion: ExpansionWithEditions,
     onOwnershipToggle: () -> Unit
 ) {
-    // Special case for Promo expansion: show chevron instead of ownership toggle
-    if (expansion.id == "PROMO") {
-        Box(modifier = Modifier.size(Constants.CHECKMARK_SIZE), contentAlignment = Alignment.Center) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(Constants.ICON_SIZE), MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        return
-    }
-
+    // TODO make a BothOwnedIcon, FirstEditionIcon, SecondEditionIcon, UnownedIcon to reduce nesting and repetition
     Box(
         modifier = Modifier
-            .size(Constants.CHECKMARK_SIZE)
-            .clickable { onOwnershipToggle() },
+            .size(35.dp), // TODO random
         contentAlignment = Alignment.Center
     ) {
         // Multi-edition expansion: show ownership state icon
@@ -154,25 +146,25 @@ fun ExpansionOwnershipIcon(
             when {
                 expansion.isBothOwned() -> {
                     Box {
-                        Icon(Icons.Filled.CheckCircle, null, Modifier.size(Constants.ICON_SIZE), MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Filled.CheckCircle, null, Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() }, MaterialTheme.colorScheme.primary)
                         if (expansion.isSharedSecondEdition) SharedEditionIndicator()
                     }
                 }
-                expansion.isFirstEditionOwned -> CircleWithNumber(1)
+                expansion.isFirstEditionOwned -> CircleWithNumber(1, onOwnershipToggle)
                 expansion.isSecondEditionOwned -> {
                     Box {
-                        CircleWithNumber(2)
+                        CircleWithNumber(2, onOwnershipToggle)
                         if (expansion.isSharedSecondEdition) SharedEditionIndicator()
                     }
                 }
-                else -> Icon(Icons.Outlined.Circle, null, Modifier.size(Constants.ICON_SIZE), MaterialTheme.colorScheme.onSurface)
+                else -> Icon(Icons.Outlined.Circle, null, Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() }, MaterialTheme.colorScheme.onSurface)
             }
         } else {
             val isOwned = expansion.isAnyOwned()
             Icon(
                 imageVector = if (isOwned) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                 contentDescription = null,
-                modifier = Modifier.size(Constants.ICON_SIZE),
+                modifier = Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() },
                 tint = if (isOwned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -180,9 +172,9 @@ fun ExpansionOwnershipIcon(
 }
 
 @Composable
-fun CircleWithNumber(number: Int) {
+fun CircleWithNumber(number: Int, onOwnershipToggle: () -> Unit) {
     Box(modifier = Modifier.size(Constants.ICON_SIZE), contentAlignment = Alignment.Center) {
-        Icon(Icons.Filled.Circle, null, Modifier.fillMaxSize(), MaterialTheme.colorScheme.primary)
+        Icon(Icons.Filled.Circle, null, Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() }, MaterialTheme.colorScheme.primary)
         Text(number.toString(), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.inverseOnSurface)
     }
 }
@@ -201,8 +193,9 @@ private fun ManagementCard(
     enabled: Boolean = true
 ) {
     Card(
-        modifier = Modifier
-            .clickable(enabled = enabled, onClick = onClick),
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(

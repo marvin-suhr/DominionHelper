@@ -104,8 +104,12 @@ class KingdomViewModel @Inject constructor(
     val isNewKingdom: StateFlow<Boolean> = _isNewKingdom.asStateFlow()
 
     // Grid view toggle for kingdom cards
-    private val _isGridViewEnabled = MutableStateFlow(false)
-    val isGridViewEnabled: StateFlow<Boolean> = _isGridViewEnabled.asStateFlow()
+    val isGridViewEnabled: StateFlow<Boolean> = userPrefsRepository.kingdomGridView
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true) // Default to true
+
+    // Pending delete state (for undo functionality)
+    private val _pendingDelete = MutableStateFlow<Kingdom?>(null)
+    val pendingDelete: StateFlow<Kingdom?> = _pendingDelete.asStateFlow()
 
     private val _selectedCard = MutableStateFlow<Card?>(null)
     val selectedCard: StateFlow<Card?> = _selectedCard.asStateFlow()
@@ -159,6 +163,18 @@ class KingdomViewModel @Inject constructor(
         isNew && allowVetoing && (currentVetoMode != VetoMode.NO_REROLL || currentKingdom.randomCards.size > 10)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val isLandscapeDismissalEnabled: StateFlow<Boolean> = combine(
+        userPrefsRepository.allowVetoing,
+        userPrefsRepository.vetoMode,
+        _isNewKingdom
+    ) { allowVetoing, currentVetoMode, isNew ->
+        // Only allow vetoing if:
+        // 1. It's a newly created kingdom (not previously saved), AND
+        // 2. Vetoing is enabled, AND
+        // 3. A veto mode with rerolling is enabled OR we have more than 10 cards
+        isNew && allowVetoing && currentVetoMode != VetoMode.NO_REROLL
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     private fun switchUiStateTo(newState: KingdomUiState) {
         _uiState.value = newState
         Log.d("KingdomViewModel", "Switched UI state to $newState")
@@ -178,8 +194,11 @@ class KingdomViewModel @Inject constructor(
     }
 
     fun toggleGridView() {
-        _isGridViewEnabled.value = !_isGridViewEnabled.value
-        Log.d("KingdomViewModel", "Grid view toggled: ${_isGridViewEnabled.value}")
+        viewModelScope.launch {
+            val newValue = !isGridViewEnabled.value
+            userPrefsRepository.setKingdomGridView(newValue)
+            Log.d("KingdomViewModel", "Grid view toggled: $newValue")
+        }
     }
 
     fun getRandomKingdom() {
@@ -190,7 +209,9 @@ class KingdomViewModel @Inject constructor(
             }
 
             try {
-                val generatedKingdom = kingdomGenerator.generateKingdom()
+                var generatedKingdom = kingdomGenerator.generateKingdom()
+                generatedKingdom = applyPlayerCountToKingdom(generatedKingdom, _playerCount.value)
+                generatedKingdom = applySortTypeToKingdom(generatedKingdom, _sortType.value)
 
                 // Save the kingdom to database immediately (with its initial state)
                 kingdomRepository.saveKingdom(generatedKingdom)
@@ -204,6 +225,7 @@ class KingdomViewModel @Inject constructor(
                 generatedKingdom.warningMessage?.let { warning ->
                     triggerError(warning)
                 }
+
             } catch (e: KingdomGenerator.GenerationException) {
                 Log.e("KingdomViewModel", "Generation failed", e)
                 triggerError(e.message ?: "Could not generate kingdom.")
@@ -259,7 +281,7 @@ class KingdomViewModel @Inject constructor(
         _kingdom.update { currentGlobalKingdom -> applySortTypeToKingdom(currentGlobalKingdom, newSortType.sortType) }
     }
 
-    // Move elsewhere
+    // TODO Move elsewhere
     fun getCardAmounts(cards: LinkedHashMap<Card, Int>, playerCount: Int): LinkedHashMap<Card, Int> {
         require(playerCount in 2..4) { "Invalid player count: $playerCount" }
         val cardAmounts = linkedMapOf<Card, Int>()
@@ -292,7 +314,14 @@ class KingdomViewModel @Inject constructor(
                         4 -> 30
                         else -> error("Invalid player count")
                     }
+                    CardNames.SUN_TOKENS -> when (playerCount) {
+                        2 -> 5
+                        3 -> 8
+                        4 -> 10
+                        else -> error("Invalid player count")
+                    }
                     CardNames.REWARD_PILE -> if (playerCount == 2) 6 else 12
+                    CardNames.SPOILS -> 15
                     else -> 1
                 }
             }
@@ -405,13 +434,38 @@ class KingdomViewModel @Inject constructor(
 
     fun deleteKingdom(uuid: String) {
         viewModelScope.launch {
-            kingdomRepository.deleteKingdomById(uuid)
+            // Find the kingdom to delete
+            val kingdomToDelete = allKingdoms.value.find { it.uuid == uuid }
+            if (kingdomToDelete != null) {
+                // Store for undo
+                _pendingDelete.value = kingdomToDelete
+                // Remove from database temporarily
+                kingdomRepository.deleteKingdomById(uuid)
 
-            // If selected kingdom was deleted
-            if (_kingdom.value.uuid == uuid) {
-                _kingdom.value = Kingdom()
-                switchUiStateTo(KingdomUiState.KINGDOM_LIST)
+                // If selected kingdom was deleted
+                if (_kingdom.value.uuid == uuid) {
+                    _kingdom.value = Kingdom()
+                    switchUiStateTo(KingdomUiState.KINGDOM_LIST)
+                }
             }
+        }
+    }
+
+    fun undoDelete() {
+        viewModelScope.launch {
+            val pending = _pendingDelete.value
+            if (pending != null) {
+                // Restore the kingdom
+                kingdomRepository.saveKingdom(pending)
+                _pendingDelete.value = null
+            }
+        }
+    }
+
+    fun confirmPendingDelete() {
+        viewModelScope.launch {
+            // Clear pending delete (snackbar dismissed without undo)
+            _pendingDelete.value = null
         }
     }
 

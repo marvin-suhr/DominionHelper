@@ -46,6 +46,7 @@ data class Card(
 
     fun getDisplayCategory(): CardDisplayCategory {
         return when {
+            this.types.contains(Type.PILE) -> CardDisplayCategory.NONE
             this.landscape -> CardDisplayCategory.LANDSCAPE
             this.types.contains(Type.MAT) || this.types.contains(Type.TOKEN) -> CardDisplayCategory.MATERIAL
             !this.supply || this.basic -> CardDisplayCategory.SPECIAL

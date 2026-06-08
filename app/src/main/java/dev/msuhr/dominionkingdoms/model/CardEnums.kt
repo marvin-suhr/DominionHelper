@@ -28,8 +28,7 @@ enum class Set (val imageId: Int = 0, val displayName: String = "") {
     ALLIES(R.drawable.set_allies, "Allies"),
     PLUNDER(R.drawable.set_plunder, "Plunder"),
     RISING_SUN(R.drawable.set_rising_sun, "Rising Sun"),
-    PROMO(R.drawable.set_promo, "Promo Cards"),
-    PLACEHOLDER(displayName = "Placeholder") // TODO
+    PROMO(R.drawable.set_promo, "Promo Cards")
 }
 
 enum class Type(
@@ -86,8 +85,11 @@ enum class Type(
     ALLY(sortPriority = 33, displayText = "Ally"),              // Allies
     TRAIT(sortPriority = 34, displayText = "Trait"),            // Plunder
     PROPHECY(sortPriority = 35, displayText = "Prophecy"),      // Rising Sun
-    MAT(sortPriority = 998, displayText = "Mat"),
-    TOKEN(sortPriority = 999, displayText = "Token")
+
+    // Special material
+    MAT(sortPriority = 997, displayText = "Mat"),
+    TOKEN(sortPriority = 998, displayText = "Token"),
+    PILE(sortPriority = 999, displayText = "Pile")
 }
 
 enum class Category(val displayName: String) {
@@ -122,6 +124,7 @@ enum class Category(val displayName: String) {
     TERMINAL_SILVER("Terminal Silver"),
     SIFTER("Sifter"),
 
+    // TODO v
 
     DIGGING("Digging"),
     DISCARD("Discard"), // For benefit
@@ -146,7 +149,8 @@ enum class CardDisplayCategory {
     SUPPLY, // Normal kingdom cards
     SPECIAL, // Additional cards dependent on other cards
     LANDSCAPE, // Landscape cards
-    MATERIAL // Tokens and mats
+    MATERIAL, // Tokens and mats
+    NONE // Placeholder piles are only used for generated kingdoms
 }
 
 sealed class AppSortType(val text: String) {

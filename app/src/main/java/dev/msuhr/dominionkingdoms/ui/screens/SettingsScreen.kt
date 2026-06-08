@@ -7,14 +7,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -106,6 +100,24 @@ fun SettingsScreen(
                 bottom = 8.dp
             ),
             showVersionInfo = uiState.currentSubScreen == SettingsSubScreen.MAIN
+        )
+    }
+
+    if (uiState.showResetRulesDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.setShowResetRulesDialog(false) },
+            title = { Text("Reset Generation Rules") },
+            text = { Text("Are you sure you want to reset all card types, categories, and landscape type rules to their default values?") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.resetGenerationRules() }) {
+                    Text("Reset")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.setShowResetRulesDialog(false) }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 }

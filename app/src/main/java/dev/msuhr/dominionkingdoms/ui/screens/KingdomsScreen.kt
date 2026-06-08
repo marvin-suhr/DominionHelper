@@ -3,9 +3,11 @@ package dev.msuhr.dominionkingdoms.ui.screens
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -33,14 +35,17 @@ fun KingdomsScreen(
     LaunchedEffect(topBarTitle) { onTitleChanged(topBarTitle) }
 
     val kingdomListState = rememberLazyListState()
+    val singleKingdomState = rememberLazyGridState()
 
     val uiState by viewModel.uiState.collectAsState()
     val kingdom by viewModel.kingdom.collectAsState()
     val playerCount by viewModel.playerCount.collectAsState()
     val isDismissEnabled by viewModel.isCardDismissalEnabled.collectAsState()
+    val isLandscapeDismissEnabled by viewModel.isLandscapeDismissalEnabled.collectAsState()
     val selectedCard by viewModel.selectedCard.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isGridViewEnabled by viewModel.isGridViewEnabled.collectAsState()
+    val pendingDelete by viewModel.pendingDelete.collectAsState()
 
     val allKingdoms by viewModel.allKingdoms.collectAsState()
     val hasOwnedExpansions by viewModel.hasOwnedExpansions.collectAsState()
@@ -51,6 +56,13 @@ fun KingdomsScreen(
         "MainActivity",
         "Kingdom Screen Content. UI State: ${viewModel.uiState.collectAsState().value}"
     )
+
+    // Reset single kingdom scroll state when returning to the list
+    LaunchedEffect(uiState) {
+        if (uiState == KingdomUiState.KINGDOM_LIST) {
+            singleKingdomState.scrollToItem(0)
+        }
+    }
 
     // Clear snackbar and error when leaving the screen
     DisposableEffect(Unit) {
@@ -71,6 +83,24 @@ fun KingdomsScreen(
             coroutineScope.launch {
                 snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Short)
                 viewModel.clearError()
+            }
+        }
+    }
+
+    LaunchedEffect(pendingDelete) {
+        pendingDelete?.let { deletedKingdom ->
+            coroutineScope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = "Deleted \"${deletedKingdom.name}\"",
+                    actionLabel = "Undo",
+                    duration = SnackbarDuration.Short
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.undoDelete()
+                } else {
+                    // Snackbar dismissed - confirm the delete
+                    viewModel.confirmPendingDelete()
+                }
             }
         }
     }
@@ -118,11 +148,10 @@ fun KingdomsScreen(
                 onPlayerCountChange = {
                     viewModel.userChangedPlayerCount(it)
                 },
-                listState = kingdomListState,
-                isDismissEnabled = isDismissEnabled,
+                listState = singleKingdomState,
+                isCardDismissEnabled = isDismissEnabled,
+                isLandscapeDismissEnabled = isLandscapeDismissEnabled,
                 onCardDismissed = { viewModel.onCardDismissed(it) },
-                onFavorite = { viewModel.toggleCardFavorite(it) },
-                onBan = { viewModel.toggleCardEnabled(it) },
                 paddingValues = calculatePadding(innerPadding),
                 isGridViewEnabled = isGridViewEnabled
             )

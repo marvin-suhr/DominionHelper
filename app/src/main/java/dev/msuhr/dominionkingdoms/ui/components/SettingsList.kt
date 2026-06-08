@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Circle
@@ -66,6 +67,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.platform.LocalDensity
 import dev.msuhr.dominionkingdoms.ui.SettingItem
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
@@ -83,9 +92,15 @@ fun SettingsList(
 ) {
 
     Log.i("SettingsList", "settings: $settings")
+    val focusManager = LocalFocusManager.current
 
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            },
         state = listState,
         contentPadding = paddingValues
     ) {
@@ -98,6 +113,7 @@ fun SettingsList(
                 is SettingItem.ChoiceSetting<*> -> ChoiceSettingItem(setting)
                 is SettingItem.FeedbackSetting -> FeedbackSettingItem(setting)
                 is SettingItem.NavigationSetting -> NavigationSettingItem(setting)
+                is SettingItem.ActionSetting -> ActionSettingItem(setting)
                 is SettingItem.RangeRuleSetting -> RangeRuleSettingItem(setting)
             }
         }
@@ -216,6 +232,23 @@ fun TextSettingItem(setting: SettingItem.TextSetting) {
 fun NumberSettingItem(setting: SettingItem.NumberSetting) {
 
     var textFieldValue by remember(setting.number) { mutableStateOf(setting.number.toString()) }
+    val focusManager = LocalFocusManager.current
+
+    val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    LaunchedEffect(isImeVisible) {
+        if (!isImeVisible) {
+            focusManager.clearFocus()
+        }
+    }
+
+    fun commitValue(text: String) {
+        val number = text.toIntOrNull() ?: setting.min
+        val clampedValue = number.coerceIn(setting.min, setting.max)
+        textFieldValue = clampedValue.toString()
+        if (clampedValue != setting.number) {
+            setting.onNumberChange(clampedValue)
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -257,23 +290,33 @@ fun NumberSettingItem(setting: SettingItem.NumberSetting) {
                 onValueChange = { newText ->
                     // Only allow numbers and max 2 digits
                     if (newText.all { it.isDigit() } && newText.length <= 2) {
-                        newText.toIntOrNull()?.let { number ->
-                            val clampedValue = number.coerceIn(setting.min, setting.max)
-                            textFieldValue = clampedValue.toString()
-                            setting.onNumberChange(clampedValue)
-                        }
+                        textFieldValue = newText
                     }
                 },
                 modifier = Modifier
                     .width(48.dp)
-                    .height(40.dp),
+                    .height(40.dp)
+                    .onFocusChanged { 
+                        if (!it.isFocused) {
+                            commitValue(textFieldValue)
+                        }
+                    },
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        commitValue(textFieldValue)
+                        focusManager.clearFocus()
+                    }
+                ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 decorationBox = { innerTextField ->
                     Box(
@@ -361,9 +404,10 @@ fun <E : Enum<E>> ChoiceSettingItem(setting: SettingItem.ChoiceSetting<E>) {
                 if (setting.description != null) {
                     Box(
                         modifier = Modifier
+                            .padding(start = 8.dp)
                             .fillMaxHeight()
-                            .clickable { showInfoDialog = true }
-                            .padding(start = 8.dp),
+                            .clip(CircleShape)
+                            .clickable { showInfoDialog = true },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -374,7 +418,6 @@ fun <E : Enum<E>> ChoiceSettingItem(setting: SettingItem.ChoiceSetting<E>) {
                                 .fillMaxHeight()
                                 .height(0.dp) // <--- CRITICAL: Prevents Icon from pushing Row height
                                 .aspectRatio(1f)
-                            //modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -516,6 +559,36 @@ fun NavigationSettingItem(setting: SettingItem.NavigationSetting) {
 }
 
 @Composable
+fun ActionSettingItem(setting: SettingItem.ActionSetting) {
+    Surface(
+        onClick = setting.onClick,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = setting.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (setting.isDangerous) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                )
+                if (setting.description != null) {
+                    Text(
+                        text = setting.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun FeedbackSettingItem(setting: SettingItem.FeedbackSetting) {
     val context = LocalContext.current
 
@@ -575,6 +648,7 @@ private fun RadioButton(
         tint = MaterialTheme.colorScheme.primary,
         modifier = Modifier
             .padding(8.dp)
+            .clip(CircleShape)
             .clickable(onClick = onClick)
     )
 }

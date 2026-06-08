@@ -37,7 +37,7 @@ interface CardDao {
     @Query(
         """
     SELECT * FROM cards
-    WHERE name LIKE '%' || :filter || '%'
+    WHERE (name LIKE '%' || :filter || '%'
        OR CAST(cost AS TEXT) = :filter -- Exact match on cost
        OR CAST(debt AS TEXT) = :filter
        OR (LOWER(:filter) = 'debt' AND debt > 0) -- "debt" matches cards with debt > 0
@@ -47,6 +47,11 @@ interface CardDao {
        -- Also replaces spaces with underscores in the filter input
        OR categories LIKE '%"' || REPLACE(UPPER(:filter), ' ', '_') || '"%'
        OR types LIKE '%"' || REPLACE(UPPER(:filter), ' ', '_') || '"%'
+    )
+    -- Ignore piles, mats and tokens
+    AND types NOT LIKE '%"' || 'PILE' || '"%'
+    AND types NOT LIKE '%"' || 'MAT' || '"%'
+    -- AND types NOT LIKE '%"' || 'TOKEN' || '"%' -- Actually, leave tokens in. Might be useful for new players
     """
     )
     suspend fun getFilteredCards(filter: String): List<Card>

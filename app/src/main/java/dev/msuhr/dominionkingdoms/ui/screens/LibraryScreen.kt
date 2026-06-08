@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.CheckCircle
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -38,7 +40,7 @@ sealed class LibraryListItem {
     // Search bar item - always rendered first in the list
     data class SearchItem(val searchText: String, val onSearchTextChange: (String) -> Unit) : LibraryListItem()
     // Expansion header item (section header shown once before all expansions)
-    data object ExpansionHeaderItem : LibraryListItem()
+    data class ExpansionHeaderItem(val ownedCount: Int, val totalCount: Int) : LibraryListItem()
     // Expansion item from the library
     data class ExpansionItem(val expansion: ExpansionWithEditions) : LibraryListItem()
     // Individual card item (shown in search results)
@@ -84,6 +86,13 @@ fun LibraryScreen(
 
     val libraryListState = rememberLazyListState()
     val cardListState = rememberLazyListState()
+
+    // Reset card list scroll state whenever we return to the expansion list or search results
+    LaunchedEffect(uiState) {
+        if (uiState == LibraryUiState.EXPANSIONS || uiState == LibraryUiState.SEARCH_RESULTS) {
+            cardListState.scrollToItem(0)
+        }
+    }
 
     LaunchedEffect(title) { onTitleChanged(title) }
 
@@ -159,7 +168,7 @@ fun LibraryScreen(
                 ) { item ->
                     when (item) {
                         is LibraryListItem.SearchItem -> SearchBar(item.searchText, item.onSearchTextChange)
-                        is LibraryListItem.ExpansionHeaderItem -> HeaderItem("Expansions")
+                        is LibraryListItem.ExpansionHeaderItem -> HeaderItem("Expansions (${item.ownedCount} / ${item.totalCount})")
                         is LibraryListItem.ExpansionItem -> {
                             val expansion = item.expansion
                             val ownedEdition = viewModel.getOwnedEdition(expansion)
@@ -302,7 +311,10 @@ private fun buildListItems(uiState: LibraryUiState, expansionsWithEditions: List
     return when (uiState) {
         LibraryUiState.EXPANSIONS -> buildList {
             add(LibraryListItem.SearchItem(searchText) { viewModel.changeSearchText(it) })
-            add(LibraryListItem.ExpansionHeaderItem)
+            
+            val ownedCount = expansionsWithEditions.count { it.isAnyOwned() }
+            add(LibraryListItem.ExpansionHeaderItem(ownedCount, expansionsWithEditions.size))
+
             expansionsWithEditions.forEach { add(LibraryListItem.ExpansionItem(it)) }
             add(LibraryListItem.ManageHeaderItem)
             add(LibraryListItem.PromoCardsSectionItem(promoCardCountText) { viewModel.showPromoCards() })
@@ -356,5 +368,9 @@ private fun SortTypeDialog(sortType: LibraryViewModel.SortType, onSortTypeSelect
 
 @Composable
 private fun RadioButton(selected: Boolean, onClick: () -> Unit) {
-    Icon(imageVector = if (selected) Icons.Filled.CheckCircle else Icons.Outlined.Circle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(8.dp).clickable(onClick = onClick))
+    Icon(
+        imageVector = if (selected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(8.dp).clip(CircleShape).clickable(onClick = onClick))
 }

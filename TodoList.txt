@@ -1,55 +1,56 @@
-TODO KINGDOM GENERATION: How to display it when we have a warning AND an error? currentl, one is skipped
-For example - not enough portraits = error and cancel; not enough landscapes = warning and continue
+swipe to fav / ban in card list -> option
+classic nav bar colors -> edgetoedge?
+settings focus wenn man hin und hherwechselt (tastatur geht automatisch auf)
 
-ADd explanation to each dependent card (dependency)
+allow landscapes in DONT REROLL?
 
-SPLIT PILES NICHT DRIN ALARM - wait das war schon so oder? Might make sense to add them to be able to plan / understand the kingdom
+allow promo to be owned but banned?
 
-shouldnt be able to ban split cards or leveled up cards separately
+card.isBannable() {!card.basic && card.supply}
+card.isFavoritable() {...}
 
-
-MAKE POTION UNDISABLEABLE + money + vp cards
-
+allow searching for split pile
 
 Cornucopia guilds
-- change name when 2nd edition is selected
-- use first edition icon by default?
-- Check ownership stuff
+- Check ownership stuff -> When owning 2nd edition guilds and then cycling through cornucopia, guilds switches to NOT OWNED
 
+debt is 0 but cost can be null (numbercircle takes string while numberhexagon takes int)
 
-KingdomGenerator - i think fillportraitsevenly can fuck up. if the rules have already added > target cards for an expansion
-for example, require 3 treasures + 3 cost 6 cards. select base and prosperity. generation will sometimes be forced to make 6 prosp cards
-idk iif this can and should be fixed?
+dark_ages ist als einziges not all caps in sets (?)
+
+sort popup statt dropdown
+
+Allow forcing a landscape type or expansion
+landscape: allow / exclude / force 1?
+favorite star in gridview
+
+delete toast queue
+
+LAG with many kingdoms uh oh
+
+remove cards > 10 when saving kingdom (maybe warning)
 
 TOP PRIO
-- Even amounts seemed to be bugged when lots of cards are disabled?? i think when cards needed > cards enabled, the whole expansion is just skipped
--> This ONLY happens if the second edition is owned and those cards are limites
-- Fix mat image placement
-- Also check abstract piles like Loot and Boon
-- Tokens dependency + tokens in kingdom
-- Make landscape rules more chill, or at least give the option + option
-+ Currently, when we require 2 landscapes, 1 is fine for the kingdom to pass
-+ Check if we can generate more
-+ There is no way to force a landscape type?
-+ maybe let landscapes be on / off / force?
-- rethink trash / save edit position
+- Add split piles to additional material?? (upgrade cards sind drin)
+- SAUNA AVANTO GENERATED DISTINCTLY
 
 MID PRIO
-- Tell user what rule is fucking him up
+- Traits need to apply to a card
+- If only first edition is owned, always display first edition icon in card list -> komplexer, entweder muss jede Karte die ownership wissen, oder das kingdom muss es wissen
 - 5-6 players
 - Fehlende Kartenkategorien hinzufügen
+- kingdom count
 
 LOW PRIO
-- Traits need to apply to a card
-- If only first edition is owned, always display first edition icon in card list
-- Fix UI for promo cards
 - Island, pirate ship, native village are sorted wrong
+- Adventures upgrade cards are sorted wrong
 - Text(styling = ...
   - MaterialTheme.typography.headlineLarge/Medium/Small
   - MaterialTheme.typography.titleLarge/Medium/Small
   - MaterialTheme.typography.bodyLarge/Medium/Small
   - MaterialTheme.typography.labelLarge/Medium/Small
 - Search for can rip results in cantrip
+- card function / extension for "show fav / ban"
 
 LATER
 hints / popup system
@@ -61,6 +62,22 @@ favorite / premade kingdoms tab
     - recommended sets
 - VP counter
 - Dominion wiki link (dominionstrategy.com)
+- There will be a problem in gridview when a card costs coins + debt. this is currently only the case for fortune and wedding, which are both not portrait supply cards.
+ADd explanation to each dependent card (dependency)
+- Advanced dependencies (reaction activation depends on certain conditions:
+    attack: moat, diplomat, secret chamber, horse traders, guard dog, beggar, caravan guard, shield
+    trash: market square
+    discard: tunnel, weaver, faithful hound, village green
+    reveal: patron
+    card with 2+ types gained: falconer
+some materials have different artworks (vp mats) -> randomize which one is shown
+Option: expansion name instead of icon
+Option: require a certain expansion
+Options: random mode als erstes
+reset button for rules, fav / ban
+pin cards after generating + reroll button
+make checkbox clickable in full rectangle
+
 
 
 
@@ -73,6 +90,11 @@ Range slider: Remove 0 -> none selected = exclude? + default mode all selected +
 show bunte borders option in kingdomlist
 Align YEAR bottom right
 save card counts somewhere? they usually never change -> but they can be disabled hm
+KingdomGenerator - i think fillportraitsevenly can fuck up. if the rules have already added > target cards for an expansion
+for example, require 3 treasures + 3 cost 6 cards. select base and prosperity. generation will sometimes be forced to make 6 prosp cards
+idk if this can and should be fixed?
+Trash card?
+reset fav / ban?
 
 ---
 
@@ -235,3 +257,20 @@ TODO LOW PRIO
 - Attack, Prize -> Prize, attack (order)=? Clash, Augur, Wizard too
 - Add source card to dependent cards in library
 
+{
+    "name": "Trash Card",
+    "cost": null,
+    "supply": false,
+    "landscape": false,
+    "types": ["MAT"],
+    "image_name": "trash_card",
+    "basic": false,
+    "debt": 0,
+    "categories": [],
+    "potion": false,
+    "sets": [
+      "BASE_1E"
+    ],
+    "overpay": false,
+    "special_cost": false
+,

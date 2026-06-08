@@ -74,17 +74,14 @@ object CardNames {
     const val TREASURER = "Treasurer"
     const val KEY = "Key"
 
-    val CoffersGuildsCards = listOf(
+    val CoffersCards = listOf(
         "Baker",
         "Butcher",
         "Candlestick Maker",
         "Footpad",
         "Joust",
         "Merchant Guild",
-        "Plaza"
-    )
-
-    val CoffersRenaissanceCards = listOf(
+        "Plaza",
         "Ducat",
         "Patron",
         "Silk Merchant",
@@ -169,7 +166,7 @@ object CardNames {
     const val VICTORY_TOKEN_MAT = "Victory Token Mat"
     const val TAVERN_MAT = "Tavern Mat"
     const val COFFERS_MAT = "Coffers Mat"
-    const val COFFERS_VILLAGERS_MAT = "Coffers / Villagers Mat"
+    const val VILLAGERS_MAT = "Villagers Mat"
     const val EXILE_MAT = "Exile Mat"
     const val FAVORS_MAT = "Favors Mat"
 
@@ -215,7 +212,7 @@ object CardNames {
         "Trade Route",
         "Sinister Plot",
         "Garrison"
-    ) + CoffersGuildsCards + CoffersRenaissanceCards + VillagersCards
+    ) + CoffersCards + VillagersCards
 
     const val EMBARGO_TOKENS = "Embargo Tokens"
     const val EMBARGO = "Embargo"
@@ -275,14 +272,14 @@ object CardNames {
     // -> Omen / Prophecy
 
     // Placeholders for entire piles
-    const val BOON_PILE = "Boon pile"
-    const val HEX_PILE = "Hex pile"
-    const val LOOT_PILE = "Loot pile"
-    const val RUINS_PILE = "Ruins pile"
+    const val BOON_PILE = "Boon Pile"
+    const val HEX_PILE = "Hex Pile"
+    const val LOOT_PILE = "Loot Pile"
+    const val RUINS_PILE = "Ruins Pile"
 
     // Tournament / Joust
     const val TOURNAMENT = "Tournament"
-    const val PRIZE_PILE = "Prizes"
+    const val PRIZE_PILE = "Prize Pile"
     const val JOUST = "Joust"
-    const val REWARD_PILE = "Rewards"
+    const val REWARD_PILE = "Reward Pile"
 }
