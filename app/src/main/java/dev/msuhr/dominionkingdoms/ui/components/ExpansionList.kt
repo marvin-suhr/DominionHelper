@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.ColorFilter
@@ -51,7 +52,11 @@ fun ExpansionListItem(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
+            .shadow(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+            ),
         shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(
@@ -93,8 +98,8 @@ fun ExpansionLabels(
     val inlineContent = remember {
         val placeholder = Placeholder(16.sp, 16.sp, PlaceholderVerticalAlign.TextBottom)
         mapOf(
-            "p" to InlineTextContent(placeholder) { Image(painterResource(R.drawable.portrait2), null, Modifier.size(14.dp), alpha = 0.6f) },
-            "l" to InlineTextContent(placeholder) { Image(painterResource(R.drawable.landscape2), null, Modifier.size(15.dp), alpha = 0.6f) }
+            "p" to InlineTextContent(placeholder) { Image(painterResource(R.drawable.portrait2), null, Modifier.size(14.dp), alpha = 0.6f, colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)) },
+            "l" to InlineTextContent(placeholder) { Image(painterResource(R.drawable.landscape2), null, Modifier.size(15.dp), alpha = 0.6f, colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)) }
         )
     }
 
@@ -102,7 +107,7 @@ fun ExpansionLabels(
         Text(
             // Constructs card amount text with icons
             text = buildAnnotatedString {
-                withStyle(SpanStyle(fontSize = Constants.CARD_NAME_FONT_SIZE, fontWeight = FontWeight.Bold)) {
+                withStyle(SpanStyle(fontSize = Constants.CARD_NAME_FONT_SIZE, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)) {
                     append(expansion.displayName)
                 }
                 if (expansion.isAnyOwned()) {
@@ -157,7 +162,7 @@ fun ExpansionOwnershipIcon(
                         if (expansion.isSharedSecondEdition) SharedEditionIndicator()
                     }
                 }
-                else -> Icon(Icons.Outlined.Circle, null, Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() }, MaterialTheme.colorScheme.onSurface)
+                else -> Icon(Icons.Outlined.Circle, null, Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() }, MaterialTheme.colorScheme.outline)
             }
         } else {
             val isOwned = expansion.isAnyOwned()
@@ -165,7 +170,7 @@ fun ExpansionOwnershipIcon(
                 imageVector = if (isOwned) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() },
-                tint = if (isOwned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                tint = if (isOwned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             )
         }
     }
@@ -175,13 +180,13 @@ fun ExpansionOwnershipIcon(
 fun CircleWithNumber(number: Int, onOwnershipToggle: () -> Unit) {
     Box(modifier = Modifier.size(Constants.ICON_SIZE), contentAlignment = Alignment.Center) {
         Icon(Icons.Filled.Circle, null, Modifier.fillMaxSize().clip(CircleShape).clickable { onOwnershipToggle() }, MaterialTheme.colorScheme.primary)
-        Text(number.toString(), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.inverseOnSurface)
+        Text(number.toString(), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
     }
 }
 
 @Composable
 fun SharedEditionIndicator() {
-    Icon(Icons.Filled.Link, null, Modifier.size(12.dp).offset { IntOffset(16, -16) }, MaterialTheme.colorScheme.tertiary)
+    Icon(Icons.Filled.Link, null, Modifier.size(12.dp).offset { IntOffset(16, -16) }, MaterialTheme.colorScheme.primary)
 }
 
 @Composable
@@ -195,7 +200,11 @@ private fun ManagementCard(
     Card(
         onClick = onClick,
         enabled = enabled,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
+            .shadow(
+              elevation = 4.dp,
+                shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+            ),
         shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(

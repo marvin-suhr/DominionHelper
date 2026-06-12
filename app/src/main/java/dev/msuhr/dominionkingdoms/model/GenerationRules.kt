@@ -8,7 +8,7 @@ data class RuleOption(
     val max: Int = MAX_CARDS
 ) {
     companion object {
-        const val MAX_CARDS = 10 // TODO might mess with >10 cards generated
+        const val MAX_CARDS = 20
         val ALLOW = RuleOption(0, MAX_CARDS)
         val EXCLUDE = RuleOption(0, 0)
     }

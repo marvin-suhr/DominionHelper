@@ -14,7 +14,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -72,6 +71,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -96,6 +96,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -568,7 +569,12 @@ fun KingdomGridCardItem(
 
     Card(
         onClick = { onCardClick(card) },
-        modifier = modifier.border( border = BorderStroke(3.dp, borderBrush), shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)),
+        modifier = modifier
+            .border(border = BorderStroke(3.dp, borderBrush), shape = RoundedCornerShape(Constants.IMAGE_ROUNDED))
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+            ),
         shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
     ) {
         Row(
@@ -586,6 +592,7 @@ fun KingdomGridCardItem(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL)
             ) {
+
                 // Expansion icon
                 Image(
                     painter = painterResource(id = card.expansionImageId),
@@ -596,9 +603,18 @@ fun KingdomGridCardItem(
 
                 Spacer(Modifier.height(Constants.PADDING_SMALL))
 
-                // Price Indicator
-                if (card.cost != null) { NumberCircle(card.cost.toString()) }
-                if (card.debt != 0) {NumberHexagon(card.debt) }
+                Row (horizontalArrangement = Arrangement.Center) {
+                    // Price Indicator
+                    if (card.cost != null) {
+                        NumberCircle(card.cost.toString())
+                    }
+                    if (card.debt != 0) {
+                        NumberHexagon(card.debt)
+                    }
+                    if (card.potion) {
+                        PotionIcon()
+                    }
+                }
             }
 
             // Card image with text on it
@@ -613,7 +629,7 @@ fun KingdomGridCardItem(
                         .border(
                             border = BorderStroke(
                                 2.5.dp,
-                                MaterialTheme.colorScheme.outlineVariant
+                                MaterialTheme.colorScheme.outline
                             ),
                             shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
                         )
@@ -805,6 +821,10 @@ fun CardView(
     Box(
         modifier = modifier
             .height(Constants.CARD_HEIGHT_CARDS)
+            .shadow(
+                elevation = if (enabled) 4.dp else 0.dp,
+                shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+            )
             .fillMaxWidth()
             .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
             .alpha(if (enabled) 1f else 0.6f)
@@ -955,7 +975,6 @@ fun CardImage(card: Card) {
             .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))
             .width(Constants.CARD_IMAGE_WIDTH)
     ) {
-
         AsyncImage(
             model = drawableId,
             contentDescription = stringResource(

@@ -23,10 +23,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.model.ExpansionWithEditions
+import dev.msuhr.dominionkingdoms.model.OwnedEdition
 import dev.msuhr.dominionkingdoms.ui.LibraryUiState
 import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
 import dev.msuhr.dominionkingdoms.ui.components.*
-import dev.msuhr.dominionkingdoms.utils.Constants
 import dev.msuhr.dominionkingdoms.utils.calculatePadding
 
 /**
@@ -145,7 +145,7 @@ fun LibraryScreen(
 
             LazyColumn(
                 state = libraryListState,
-                verticalArrangement = Arrangement.spacedBy(Constants.PADDING_SMALL),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = calculatePadding(innerPadding)
             ) {
                 items(
@@ -173,7 +173,7 @@ fun LibraryScreen(
                             val expansion = item.expansion
                             val ownedEdition = viewModel.getOwnedEdition(expansion)
                             
-                            val counts = if (ownedEdition == dev.msuhr.dominionkingdoms.model.OwnedEdition.BOTH) {
+                            val counts = if (ownedEdition == OwnedEdition.BOTH) {
                                 expansionCardCounts[expansion.id]
                             } else {
                                 expansion.activeEdition?.let { expansionCardCounts[it.id] }

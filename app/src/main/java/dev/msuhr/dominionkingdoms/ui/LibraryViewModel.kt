@@ -173,14 +173,13 @@ class LibraryViewModel @Inject constructor(
                 }
 
                 val portraits = editionCards.count { it.supply && !it.landscape }
-                val landscapes = editionCards.count { it.supply && it.landscape }
+                val landscapes = editionCards.count { /*it.supply &&*/ it.landscape }
 
                 counts[editionId] = Pair(portraits, landscapes)
 
                 editionCards.forEach { card ->
-                    if (card.supply) {
-                        if (card.landscape) landscapeSet.add(card.id) else portraitSet.add(card.id)
-                    }
+                    if (card.landscape) landscapeSet.add(card.id)
+                    else if (card.supply) portraitSet.add(card.id)
                 }
             }
 

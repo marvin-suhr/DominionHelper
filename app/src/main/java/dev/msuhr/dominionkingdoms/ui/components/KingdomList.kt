@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,17 +47,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -180,7 +184,11 @@ fun KingdomCard(
 
     Card(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
+            ),
         onClick = {
             //if (!isEditingName) { // Allow card click only while not editing
             onKingdomClick()
@@ -244,6 +252,8 @@ fun EditableKingdomName(
 
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+
+    val haptic = LocalHapticFeedback.current
 
     // Function to commit the name change
     val commitNameChange = {
@@ -330,7 +340,13 @@ fun EditableKingdomName(
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .clickable { isEditingName = true }
+                    .combinedClickable(
+                        onClick = { },
+                        onLongClick = {
+                            isEditingName = true
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    )
             )
         }
     }
@@ -361,7 +377,7 @@ fun CardImageKingdomList(card: Card) {
         modifier = Modifier
             .border(
                 //border = BorderStroke(1.5.dp, borderBrush), // Colored variant. too loud
-                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
                 shape = RoundedCornerShape(Constants.IMAGE_ROUNDED)
             )
             .clip(RoundedCornerShape(Constants.IMAGE_ROUNDED))

@@ -73,50 +73,44 @@ object AppColorScheme {
         surfaceDim = if (isDark) Color(0xFF1B1B1F) else Color(0xFFDADADD),
         surfaceContainer = if (isDark) Color(0xFF2B2A2E) else Color(0xFFE0DCD6), // Nav bar
         surfaceContainerHigh = if (isDark) Color(0xFF2B2A2E) else Color(0xFFE8EAF0), // not used
-        surfaceContainerHighest = if (isDark) Color(0xFF36353A) else Color(0xFFEBE8E0), // Card background - 0xFFF3EEE2 action card color
+        //surfaceContainerHighest = if (isDark) Color(0xFF36353A) else Color(0xFFFFFFFF), // WHITE BACKGROUND
+        surfaceContainerHighest = if (isDark) Color(0xFF36353A) else Color(0xFFEBE8E0), // Card background
         surfaceContainerLow = if (isDark) Color(0xFF181819) else Color(0xFFE3E6E0), // not used
         surfaceContainerLowest = if (isDark) Color(0xFF101012) else Color(0xFFE1E4DC) // not used
     )
 
     // Light Mode Colors
     val lightCustomColors = createColorScheme(
-        // Primary: Warm amber/gold (Dominion card backs)
-        primary = Color(0xFFD4901F),
-        onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFFFFDD87),
-        onPrimaryContainer = Color(0xFF2E1500),
+        //primary = Color(0xFFD4901F), // ORANGE
+        //primary = Color(0xFFE6952B), // 1
+        primary = Color(0xFFDF9F37), // 3
+        //primary = Color(0xFFE5C158), // Gold coin
+        onPrimary = Color(0xFFFFFFFF), // On player selection buttons?
+        //primaryContainer = Color(0xFFFFE187),
+        //onPrimaryContainer = Color(0xFF2E1500),
 
-        // Secondary: Warm copper/accent
-        secondary = Color(0xFF8B5E3C),
-        onSecondary = Color(0xFFFFFFFF),
-        secondaryContainer = Color(0xFFB8CB8D),
-        onSecondaryContainer = Color(0xFF252F20),
-
-        // Tertiary: Olive green (earth tone)
-        tertiary = Color(0xFF5C6B3F),
-        onTertiary = Color(0xFFFFFFFF),
-        tertiaryContainer = Color(0xFFD0E8B8),
-        onTertiaryContainer = Color(0xFF192220),
+        primaryContainer = Color(0xFFFCE7CB),
+        onPrimaryContainer = Color(0xFF331B00),
 
         // Error: Soft red (less harsh)
-        error = Color(0xFFDC6A6A),
+        error = Color(0xFFFFB2B2),
         onError = Color(0xFFFFFFFF),
-        errorContainer = Color(0xFFFFDAD4),
+        errorContainer = Color(0xFFFFB2B2),
         onErrorContainer = Color(0xFF411F2A),
 
         // Background: Warm off-white (cream instead of cool gray)
-        background = Color(0xFFFAF8F3),
+        background = Color(0xFFF9F7F2),
         onBackground = Color(0xFF1C1B18),
 
         // Surface: Warm white
-        surface = Color(0xFFFFFBF9),
-        onSurface = Color(0xFF1C1B18),
+        surface = Color(0xFFF9F7F2),
+        onSurface = Color(0xFF3D3631),
 
         // SurfaceVariant: Warm gray
         surfaceVariant = Color(0xFFE1E3DD),
         onSurfaceVariant = Color(0xFF454744),
 
-        outline = Color(0xFF747773),
+        outline = Color(0xFF94969A),
         outlineVariant = Color(0xFFB4B6BB),
 
         inverseSurface = Color(0xFF2F3032),
@@ -124,37 +118,37 @@ object AppColorScheme {
 
         inversePrimary = Color(0xFFFFB972),
 
+        secondary = Color(0xFF454744), // Navbar selected text
+        onSecondary = Color(0xFF00FF00), // ???
+        secondaryContainer = Color(0xFFF5E6C8), // Navbar selection blob
+        onSecondaryContainer = Color(0xFF2D1600), // Navbar selected icon
+
+        // Unused
+        tertiary = Color(0xFFFF00FF),
+        onTertiary = Color(0xFFFF00FF),
+        tertiaryContainer = Color(0xFFFF00FF),
+        onTertiaryContainer = Color(0xFFFF00FF),
+
         isDark = false
     )
 
     // Dark Mode Colors
     val darkCustomColors = createColorScheme(
-        /*primary = Color(0xFF9CBAFF),
-        onPrimary = Color(0xFF002F66),
-        primaryContainer = Color(0xFF00468E),
-        onPrimaryContainer = Color(0xFFD3E4FF),
-        inversePrimary = Color(0xFF2563EB),*/
-        primary = Color(0xAAE5C158),
-        onPrimary = Color(0xFF3A2D00),
-        primaryContainer = Color(0xFF554300),
-        onPrimaryContainer = Color(0xFFFFE187),
+        primary = Color(0xFFF0B27A), // ORANGE
+        //primary = Color(0xFFE5C158), // GOLD COIN
+        onPrimary = Color(0xFF4F3014),
+        //primaryContainer = Color(0xFF4D4421),
+        //onPrimaryContainer = Color(0xFFFFE187),
+
+        primaryContainer = Color(0xFF593E23),
+        onPrimaryContainer = Color(0xFFFCDCBF),
+
         inversePrimary = Color(0xFF755B00),
-
-        secondary = Color(0xFFFFB972),
-        onSecondary = Color(0xFF4B2800),
-        secondaryContainer = Color(0xFF6D3B00),
-        onSecondaryContainer = Color(0xFFFFDDB3),
-
-        tertiary = Color(0xFF9CD49B),
-        onTertiary = Color(0xFF003913),
-        tertiaryContainer = Color(0xFF0F511F),
-        onTertiaryContainer = Color(0xFFB8F1BB),
 
         error = Color(0xFFFFB4AB),
         onError = Color(0xFF690005),
-        //errorContainer = Color(0xFF93000A),
-        errorContainer = Color(0xFF690005),
-        onErrorContainer = Color(0xFFFFDAD6),
+        errorContainer = Color(0xFF8C1D18),
+        onErrorContainer = Color(0xFFF9DEDC),
 
         background = Color(0xFF1C1B1F),
         onBackground = Color(0xFFE5E1E5),
@@ -163,11 +157,22 @@ object AppColorScheme {
         surfaceVariant = Color(0xFF464349),
         onSurfaceVariant = Color(0xFFCAC6CF),
 
-        outline = Color(0xFF928F99),
+        outline = Color(0xFF6C6971),
         outlineVariant = Color(0xFF464349),
 
         inverseSurface = Color(0xFFE5E1E5),
         inverseOnSurface = Color(0xFF2F3033),
+
+        secondary = Color(0xFFCAC6CF), // Navbar selected text
+        onSecondary = Color(0xFF00FF00), // ???
+        secondaryContainer = Color(0xFF3D2E20), // Navbar selection blob
+        onSecondaryContainer = Color(0xFFF0B27A), // Navbar selected icon
+
+        // Unused
+        tertiary = Color(0xFFFF00FF),
+        onTertiary = Color(0xFFFF00FF),
+        tertiaryContainer = Color(0xFFFF00FF),
+        onTertiaryContainer = Color(0xFFFF00FF),
 
         isDark = true
     )

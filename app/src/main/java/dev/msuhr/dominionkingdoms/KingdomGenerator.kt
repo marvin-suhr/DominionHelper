@@ -200,13 +200,37 @@ class KingdomGenerator @Inject constructor(
         }
 
         // 4. Portrait Phase
-        val portraitRules = rules.filter { it.target == RuleTarget.PORTRAIT }.toMutableList()
-        applyRules(context.portraitPool, portraitList, portraitRules)
+        val portraitRules = rules.filter { it.target == RuleTarget.PORTRAIT }
+
+        // 1. Collect rules that are impossible to satisfy with the current pool
+        val ignoredRules = portraitRules.filter { rule ->
+            rule.option.min > 0 && context.portraitPool.count { rule.condition(it) } < rule.option.min
+        }
+
+        // 2. Log warnings for each ignored rule
+        if (ignoredRules.isNotEmpty()) {
+            val names = ignoredRules.joinToString(", ") { it.name }
+            context.addWarning(
+                GenerationWarningTag.DISTRIBUTION,
+                "Ignoring rules because no matching cards are in the selection: $names."
+            )
+        }
+
+        // 3. Apply the relaxed rules
+        val filteredRules = portraitRules.map { rule ->
+            if (rule in ignoredRules) {
+                rule.copy(option = rule.option.copy(min = 0))
+            } else {
+                rule
+            }
+        }
+
+        applyRules(context.portraitPool, portraitList, filteredRules, context)
         
         if (context.config.randomMode == RandomMode.EVEN_AMOUNTS && context.expansionSource != null) { // TODO doesn't EVEN_AMOUNTS require expansionSource != null?
-            fillPortraitsEvenly(context.config.totalPortraits, portraitList, context.portraitPool, context.expansionSource, portraitRules, context)
+            fillPortraitsEvenly(context.config.totalPortraits, portraitList, context.portraitPool, context.expansionSource, filteredRules, context)
         } else {
-            fillRemainingPortraits(context.config.totalPortraits, portraitList, context.portraitPool, portraitRules)
+            fillRemainingPortraits(context.config.totalPortraits, portraitList, context.portraitPool, filteredRules)
         }
 
         if (portraitList.size < 10) {
@@ -230,8 +254,10 @@ class KingdomGenerator @Inject constructor(
     private fun applyRules(
         pool: MutableSet<Card>,
         targetList: MutableSet<Card>,
-        rules: List<GenerationRule>
+        rules: List<GenerationRule>,
+        context: GenerationContext
     ) {
+        val targetCount = context.config.totalPortraits
         val requirementRules = rules.filter { it.option.min > 0 }
         var attempts = 0
         
@@ -240,6 +266,16 @@ class KingdomGenerator @Inject constructor(
             // Check if any previously satisfied rules randomly satisfied other rules
             val unsatisfied = requirementRules.filter { rule -> targetList.count { rule.condition(it) } < rule.option.min }
             if (unsatisfied.isEmpty()) break
+
+            // Stop immediately if we reach the target count, even if rules are unsatisfied
+            if (targetList.size >= targetCount) {
+                val names = unsatisfied.joinToString(", ") { it.name }
+                context.addWarning(
+                    GenerationWarningTag.PORTRAIT,
+                    "Target card count reached ($targetCount). Some rules were ignored: $names."
+                )
+                break
+            }
 
             // Work on a random rule to avoid bias
             val rule = unsatisfied.shuffled().first()

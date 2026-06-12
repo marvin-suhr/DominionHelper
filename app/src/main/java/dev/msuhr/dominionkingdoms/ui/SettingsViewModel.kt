@@ -92,9 +92,9 @@ sealed class SettingItem {
 }
 
 enum class RandomMode(val displayName: String) {
-    FULL_RANDOM("Full Random"),
+    EVEN_AMOUNTS("Even Amounts"),
     LIMITED_RANDOM("Limited Random"),
-    EVEN_AMOUNTS("Even Amounts")
+    FULL_RANDOM("Full Random")
 }
 
 enum class VetoMode(val displayName: String) {

@@ -135,7 +135,7 @@ fun SettingsList(
                     }
 
                     Text(
-                        text = "v${versionName}_$versionCode",
+                        text = "v${versionName}.$versionCode",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier

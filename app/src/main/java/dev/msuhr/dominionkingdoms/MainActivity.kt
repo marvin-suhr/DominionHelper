@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -25,8 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.ui.text.font.FontWeight
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -233,15 +230,7 @@ class MainActivity : ComponentActivity() {
                                             text = item.label,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                         )
-                                    },
-                                    // Explicitly define the colors to ensure perfect contrast inside the active pill
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = MaterialTheme.colorScheme.primary, // The gold pill background
-                                        selectedIconColor = MaterialTheme.colorScheme.onPrimary, // The dark icon inside the gold pill
-                                        selectedTextColor = MaterialTheme.colorScheme.primary, // The gold text under the pill
-                                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant, // Muted grey for inactive icons
-                                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant // Muted grey for inactive text
-                                    )
+                                    }
                                 )
                             }
                         }

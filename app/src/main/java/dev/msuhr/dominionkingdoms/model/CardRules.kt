@@ -54,9 +54,11 @@ object CardRules {
         GenerationRule("cat_peddler_variant", "Peddler variant", imageName = "cat_peddler_variant") { it.categories.contains(Category.PEDDLER_VARIANT) },
         GenerationRule("cat_terminal_silver", "Terminal silver", imageName = "cat_terminal_silver") { it.categories.contains(Category.TERMINAL_SILVER) },
         GenerationRule("cat_sifter", "Sifter", imageName = "cat_sifter") { it.categories.contains(Category.SIFTER) },
-        GenerationRule("cat_coffers", "Coffers", imageName = "") { it.categories.contains(Category.COFFERS) },
-        GenerationRule("cat_villagers", "Villagers", imageName = "") { it.categories.contains(Category.VILLAGERS) },
-        GenerationRule("cat_exile", "Exile", imageName = "") { it.categories.contains(Category.EXILE) },
+
+        // TODO NO IMAGES YET
+        //GenerationRule("cat_coffers", "Coffers", imageName = "") { it.categories.contains(Category.COFFERS) },
+        //GenerationRule("cat_villagers", "Villagers", imageName = "") { it.categories.contains(Category.VILLAGERS) },
+        //GenerationRule("cat_exile", "Exile", imageName = "") { it.categories.contains(Category.EXILE) },
     )
 
     val LANDSCAPE_RULES = listOf(

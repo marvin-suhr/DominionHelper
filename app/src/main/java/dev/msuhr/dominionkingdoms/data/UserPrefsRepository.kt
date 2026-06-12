@@ -76,7 +76,7 @@ class UserPrefsRepository @Inject constructor(
     // Use system theme: true = use system colors, false = use custom app colors
     val useSystemTheme: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferencesKeys.USE_SYSTEM_THEME] ?: true // Default to true
+            preferences[UserPreferencesKeys.USE_SYSTEM_THEME] ?: false // Default to false
         }
 
     suspend fun setUseSystemTheme(useSystem: Boolean) {

@@ -217,8 +217,8 @@ fun CardDetail(
                         modifier = Modifier.weight(1f),
                         onClick = { onFavorite(card) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,//Color(0xFFFFD54F), // TODO: Light mode colors
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer//Color(0xFF121212)
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     ) {
                         Icon(Icons.Filled.Star, contentDescription = null)
@@ -230,9 +230,9 @@ fun CardDetail(
                         modifier = Modifier.weight(1f),
                         onClick = { onFavorite(card) },
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
+                            contentColor = MaterialTheme.colorScheme.outline
                         ),
-                        border = BorderStroke(1.dp, Color(0xFF424242))
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                     ) {
                         Icon(Icons.Outlined.StarBorder, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -241,7 +241,7 @@ fun CardDetail(
                 }
 
                 // Can't ban basic cards
-                if (!card.basic && card.supply) {
+                if (!card.basic && (card.supply || card.landscape)) {
 
                     // Ban toggle
                     if (!card.isEnabled) {
@@ -249,8 +249,8 @@ fun CardDetail(
                             modifier = Modifier.weight(1f),
                             onClick = { onBan(card) },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,//Color(0xFFE57373), // TODO: Light mode colors
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer//Color(0xFF121212)
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
                             )
                         ) {
                             Icon(Icons.Filled.Block, contentDescription = null)
@@ -262,9 +262,9 @@ fun CardDetail(
                             modifier = Modifier.weight(1f),
                             onClick = { onBan(card) },
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.outline//Color(0xB3FFFFFF)
+                                contentColor = MaterialTheme.colorScheme.outline
                             ),
-                            border = BorderStroke(1.dp, Color(0xFF424242))
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                         ) {
                             Icon(Icons.Outlined.Block, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
@@ -316,8 +316,8 @@ fun CategoryChip(categoryName: String, modifier: Modifier = Modifier) {
             )
         },
         colors = AssistChipDefaults.assistChipColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            labelColor = MaterialTheme.colorScheme.onPrimaryContainer
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            labelColor = MaterialTheme.colorScheme.onSecondaryContainer
         ),
         border = null // Removes the default outline border so it looks like a clean solid badge
     )
