@@ -6,7 +6,7 @@ import android.graphics.Rect
 import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -47,11 +47,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -91,16 +89,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle.Companion.Italic
@@ -125,8 +124,13 @@ import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
 import dev.msuhr.dominionkingdoms.utils.Constants
 import dev.msuhr.dominionkingdoms.model.Set
 import dev.msuhr.dominionkingdoms.utils.ui.horizontalFadingEdges
+import dev.msuhr.dominionkingdoms.utils.ui.swipeLockGatekeeper
 import kotlin.math.cos
 import kotlin.math.sin
+
+class SwipeLock {
+    var activeCardId: Int? = null
+}
 
 // TODO: Check Box contentAlignment vs contents Modifier.align (first is better)
 // Displays a list of cards
@@ -181,8 +185,8 @@ fun LibraryCardList(
             items(cardList) { card ->
                 CardView(
                     card,
-                    onCardClick,
-                    card.isEnabled,
+                    onCardClick = onCardClick,
+                    enabled = card.isEnabled,
                     showIcon = false,
                     onToggleEnable = { onToggleEnable(card) },
                     onFavorite = { onFavorite(card) },
@@ -342,13 +346,12 @@ fun KingdomCardList(
     paddingValues: PaddingValues,
     isGridViewEnabled: Boolean = false
 ) {
-    // 1. Track the specific ID of the card being swiped instead of a boolean
-    var activeSwipingCardId by remember { mutableStateOf<Any?>(null) }
-
     Log.i(
         "KingdomList",
         "randomCards: ${kingdom.randomCards.size}, basicCards: ${kingdom.basicCards.size}, dependentCards: ${kingdom.dependentCards.size}, startingCards: ${kingdom.startingCards.size}, landscapeCards: ${kingdom.landscapeCards.size}, gridView: $isGridViewEnabled"
     )
+
+    val swipeLock = remember { SwipeLock() }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -377,12 +380,12 @@ fun KingdomCardList(
             key = { _, card -> "random_${card.id}" },
             span = { _, _ -> GridItemSpan(if (isGridViewEnabled) 1 else 2) }
         ) { index, card ->
-            val currentCardId = card.id
             val isLeftColumn = index % 2 == 0
 
             if (isCardDismissEnabled) {
                 DismissableCard(
                     card = card,
+                    amount = kingdom.randomCards[card]!!,
                     onCardDismissed = onCardDismissed,
                     onCardClick = onCardClick,
                     modifier = Modifier.animateItem(),
@@ -390,32 +393,23 @@ fun KingdomCardList(
                     useGridView = isGridViewEnabled,
                     enableDismissFromStartToEnd = !isGridViewEnabled || !isLeftColumn,
                     enableDismissFromEndToStart = !isGridViewEnabled || isLeftColumn,
-                    isLockedByOthers = { activeSwipingCardId != null && activeSwipingCardId != currentCardId },
-                    onSwipeStart = {
-                        if (activeSwipingCardId == null) {
-                            activeSwipingCardId = currentCardId
-                        }
-                    },
-                    onSwipeEnd = {
-                        if (activeSwipingCardId == currentCardId) {
-                            activeSwipingCardId = null
-                        }
-                    }
+                    swipeLock = swipeLock
                 )
             } else {
                 if (isGridViewEnabled) {
                     KingdomGridCardItem(
                         card = card,
+                        amount = kingdom.randomCards[card]!!,
                         onCardClick = onCardClick,
                         modifier = Modifier.animateItem()
                     )
                 } else {
                     CardView(
                         card,
+                        amount = kingdom.randomCards[card]!!,
                         onCardClick,
                         enabled = card.isEnabled,
                         showIcon = true,
-                        amount = kingdom.randomCards[card]!!,
                         isContextMenuEnabled = false,
                         modifier = Modifier.animateItem()
                     )
@@ -434,33 +428,23 @@ fun KingdomCardList(
                 span = { GridItemSpan(2) }
             ) { card ->
                 if (isLandscapeDismissEnabled) {
-                    val currentCardId = card.id
-
                     DismissableCard(
                         card = card,
                         onCardDismissed = onCardDismissed,
                         onCardClick = onCardClick,
                         modifier = Modifier.animateItem(),
                         isEnabled = card.isEnabled,
-                        isLockedByOthers = { activeSwipingCardId != null && activeSwipingCardId != currentCardId },
-                        onSwipeStart = {
-                            if (activeSwipingCardId == null) {
-                                activeSwipingCardId = card.id
-                            }
-                        },
-                        onSwipeEnd = {
-                            if (activeSwipingCardId == card.id) {
-                                activeSwipingCardId = null
-                            }
-                        }
+                        enableDismissFromStartToEnd = true,
+                        enableDismissFromEndToStart = true,
+                        swipeLock = swipeLock
                     )
                 } else {
                     CardView(
                         card,
-                        onCardClick,
+                        amount = kingdom.landscapeCards[card]!!,
+                        onCardClick = onCardClick,
                         enabled = card.isEnabled,
                         showIcon = true,
-                        amount = kingdom.landscapeCards[card]!!,
                         isContextMenuEnabled = false,
                         modifier = Modifier.animateItem()
                     )
@@ -476,10 +460,10 @@ fun KingdomCardList(
             items(kingdom.dependentCards.keys.toList(), key = { "dependent_${it.id}" }, span = { GridItemSpan(2) }) { card ->
                 CardView(
                     card,
-                    onCardClick,
+                    amount = kingdom.dependentCards[card]!!,
+                    onCardClick = onCardClick,
                     enabled = card.isEnabled,
                     showIcon = true,
-                    amount = kingdom.dependentCards[card]!!,
                     isContextMenuEnabled = false,
                     modifier = Modifier.animateItem() // I think that's only needed for dismissable cards?
                 )
@@ -493,10 +477,10 @@ fun KingdomCardList(
         items(kingdom.startingCards.keys.toList(), key = { "starting_${it.id}" }, span = { GridItemSpan(2) }) { card ->
             CardView(
                 card,
-                onCardClick,
+                amount = kingdom.startingCards[card]!!,
+                onCardClick = onCardClick,
                 enabled = card.isEnabled,
                 showIcon = true,
-                amount = kingdom.startingCards[card]!!,
                 isContextMenuEnabled = false,
                 modifier = Modifier.animateItem()
             )
@@ -507,7 +491,7 @@ fun KingdomCardList(
             CardSpacer("Basic Cards")
         }
         items(kingdom.basicCards.keys.toList(), key = { "basic_${it.id}" }, span = { GridItemSpan(2) }) { card ->
-            CardView(card, onCardClick, enabled = card.isEnabled, showIcon = true, amount = kingdom.basicCards[card]!!, isContextMenuEnabled = false, modifier = Modifier.animateItem())
+            CardView(card, amount = kingdom.basicCards[card]!!, onCardClick = onCardClick, enabled = card.isEnabled, showIcon = true, isContextMenuEnabled = false, modifier = Modifier.animateItem())
         }
     }
 }
@@ -551,6 +535,7 @@ fun PlayerSelectionButtons(selectedPlayers: Int, onPlayerSelected: (Int) -> Unit
 @Composable
 fun KingdomGridCardItem(
     card: Card,
+    amount: Int = 1,
     onCardClick: (Card) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -653,7 +638,7 @@ fun KingdomGridCardItem(
 
                     // Card name
                     Text(
-                        text = card.name,
+                        text = card.name + if (amount > 1) " ($amount)" else "",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White,
                         maxLines = 1,
@@ -673,8 +658,9 @@ fun KingdomGridCardItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DismissableCard(
+private fun DismissableCard(
     card: Card,
+    amount: Int = 1,
     onCardDismissed: (Card) -> Unit,
     onCardClick: (Card) -> Unit,
     modifier: Modifier = Modifier,
@@ -682,102 +668,124 @@ fun DismissableCard(
     useGridView: Boolean = false,
     enableDismissFromStartToEnd: Boolean = true,
     enableDismissFromEndToStart: Boolean = true,
-    isLockedByOthers: () -> Boolean, // Changed from canSwipe: Boolean
-    onSwipeStart: () -> Unit = {},
-    onSwipeEnd: () -> Unit = {}
+    swipeLock: SwipeLock
 ) {
-    val view = LocalView.current
-    var isLocalSwipeInProgress by remember { mutableStateOf(false) }
-    var touchStartedOnThisItem by remember { mutableStateOf(false) }
+    val density = LocalDensity.current
+    val hapticFeedback = LocalHapticFeedback.current
 
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { dismissValue ->
-            val dismissed = dismissValue != SwipeToDismissBoxValue.Settled
-            if (dismissed) {
-                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                onCardDismissed(card)
-                onSwipeEnd()
-            }
-            dismissed
-        },
-        positionalThreshold = { it * 0.25f }
-    )
+    val currentEnableStartToEnd by rememberUpdatedState(enableDismissFromStartToEnd)
+    val currentEnableEndToStart by rememberUpdatedState(enableDismissFromEndToStart)
 
+    val dismissState = remember(card.id) {
+        SwipeToDismissBoxState(
+            initialValue = SwipeToDismissBoxValue.Settled,
+            density = density,
+            confirmValueChange = { dismissValue ->
+                if (dismissValue == SwipeToDismissBoxValue.Settled) {
+                    true
+                } else {
+                    // Always checks the updated tracking reference pointers
+                    when (dismissValue) {
+                        SwipeToDismissBoxValue.StartToEnd -> currentEnableStartToEnd
+                        SwipeToDismissBoxValue.EndToStart -> currentEnableEndToStart
+                    }
+                }
+            },
+            positionalThreshold = { totalDistance -> totalDistance * 0.25f }
+        )
+    }
+
+    // --- SIDE EFFECTS & LOCK LIFECYCLE MANAGEMENT ---
+
+    // Lock Lifecycle 1: Release lock instantly if the card springs back to the center
+    LaunchedEffect(dismissState.targetValue) {
+        if (dismissState.targetValue == SwipeToDismissBoxValue.Settled && swipeLock.activeCardId == card.id) {
+            swipeLock.activeCardId = null
+        }
+    }
+
+    // Lock Lifecycle 2: Clear lock and run state updates when card slides entirely off-screen
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            if (swipeLock.activeCardId == card.id) swipeLock.activeCardId = null
+            onCardDismissed(card)
+        }
+    }
+
+    // Lock Lifecycle 3: Absolute insurance policy to clear lock slots if layout node unmounts mid-drag
     DisposableEffect(card.id) {
         onDispose {
-            if (isLocalSwipeInProgress) {
-                onSwipeEnd()
+            if (swipeLock.activeCardId == card.id) {
+                swipeLock.activeCardId = null
             }
         }
     }
 
-    LaunchedEffect(dismissState) {
-        snapshotFlow { dismissState.targetValue }
-            .collect { targetValue ->
-                val isCurrentlySwiping = targetValue != SwipeToDismissBoxValue.Settled
-                if (isCurrentlySwiping && !isLocalSwipeInProgress) {
-                    isLocalSwipeInProgress = true
-                } else if (!isCurrentlySwiping && isLocalSwipeInProgress) {
-                    isLocalSwipeInProgress = false
-                    onSwipeEnd()
-                }
-            }
-    }
+    // --- RENDER LAYER ---
 
     SwipeToDismissBox(
         state = dismissState,
-        modifier = modifier.pointerInput(card.id) {
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent(PointerEventPass.Initial)
-
-                    if (isLockedByOthers() || (event.changes.any { it.pressed } && !touchStartedOnThisItem && !event.changes.any { it.changedToDown() })) {
-                        // If locked by others OR if we see a touch that didn't start here (no changedToDown seen first)
-                        // completely eat this touch event.
-                        event.changes.forEach { it.consume() }
-                    } else {
-                        // If a finger touches down on THIS card, claim the lock immediately
-                        if (event.changes.any { it.changedToDown() }) {
-                            touchStartedOnThisItem = true
-                            onSwipeStart()
-                        }
-
-                        // If all fingers leave this specific card, release the lock cleanly
-                        if (event.changes.all { !it.pressed }) {
-                            touchStartedOnThisItem = false
-                            onSwipeEnd()
-                        }
-                    }
-                }
-            }
-        },
-        enableDismissFromStartToEnd = touchStartedOnThisItem && !isLockedByOthers() && enableDismissFromStartToEnd,
-        enableDismissFromEndToStart = touchStartedOnThisItem && !isLockedByOthers() && enableDismissFromEndToStart,
+        modifier = modifier.swipeLockGatekeeper(card.id, swipeLock, dismissState),
+        enableDismissFromStartToEnd = enableDismissFromStartToEnd,
+        enableDismissFromEndToStart = enableDismissFromEndToStart,
         backgroundContent = {
-            val scale by animateDpAsState(
-                targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) 0.75.dp else 1.dp,
-                label = "icon scale"
+            DismissBackgroundCanvas(
+                dismissState = dismissState,
+                enableStart = enableDismissFromStartToEnd,
+                enableEnd = enableDismissFromEndToStart
             )
-
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp),
-                contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) Alignment.CenterEnd else Alignment.CenterStart
-            ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Dismiss Icon",
-                    modifier = Modifier.scale(scale.value),
-                    tint = Color.White
-                )
-            }
         }
     ) {
         if (useGridView) {
-            KingdomGridCardItem(card, onCardClick)
+            KingdomGridCardItem(card, amount, onCardClick)
         } else {
-            CardView(card, onCardClick, isEnabled, isContextMenuEnabled = false )
+            CardView(card, amount, onCardClick, isEnabled, isContextMenuEnabled = false)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DismissBackgroundCanvas(
+    dismissState: SwipeToDismissBoxState,
+    enableStart: Boolean,
+    enableEnd: Boolean
+) {
+    val direction = try { dismissState.dismissDirection } catch (_: IllegalStateException) { null }
+    val isSwipingFromStart = direction == SwipeToDismissBoxValue.StartToEnd && enableStart
+    val isSwipingFromEnd = direction == SwipeToDismissBoxValue.EndToStart && enableEnd
+    val isSwiping = dismissState.targetValue != SwipeToDismissBoxValue.Settled
+
+    val scale by animateFloatAsState(
+        targetValue = if (isSwiping) 1.4f else 1.0f,
+        label = "icon scale"
+    )
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        if (isSwipingFromStart) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = "Dismiss Left",
+                tint = Color.White,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .graphicsLayer { scaleX = scale; scaleY = scale }
+            )
+        }
+        if (isSwipingFromEnd) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = "Dismiss Right",
+                tint = Color.White,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .graphicsLayer { scaleX = scale; scaleY = scale }
+            )
         }
     }
 }
@@ -803,10 +811,10 @@ fun CardSpacer(text: String) {
 @Composable
 fun CardView(
     card: Card,
+    amount: Int = 1,
     onCardClick: (Card) -> Unit,
     enabled: Boolean = true,
     showIcon: Boolean = true,
-    amount: Int = 1,
     onToggleEnable: () -> Unit = { },
     onFavorite: () -> Unit = { },
     onBan: () -> Unit = { },

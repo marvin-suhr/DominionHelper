@@ -330,6 +330,49 @@ class KingdomViewModel @Inject constructor(
         return cardAmounts
     }
 
+    fun getCardAmount(card:  Card, playerCount: Int): Int {
+        require(playerCount in 2..4) { "Invalid player count: $playerCount" }
+        return if (card.types.contains(Type.VICTORY)) {
+            when (playerCount) {
+                2 -> 8
+                else -> 12
+            }
+        } else {
+            when (card.name) {
+                CardNames.COPPER -> when (playerCount) {
+                    2 -> 46
+                    3 -> 39
+                    4 -> 32
+                    else -> error("Invalid player count")
+                }
+                CardNames.SILVER -> 40
+                CardNames.GOLD -> 30
+                CardNames.PLATINUM -> 12
+                CardNames.CURSE -> when (playerCount) {
+                    2 -> 10
+                    3 -> 20
+                    4 -> 30
+                    else -> error("Invalid player count")
+                }
+                CardNames.RUINS_PILE -> when (playerCount) {
+                    2 -> 10
+                    3 -> 20
+                    4 -> 30
+                    else -> error("Invalid player count")
+                }
+                CardNames.SUN_TOKENS -> when (playerCount) {
+                    2 -> 5
+                    3 -> 8
+                    4 -> 10
+                    else -> error("Invalid player count")
+                }
+                CardNames.REWARD_PILE -> if (playerCount == 2) 6 else 12
+                CardNames.SPOILS -> 15
+                else -> 1
+            }
+        }
+    }
+
     fun selectKingdom(kingdom: Kingdom) {
         // At this point the kingdoms are fully loaded? But without dependencies!
         // Consider displaying KingdomEntities at this stage! TODO
@@ -342,8 +385,8 @@ class KingdomViewModel @Inject constructor(
             val fullKingdom = cardDependencyResolver.addDependentCards(kingdom.randomCards.keys, kingdom.landscapeCards.keys)
             // Preserve the original kingdom's metadata (name, uuid, favorites, etc.)
             val kingdomWithMetadata = fullKingdom.copy(uuid = kingdom.uuid, creationTimeStamp = kingdom.creationTimeStamp, isFavorite = kingdom.isFavorite, name = kingdom.name)
-            // player count
-            // sort
+            // TODO player count
+            // TODO sort
             _kingdom.value = kingdomWithMetadata
             _isNewKingdom.value = false
             switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
@@ -423,7 +466,8 @@ class KingdomViewModel @Inject constructor(
             val updatedKingdom = if (newCard.landscape) {
                 currentKingdom.copy(landscapeCards = insertOrReplaceAtKeyPosition(kingdomSnapshot.landscapeCards, dismissedCard, newCard, 1))
             } else {
-                currentKingdom.copy(randomCards = insertOrReplaceAtKeyPosition(kingdomSnapshot.randomCards, dismissedCard, newCard, 1))
+                val cardAmount = getCardAmount(newCard, _playerCount.value)
+                currentKingdom.copy(randomCards = insertOrReplaceAtKeyPosition(kingdomSnapshot.randomCards, dismissedCard, newCard, cardAmount))
             }
             viewModelScope.launch { kingdomRepository.saveKingdom(updatedKingdom) }
             updatedKingdom

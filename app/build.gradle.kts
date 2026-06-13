@@ -45,7 +45,7 @@ android {
         applicationId = "dev.msuhr.dominionkingdoms"
         minSdk = 24
         targetSdk = 35
-        versionCode = 17
+        versionCode = 19
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
