@@ -18,6 +18,7 @@ build/
 /.idea/misc.xml
 /.idea/deploymentTargetSelector.xml
 /.idea/deviceManager.xml
+/.idea/planningMode.xml
 
 .DS_Store
 /build
