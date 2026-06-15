@@ -599,8 +599,12 @@ Don't reroll: just remove cards until there's only 10 left."""
     val scrollToTopEvent: SharedFlow<Unit> = _scrollToTopEvent.asSharedFlow()
 
     override fun triggerScrollToTop() {
-        viewModelScope.launch {
-            _scrollToTopEvent.emit(Unit)
+        if (_uiState.value.currentSubScreen == SettingsSubScreen.MAIN) {
+            viewModelScope.launch {
+                _scrollToTopEvent.emit(Unit)
+            }
+        } else {
+            _uiState.update { it.copy(currentSubScreen = SettingsSubScreen.MAIN) }
         }
     }
 

@@ -1,4 +1,4 @@
-Young witch / Way of the Mouse / Riverboat
+Young witch / Way of the Mouse / Riverboat - divine wind?
 Sauna + Avanto can generate as single cards
 
 Tapping nav bar should take you to main view
@@ -7,7 +7,9 @@ landscape options (0-2)
 
 when rerolling, we need to re-check dependent cards!!!
 
-Harem Alt-VP
+Harem / Farm weird ids
+
+warning when always add promo card but 0 promos owned
 
 in search, split piles come at the very bottom (search "ast")
 

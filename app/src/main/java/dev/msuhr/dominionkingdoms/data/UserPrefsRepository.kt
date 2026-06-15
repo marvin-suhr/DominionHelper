@@ -45,9 +45,11 @@ object UserPreferencesKeys {
     val GENERATION_RULES = stringPreferencesKey("generation_rules")
     val LANDSCAPE_RULES = stringPreferencesKey("landscape_rules")
 
-    val SHOW_DATABASE_RESET_DIALOG = booleanPreferencesKey("show_database_reset_dialog")
+    val SHOW_CARD_UPDATE_DIALOG = booleanPreferencesKey("show_database_reset_dialog")
 
     val KINGDOM_GRID_VIEW = booleanPreferencesKey("kingdom_grid_view")
+
+    val CARD_DATA_VERSION = intPreferencesKey("card_data_version")
 }
 
 @Singleton
@@ -266,6 +268,18 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
+    // Card data version for tracking when to update card database
+    val cardDataVersion: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.CARD_DATA_VERSION] ?: 0 // Default to 0 (first run)
+        }
+
+    suspend fun setCardDataVersion(version: Int) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.CARD_DATA_VERSION] = version
+        }
+    }
+
     // Generation Rules (stored as Map<String, RuleOption> serialized to JSON via Kotlinx serialization)
     val activeRules: Flow<Map<String, RuleOption>> = context.dataStore.data
         .map { preferences ->
@@ -344,14 +358,14 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
-    val showDatabaseResetDialog: Flow<Boolean> = context.dataStore.data
+    val showCardUpdateDialog: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[UserPreferencesKeys.SHOW_DATABASE_RESET_DIALOG] ?: false
+            preferences[UserPreferencesKeys.SHOW_CARD_UPDATE_DIALOG] ?: false
         }
 
-    suspend fun setShowDatabaseResetDialog(show: Boolean) {
+    suspend fun setShowCardUpdateDialog(show: Boolean) {
         context.dataStore.edit { settings ->
-            settings[UserPreferencesKeys.SHOW_DATABASE_RESET_DIALOG] = show
+            settings[UserPreferencesKeys.SHOW_CARD_UPDATE_DIALOG] = show
         }
     }
 }

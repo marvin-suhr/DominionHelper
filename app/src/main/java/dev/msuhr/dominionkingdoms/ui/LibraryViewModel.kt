@@ -111,7 +111,13 @@ class LibraryViewModel @Inject constructor(
     val scrollToTopEvent = _scrollToTopEvent.asSharedFlow()
 
     override fun triggerScrollToTop() {
-        _scrollToTopEvent.tryEmit(Unit)
+        if (_uiState.value == LibraryUiState.EXPANSIONS || _uiState.value == LibraryUiState.SEARCH_RESULTS) {
+            _scrollToTopEvent.tryEmit(Unit)
+        } else {
+            clearSelectedExpansion()
+            clearSelectedCard()
+            switchUiStateTo(LibraryUiState.EXPANSIONS)
+        }
     }
 
     private val _sortType = MutableStateFlow(SortType.TYPE)

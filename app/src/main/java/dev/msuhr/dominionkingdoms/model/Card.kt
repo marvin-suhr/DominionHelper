@@ -14,22 +14,26 @@ import java.io.IOException
 @Entity(tableName = "cards")
 @Serializable
 data class Card(
-    @SerialName("id") @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @SerialName("id") @PrimaryKey val id: Int,
     @SerialName("name") val name: String,
+    @SerialName("image_name") val imageName: String,
+
     @SerialName("sets") val sets: List<Set>,
+    @SerialName("types") val types: List<Type>,
+    @SerialName("categories") val categories: List<Category>,
+
     @SerialName("cost") val cost: Int?,
+    @SerialName("overpay") val overpay: Boolean = false,
+    @SerialName("special_cost") val specialCost: Boolean = false,
+    @SerialName("potion") val potion: Boolean = false,
+    @SerialName("debt") val debt: Int = 0,
+
     @SerialName("supply") val supply: Boolean = true,
     @SerialName("landscape") val landscape: Boolean = false,
-    @SerialName("types") val types: List<Type>,
-    @SerialName("image_name") val imageName: String,
     @SerialName("basic") val basic: Boolean = false,
-    @SerialName("debt") val debt: Int = 0,
-    @SerialName("categories") val categories: List<Category>,
-    @SerialName("potion") val potion: Boolean = false,
+
     @SerialName("is_enabled") val isEnabled: Boolean = true,
-    @SerialName("is_favorite") val isFavorite: Boolean = false,
-    @SerialName("overpay") val overpay: Boolean = false,
-    @SerialName("special_cost") val specialCost: Boolean = false
+    @SerialName("is_favorite") val isFavorite: Boolean = false
 ) {
 
     override fun toString(): String {

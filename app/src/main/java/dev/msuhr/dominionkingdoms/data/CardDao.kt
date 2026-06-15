@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import dev.msuhr.dominionkingdoms.model.Card
 import kotlinx.coroutines.flow.Flow
@@ -59,7 +60,7 @@ interface CardDao {
     @Query("SELECT * FROM cards WHERE sets LIKE '%' || :id || '%'")
     suspend fun getCardsByExpansion(id: String): List<Card>
 
-    @Query("SELECT * FROM cards AS c WHERE sets LIKE '%' || :id || '%' AND c.isEnabled = 1")
+    @Query("SELECT * FROM cards AS c WHERE supply = 1 AND sets LIKE '%' || :id || '%' AND c.isEnabled = 1")
     suspend fun getEnabledCardsByExpansion(id: String): List<Card>
 
     @Query("SELECT * FROM cards WHERE supply = 1 AND sets LIKE '%' || :id || '%'")
@@ -288,4 +289,18 @@ interface CardDao {
 
     @Query("SELECT COUNT(*) FROM cards WHERE isFavorite = 1")
     fun getFavoriteCardCount(): Flow<Int>
+
+    // Card data update methods
+    @Query("SELECT * FROM cards")
+    suspend fun getAllCards(): List<Card>
+
+    @Query("DELETE FROM cards")
+    suspend fun clearCards()
+
+    // Executes everything inside a single database transaction safely
+    @Transaction
+    suspend fun replaceAllCards(newCards: List<Card>) {
+        clearCards()
+        insertAll(newCards)
+    }
 }

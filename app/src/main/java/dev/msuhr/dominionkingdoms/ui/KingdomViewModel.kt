@@ -83,7 +83,13 @@ class KingdomViewModel @Inject constructor(
     val scrollToTopEvent = _scrollToTopEvent.asSharedFlow()
 
     override fun triggerScrollToTop() {
-        _scrollToTopEvent.tryEmit(Unit)
+        if (_uiState.value == KingdomUiState.KINGDOM_LIST) {
+            _scrollToTopEvent.tryEmit(Unit)
+        } else {
+            saveKingdomIfNeeded()
+            clearSelectedCard()
+            switchUiStateTo(KingdomUiState.KINGDOM_LIST)
+        }
     }
 
     private val _sortType = MutableStateFlow(SortType.EXPANSION)

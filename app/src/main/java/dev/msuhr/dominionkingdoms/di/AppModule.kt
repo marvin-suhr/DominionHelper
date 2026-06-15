@@ -15,10 +15,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.msuhr.dominionkingdoms.data.CardDataUpdater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.runBlocking
 import javax.inject.Singleton
 
 @Module
@@ -34,8 +34,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideAppDatabase(
-        app: Application,
-        userPrefsRepository: UserPrefsRepository
+        app: Application
     ): AppDatabase {
         val databaseName = app.getString(R.string.database_name)
 
@@ -44,21 +43,23 @@ object AppModule {
             AppDatabase::class.java,
             databaseName
         ).fallbackToDestructiveMigration(true)
-            .addCallback(object : RoomDatabase.Callback() {
-                override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
-                    super.onDestructiveMigration(db)
-                    // Set flag to show dialog in MainActivity
-                    runBlocking {
-                        userPrefsRepository.setShowDatabaseResetDialog(true)
-                    }
-                }
-            })
             .build()
     }
 
     @Provides
-    fun provideCardDao(appDatabase: AppDatabase): CardDao {
-        return appDatabase.cardDao()
+    @Singleton
+    fun provideCardDataUpdater(
+        app: Application,
+        userPrefsRepository: UserPrefsRepository,
+        cardDao: CardDao
+    ): CardDataUpdater {
+        return CardDataUpdater(app.applicationContext, userPrefsRepository, cardDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCardDao(database: AppDatabase): CardDao {
+        return database.cardDao() // Replace with the abstract DAO getter method inside your AppDatabase class
     }
 
     @Provides
