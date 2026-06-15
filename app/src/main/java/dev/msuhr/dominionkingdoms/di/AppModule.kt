@@ -52,20 +52,20 @@ object AppModule {
                     CREATE TABLE IF NOT EXISTS cards (
                         id INTEGER PRIMARY KEY NOT NULL,
                         name TEXT NOT NULL,
-                        image_name TEXT NOT NULL,
+                        imageName TEXT NOT NULL,
                         sets TEXT NOT NULL,
                         types TEXT NOT NULL,
                         categories TEXT NOT NULL,
                         cost INTEGER,
                         overpay INTEGER NOT NULL,
-                        special_cost INTEGER NOT NULL,
+                        specialCost INTEGER NOT NULL,
                         potion INTEGER NOT NULL,
                         debt INTEGER NOT NULL,
                         supply INTEGER NOT NULL,
                         landscape INTEGER NOT NULL,
                         basic INTEGER NOT NULL,
-                        is_enabled INTEGER NOT NULL,
-                        is_favorite INTEGER NOT NULL
+                        isEnabled INTEGER NOT NULL,
+                        isFavorite INTEGER NOT NULL
                     )
                     """.trimIndent()
                 )
