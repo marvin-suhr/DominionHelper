@@ -282,4 +282,6 @@ object CardNames {
     const val PRIZE_PILE = "Prize Pile"
     const val JOUST = "Joust"
     const val REWARD_PILE = "Reward Pile"
+
+    const val CASTLES = "Castles"
 }

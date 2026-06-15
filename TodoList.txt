@@ -1,8 +1,25 @@
+Young witch / Way of the Mouse / Riverboat
+Sauna + Avanto can generate as single cards
+
+Tapping nav bar should take you to main view
+
+landscape options (0-2)
+
+Harem Alt-VP
+
+in search, split piles come at the very bottom (search "ast")
+
+show suggestions when searching type / category substrings
+
 swipe to fav / ban in card list -> option
 classic nav bar colors -> edgetoedge?
 settings focus wenn man hin und hherwechselt (tastatur geht automatisch auf)
 
 allow landscapes in DONT REROLL?
+
+when starting to edit a second name, commit the first one (kingdoms list)
+"- Banned" after banned card names
+
 
 allow promo to be owned but banned?
 
@@ -29,6 +46,8 @@ delete toast queue
 LAG with many kingdoms uh oh
 
 remove cards > 10 when saving kingdom (maybe warning)
+
+1st 2nd position verschiedene farben
 
 TOP PRIO
 - Add split piles to additional material?? (upgrade cards sind drin)

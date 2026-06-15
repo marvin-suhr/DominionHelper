@@ -283,11 +283,20 @@ class KingdomViewModel @Inject constructor(
 
     // TODO Move elsewhere
     fun getCardAmounts(cards: LinkedHashMap<Card, Int>, playerCount: Int): LinkedHashMap<Card, Int> {
-        require(playerCount in 2..4) { "Invalid player count: $playerCount" }
+        require(playerCount in 2..6) { "Invalid player count: $playerCount" }
         val cardAmounts = linkedMapOf<Card, Int>()
         cards.forEach { (card, _) ->
             val amount = if (card.types.contains(Type.VICTORY)) {
-                when (playerCount) {
+                if (card.name == CardNames.PROVINCE) {
+                    when (playerCount) {
+                        2 -> 8
+                        3 -> 12
+                        4 -> 12
+                        5 -> 15
+                        6 -> 18
+                        else -> error("Invalid player count")
+                    }
+                } else when (playerCount) {
                     2 -> 8
                     else -> 12
                 }
@@ -297,30 +306,33 @@ class KingdomViewModel @Inject constructor(
                         2 -> 46
                         3 -> 39
                         4 -> 32
+                        5 -> 85
+                        6 -> 78
                         else -> error("Invalid player count")
                     }
-                    CardNames.SILVER -> 40
-                    CardNames.GOLD -> 30
+                    CardNames.SILVER -> when (playerCount) {
+                        in 2..4 -> 40
+                        in 5..6 -> 80
+                        else -> error("Invalid player count")
+                    }
+                    CardNames.GOLD -> when (playerCount) {
+                        in 2..4 -> 40
+                        in 5..6 -> 60
+                        else -> error("Invalid player count")
+                    }
                     CardNames.PLATINUM -> 12
-                    CardNames.CURSE -> when (playerCount) {
-                        2 -> 10
-                        3 -> 20
-                        4 -> 30
-                        else -> error("Invalid player count")
-                    }
-                    CardNames.RUINS_PILE -> when (playerCount) {
-                        2 -> 10
-                        3 -> 20
-                        4 -> 30
-                        else -> error("Invalid player count")
-                    }
+                    CardNames.CURSE -> (playerCount - 1) * 10
+                    CardNames.RUINS_PILE -> (playerCount - 1) * 10
                     CardNames.SUN_TOKENS -> when (playerCount) {
                         2 -> 5
                         3 -> 8
                         4 -> 10
+                        5 -> 12
+                        6 -> 13
                         else -> error("Invalid player count")
                     }
                     CardNames.REWARD_PILE -> if (playerCount == 2) 6 else 12
+                    CardNames.CASTLES -> if (playerCount == 2) 6 else 12
                     CardNames.SPOILS -> 15
                     else -> 1
                 }
@@ -331,9 +343,19 @@ class KingdomViewModel @Inject constructor(
     }
 
     fun getCardAmount(card:  Card, playerCount: Int): Int {
-        require(playerCount in 2..4) { "Invalid player count: $playerCount" }
+        require(playerCount in 2..6) { "Invalid player count: $playerCount" }
         return if (card.types.contains(Type.VICTORY)) {
-            when (playerCount) {
+            if (card.name == CardNames.PROVINCE) {
+                when (playerCount) {
+                    2 -> 8
+                    3 -> 12
+                    4 -> 12
+                    5 -> 15
+                    6 -> 18
+                    else -> error("Invalid player count")
+                }
+            }
+            else when (playerCount) {
                 2 -> 8
                 else -> 12
             }
@@ -343,30 +365,33 @@ class KingdomViewModel @Inject constructor(
                     2 -> 46
                     3 -> 39
                     4 -> 32
+                    5 -> 85
+                    6 -> 78
                     else -> error("Invalid player count")
                 }
-                CardNames.SILVER -> 40
-                CardNames.GOLD -> 30
+                CardNames.SILVER -> when (playerCount) {
+                    in 2..4 -> 40
+                    in 5..6 -> 80
+                    else -> error("Invalid player count")
+                }
+                CardNames.GOLD -> when (playerCount) {
+                    in 2..4 -> 40
+                    in 5..6 -> 60
+                    else -> error("Invalid player count")
+                }
                 CardNames.PLATINUM -> 12
-                CardNames.CURSE -> when (playerCount) {
-                    2 -> 10
-                    3 -> 20
-                    4 -> 30
-                    else -> error("Invalid player count")
-                }
-                CardNames.RUINS_PILE -> when (playerCount) {
-                    2 -> 10
-                    3 -> 20
-                    4 -> 30
-                    else -> error("Invalid player count")
-                }
+                CardNames.CURSE -> (playerCount - 1) * 10
+                CardNames.RUINS_PILE -> (playerCount - 1) * 10
                 CardNames.SUN_TOKENS -> when (playerCount) {
                     2 -> 5
                     3 -> 8
                     4 -> 10
+                    5 -> 12
+                    6 -> 13
                     else -> error("Invalid player count")
                 }
                 CardNames.REWARD_PILE -> if (playerCount == 2) 6 else 12
+                CardNames.CASTLES -> if (playerCount == 2) 6 else 12
                 CardNames.SPOILS -> 15
                 else -> 1
             }

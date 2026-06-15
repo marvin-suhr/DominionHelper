@@ -498,7 +498,7 @@ fun KingdomCardList(
 
 @Composable
 fun PlayerSelectionButtons(selectedPlayers: Int, onPlayerSelected: (Int) -> Unit) {
-    val playerCounts = listOf(2, 3, 4)
+    val playerCounts = listOf(2, 3, 4, 5, 6)
 
     LazyRow(
         modifier = Modifier
