@@ -3,38 +3,33 @@ package dev.msuhr.dominionkingdoms.model
 import android.content.Context
 import android.util.Log
 import androidx.compose.ui.graphics.Color
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.google.gson.GsonBuilder
-import com.google.gson.TypeAdapter
-import com.google.gson.annotations.SerializedName
-import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.io.IOException
-import kotlin.text.uppercase
-import com.google.gson.stream.JsonWriter
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
 
 @Entity(tableName = "cards")
+@Serializable
 data class Card(
-    @SerializedName("id") @PrimaryKey(autoGenerate = true) val id: Int,
-    @SerializedName("name") val name: String,
-    @SerializedName("sets") val sets: List<Set>,
-    @SerializedName("cost") val cost: Int?,
-    @SerializedName("supply") val supply: Boolean,
-    @SerializedName("landscape") val landscape: Boolean,
-    @SerializedName("types") val types: List<Type>,
-    @SerializedName("image_name") val imageName: String,
-    @SerializedName("basic") val basic: Boolean,
-    @SerializedName("debt") val debt: Int,
-    @SerializedName("categories") val categories: List<Category>,
-    @SerializedName("potion") val potion: Boolean,
-    @SerializedName("is_enabled") @ColumnInfo(defaultValue = "1") val isEnabled: Boolean,
-    @SerializedName("is_favorite") @ColumnInfo(defaultValue = "0") val isFavorite: Boolean,
-    @SerializedName("overpay") val overpay: Boolean,
-    @SerializedName("special_cost") val specialCost: Boolean
+    @SerialName("id") @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @SerialName("name") val name: String,
+    @SerialName("sets") val sets: List<Set>,
+    @SerialName("cost") val cost: Int?,
+    @SerialName("supply") val supply: Boolean = true,
+    @SerialName("landscape") val landscape: Boolean = false,
+    @SerialName("types") val types: List<Type>,
+    @SerialName("image_name") val imageName: String,
+    @SerialName("basic") val basic: Boolean = false,
+    @SerialName("debt") val debt: Int = 0,
+    @SerialName("categories") val categories: List<Category>,
+    @SerialName("potion") val potion: Boolean = false,
+    @SerialName("is_enabled") val isEnabled: Boolean = true,
+    @SerialName("is_favorite") val isFavorite: Boolean = false,
+    @SerialName("overpay") val overpay: Boolean = false,
+    @SerialName("special_cost") val specialCost: Boolean = false
 ) {
 
     override fun toString(): String {
@@ -158,14 +153,12 @@ fun loadCardsFromAssets(context: Context): List<Card> {
         return emptyList()
     }
 
-    val gson = GsonBuilder()
-        .registerTypeAdapter(Set::class.java, SetTypeAdapter())
-        .registerTypeAdapter(Type::class.java, TypeTypeAdapter())
-        .registerTypeAdapter(Category::class.java, CategoryTypeAdapter())
-        .create()
+    val json = Json {
+        ignoreUnknownKeys = false // Fail on unknown keys to catch typos/structural issues
+        coerceInputValues = true // Use default values for missing fields
+    }
 
-    val cardListType = object : TypeToken<List<Card>>() {}.type
-    val cardList: List<Card> = gson.fromJson(jsonString, cardListType)
+    val cardList: List<Card> = json.decodeFromString(jsonString)
 
     // Expansion cards are enabled by default, Promo cards are disabled by default
     val cardsWithDefaultEnabled = cardList.map { card ->
@@ -177,73 +170,4 @@ fun loadCardsFromAssets(context: Context): List<Card> {
     }
 
     return cardsWithDefaultEnabled
-}
-
-class SetTypeAdapter : TypeAdapter<Set>() {
-
-    override fun write(out: JsonWriter, value: Set?) {
-        if (value == null) {
-            out.nullValue()
-        } else {
-            out.value(value.name) // Write as the enum name (e.g., "BASE")
-        }
-    }
-
-    override fun read(reader: JsonReader): Set? {
-        if (reader.peek() == JsonToken.NULL) {
-            reader.nextNull()
-            return null
-        }
-        val value = reader.nextString()
-        return Set.valueOf(value.uppercase()) // Convert from string to Set enum
-    }
-}
-
-class TypeTypeAdapter : TypeAdapter<Type>() {
-    override fun write(out: JsonWriter, value: Type?) {
-        if (value == null) {
-            out.nullValue()
-        } else {
-            out.value(value.name) // Write as the enum name (e.g., "ACTION")
-        }
-    }
-
-    override fun read(reader: JsonReader): Type? {
-        if (reader.peek() == JsonToken.NULL) {
-            reader.nextNull()
-            return null
-        }
-        val value = reader.nextString()
-        return Type.valueOf(value.uppercase()) // Convert from string to Type enum
-    }
-}
-
-class CategoryTypeAdapter : TypeAdapter<Category>() {
-    override fun write(out: JsonWriter, value: Category?) {
-        if (value == null) {
-            out.nullValue()
-        } else {
-            out.value(value.name)
-        }
-    }
-
-    override fun read(reader: JsonReader): Category? {
-        if (reader.peek() == JsonToken.NULL) {
-            reader.nextNull()
-            return null
-        }
-        val value = reader.nextString()
-
-        // Match by displayName (case-insensitive)
-        val matchedCategory = Category.entries.find { it.name.equals(value, ignoreCase = true) }
-
-        if (matchedCategory == null) {
-            val errorMsg = "CategoryTypeAdapter: No matching Category enum found for: '$value'\n" +
-                    "Available categories: ${Category.entries.joinToString(", ") { it.name }}"
-            Log.e("CategoryTypeAdapter", errorMsg)
-            throw RuntimeException(errorMsg)
-        }
-
-        return matchedCategory
-    }
 }

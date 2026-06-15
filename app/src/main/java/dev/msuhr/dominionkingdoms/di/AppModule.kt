@@ -11,7 +11,6 @@ import dev.msuhr.dominionkingdoms.data.ExpansionDao
 import dev.msuhr.dominionkingdoms.data.KingdomDao
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.data.repositories.KingdomRepository
-import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -79,11 +78,5 @@ object AppModule {
         cardDao: CardDao
     ): KingdomRepository {
         return KingdomRepository(kingdomDao, cardDao, Dispatchers.IO)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGson(): Gson {
-        return Gson()
     }
 }

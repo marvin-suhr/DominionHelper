@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.dagger.hilt.android)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.services)
@@ -45,8 +46,10 @@ android {
         applicationId = "dev.msuhr.dominionkingdoms"
         minSdk = 24
         targetSdk = 35
-        versionCode = 19
+        versionCode = 20
         versionName = "1.0"
+
+        var dataVersion = 1
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -110,7 +113,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore.preferences.core) // try rem
-    implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
 
     // Networking and Image Loading
     implementation(libs.coil.compose)

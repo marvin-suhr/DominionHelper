@@ -8,14 +8,18 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.google.gson.GsonBuilder
-import com.google.gson.TypeAdapter
-import com.google.gson.annotations.SerializedName
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
-import com.google.gson.stream.JsonWriter
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import java.io.IOException
 
+@Serializable(with = ExpansionSizeSerializer::class)
 enum class ExpansionSize(val text: String) {
     SMALL("Small"),
     MEDIUM("Medium"),
@@ -23,10 +27,11 @@ enum class ExpansionSize(val text: String) {
 }
 
 @Entity(tableName = "expansions")
+@Serializable
 data class Expansion(
     @PrimaryKey val id: String, // e.g., "BASE", "INTRIGUE"
     val name: String,
-    @SerializedName("image_name") val imageName: String
+    @SerialName("image_name") val imageName: String
 )
 
 @Entity(
@@ -41,14 +46,15 @@ data class Expansion(
     ],
     indices = [Index(value = ["expansionId"])]
 )
+@Serializable
 data class Edition(
     @PrimaryKey val id: String, // e.g., "BASE_1E", "BASE_2E"
     val expansionId: String,
     val editionNumber: Int,
-    @SerializedName("isOwned") val isOwned: Boolean,
+    @SerialName("isOwned") val isOwned: Boolean,
     val year: Int,
     val size: ExpansionSize,
-    @SerializedName("image_name") val imageName: String,
+    @SerialName("image_name") val imageName: String,
     val cards: Int,
     val landscapes: Int
 )
@@ -127,6 +133,7 @@ enum class OwnedEdition {
 /**
  * Data class for parsing the hierarchical JSON structure
  */
+@Serializable
 data class ExpansionData(
     val expansions: List<Expansion>,
     val editions: List<Edition>
@@ -147,30 +154,24 @@ fun loadExpansionsFromAssets(context: Context): ExpansionData {
         return ExpansionData(emptyList(), emptyList())
     }
 
-    val gson = GsonBuilder()
-        .registerTypeAdapter(Set::class.java, SetTypeAdapter())
-        .registerTypeAdapter(ExpansionSize::class.java, ExpansionSizeTypeAdapter())
-        .create()
-
-    return gson.fromJson(jsonString, ExpansionData::class.java)
-}
-
-class ExpansionSizeTypeAdapter : TypeAdapter<ExpansionSize>() {
-
-    override fun write(out: JsonWriter, value: ExpansionSize?) {
-        if (value == null) {
-            out.nullValue()
-        } else {
-            out.value(value.name) // Write as the enum name (e.g., "BASE")
-        }
+    val json = Json {
+        ignoreUnknownKeys = false // Fail on unknown keys to catch typos/structural issues
+        coerceInputValues = true // Use default values for missing fields
     }
 
-    override fun read(reader: JsonReader): ExpansionSize? {
-        if (reader.peek() == JsonToken.NULL) {
-            reader.nextNull()
-            return null
-        }
-        val value = reader.nextString()
-        return ExpansionSize.valueOf(value.uppercase()) // Convert from string to Set enum
+    return json.decodeFromString(jsonString)
+}
+
+// Custom serializer for case-insensitive enum deserialization
+object ExpansionSizeSerializer : KSerializer<ExpansionSize> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ExpansionSize", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ExpansionSize) {
+        encoder.encodeString(value.text)
+    }
+
+    override fun deserialize(decoder: Decoder): ExpansionSize {
+        val value = decoder.decodeString()
+        return ExpansionSize.valueOf(value.uppercase())
     }
 }

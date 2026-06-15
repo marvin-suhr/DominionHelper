@@ -19,19 +19,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# Necessary?
-
 # Keep the data model classes
 -keep class dev.msuhr.dominionkingdoms.model.** { *; }
 
-# Keep the TypeAdapters so Gson can use them
--keep class * extends com.google.gson.TypeAdapter
--keepnames class dev.msuhr.dominionkingdoms.model.** { *; }
-
-# Keep Enums (Set, Type, Category) from being renamed
--keepclassmembers enum dev.msuhr.dominionkingdoms.model.** { *; }
-
-# Keep TypeAdapters to ensure they work properly
--keep class dev.msuhr.dominionkingdoms.model.CategoryTypeAdapter { *; }
--keep class dev.msuhr.dominionkingdoms.model.SetTypeAdapter { *; }
--keep class dev.msuhr.dominionkingdoms.model.TypeTypeAdapter { *; }
+# Kotlinx serialization
+-keepattributes *Annotation* # Keep annotations for serialization
+-keep class kotlinx.serialization.json.** { *; }

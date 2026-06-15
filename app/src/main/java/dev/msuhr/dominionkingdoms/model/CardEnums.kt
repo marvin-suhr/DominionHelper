@@ -3,7 +3,15 @@ package dev.msuhr.dominionkingdoms.model
 import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.ui.KingdomViewModel
 import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
+@Serializable(with = SetSerializer::class)
 enum class Set (val imageId: Int = 0, val displayName: String = "") {
     BASE_1E(R.drawable.set_dominion_1e, "Dominion"),
     BASE_2E(R.drawable.set_dominion_2e, "Dominion"),
@@ -31,6 +39,7 @@ enum class Set (val imageId: Int = 0, val displayName: String = "") {
     PROMO(R.drawable.set_promo, "Promo Cards")
 }
 
+@Serializable(with = TypeSerializer::class)
 enum class Type(
     val sortPriority: Int = Int.MAX_VALUE,
     val displayText: String? = null
@@ -92,6 +101,7 @@ enum class Type(
     PILE(sortPriority = 999, displayText = "Pile")
 }
 
+@Serializable(with = CategorySerializer::class)
 enum class Category(val displayName: String) {
     COFFERS("Coffers"),
     VILLAGERS("Villagers"),
@@ -156,4 +166,44 @@ enum class CardDisplayCategory {
 sealed class AppSortType(val text: String) {
     data class Kingdom(val sortType: KingdomViewModel.SortType) : AppSortType(sortType.text)
     data class Library(val sortType: LibraryViewModel.SortType) : AppSortType(sortType.text)
+}
+
+// Custom serializers for case-insensitive enum deserialization
+object SetSerializer : KSerializer<Set> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Set", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Set) {
+        encoder.encodeString(value.name)
+    }
+
+    override fun deserialize(decoder: Decoder): Set {
+        val value = decoder.decodeString()
+        return Set.valueOf(value.uppercase())
+    }
+}
+
+object TypeSerializer : KSerializer<Type> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Type", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Type) {
+        encoder.encodeString(value.name)
+    }
+
+    override fun deserialize(decoder: Decoder): Type {
+        val value = decoder.decodeString()
+        return Type.valueOf(value.uppercase())
+    }
+}
+
+object CategorySerializer : KSerializer<Category> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Category", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Category) {
+        encoder.encodeString(value.name)
+    }
+
+    override fun deserialize(decoder: Decoder): Category {
+        val value = decoder.decodeString()
+        return Category.valueOf(value.uppercase())
+    }
 }

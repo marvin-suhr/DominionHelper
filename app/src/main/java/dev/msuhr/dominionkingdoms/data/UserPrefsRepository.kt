@@ -4,8 +4,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import dev.msuhr.dominionkingdoms.model.*
 import dev.msuhr.dominionkingdoms.ui.DarkAgesMode
 import dev.msuhr.dominionkingdoms.ui.ProsperityMode
@@ -16,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.msuhr.dominionkingdoms.ui.PromoMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -53,9 +52,13 @@ object UserPreferencesKeys {
 
 @Singleton
 class UserPrefsRepository @Inject constructor(
-    @ApplicationContext private val context: Context, // TODO check what the warning means
-    private val gson: Gson
+    @ApplicationContext private val context: Context
 ) {
+    private val json = Json {
+        ignoreUnknownKeys = false // Fail on unknown keys to catch typos/structural issues
+        coerceInputValues = true // Use default values for missing fields
+        encodeDefaults = true
+    }
 
     // Dark mode: null means use system default, true = dark, false = light
     val isDarkMode: Flow<Boolean?> = context.dataStore.data
@@ -263,13 +266,12 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
-    // Generation Rules (stored as Map<String, RuleOption> serialized to JSON via Gson)
+    // Generation Rules (stored as Map<String, RuleOption> serialized to JSON via Kotlinx serialization)
     val activeRules: Flow<Map<String, RuleOption>> = context.dataStore.data
         .map { preferences ->
             val jsonString = preferences[UserPreferencesKeys.GENERATION_RULES] ?: "{}"
             try {
-                val type = object : TypeToken<Map<String, RuleOption>>() {}.type
-                gson.fromJson<Map<String, RuleOption>>(jsonString, type) ?: emptyMap()
+                json.decodeFromString<Map<String, RuleOption>>(jsonString)
             } catch (e: Exception) {
                 emptyMap()
             }
@@ -278,14 +280,13 @@ class UserPrefsRepository @Inject constructor(
     suspend fun setRuleOption(ruleId: String, option: RuleOption) {
         context.dataStore.edit { settings ->
             val currentJson = settings[UserPreferencesKeys.GENERATION_RULES] ?: "{}"
-            val type = object : TypeToken<Map<String, RuleOption>>() {}.type
             val currentMap: MutableMap<String, RuleOption> = try {
-                gson.fromJson<Map<String, RuleOption>>(currentJson, type)?.toMutableMap() ?: mutableMapOf()
+                json.decodeFromString<Map<String, RuleOption>>(currentJson).toMutableMap()
             } catch (e: Exception) {
                 mutableMapOf()
             }
             currentMap[ruleId] = option
-            settings[UserPreferencesKeys.GENERATION_RULES] = gson.toJson(currentMap)
+            settings[UserPreferencesKeys.GENERATION_RULES] = json.encodeToString(currentMap)
         }
     }
 
@@ -305,8 +306,7 @@ class UserPrefsRepository @Inject constructor(
                 )
             } else {
                 try {
-                    val type = object : TypeToken<Map<String, Boolean>>() {}.type
-                    gson.fromJson<Map<String, Boolean>>(jsonString, type) ?: emptyMap()
+                    json.decodeFromString<Map<String, Boolean>>(jsonString)
                 } catch (e: Exception) {
                     emptyMap()
                 }
@@ -318,8 +318,7 @@ class UserPrefsRepository @Inject constructor(
             val currentJson = settings[UserPreferencesKeys.LANDSCAPE_RULES]
             val currentMap: MutableMap<String, Boolean> = if (currentJson != null) {
                 try {
-                    val type = object : TypeToken<Map<String, Boolean>>() {}.type
-                    gson.fromJson<Map<String, Boolean>>(currentJson, type)?.toMutableMap() ?: mutableMapOf()
+                    json.decodeFromString<Map<String, Boolean>>(currentJson).toMutableMap()
                 } catch (e: Exception) {
                     mutableMapOf()
                 }
@@ -334,7 +333,7 @@ class UserPrefsRepository @Inject constructor(
                 )
             }
             currentMap[ruleId] = enabled
-            settings[UserPreferencesKeys.LANDSCAPE_RULES] = gson.toJson(currentMap)
+            settings[UserPreferencesKeys.LANDSCAPE_RULES] = json.encodeToString(currentMap)
         }
     }
 

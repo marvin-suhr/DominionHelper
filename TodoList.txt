@@ -5,6 +5,8 @@ Tapping nav bar should take you to main view
 
 landscape options (0-2)
 
+when rerolling, we need to re-check dependent cards!!!
+
 Harem Alt-VP
 
 in search, split piles come at the very bottom (search "ast")

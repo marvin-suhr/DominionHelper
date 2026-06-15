@@ -14,6 +14,8 @@ import dev.msuhr.dominionkingdoms.utils.Constants.PADDING_SMALL
 
 object Constants {
 
+    val CARD_DATA_VERSION = 1
+
     // UI TODO - SORT
     val PADDING_MINI = 4.dp
     val PADDING_SMALL = 8.dp
