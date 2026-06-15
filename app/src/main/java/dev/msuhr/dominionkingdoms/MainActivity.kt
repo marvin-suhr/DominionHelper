@@ -238,7 +238,7 @@ class MainActivity : ComponentActivity() {
             },
             text = {
                 Text(
-                    text = "Hi and thanks for testing.\nUnfortunately, I had to overthink some database decisions and therefore had to delete user data concerning expansions (ownership status) and cards (banned and favorite state).\n\nSorry for the inconvenience, this shouldn't happen again!"
+                    text = "Hi and thanks for testing!\n\nUnfortunately, I had to overthink some database decisions and therefore had to delete user data concerning cards (banned and favorite state).\n\nSorry for the inconvenience, this shouldn't happen again!"
                 )
             },
             confirmButton = {

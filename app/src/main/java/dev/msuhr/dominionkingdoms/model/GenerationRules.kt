@@ -1,8 +1,11 @@
 package dev.msuhr.dominionkingdoms.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Defines the range for a specific constraint in the kingdom generation process.
  */
+@Serializable
 data class RuleOption(
     val min: Int = 0,
     val max: Int = MAX_CARDS

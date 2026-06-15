@@ -2,7 +2,7 @@ package dev.msuhr.dominionkingdoms.di
 
 import android.app.Application
 import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.data.AppDatabase
@@ -38,11 +38,45 @@ object AppModule {
     ): AppDatabase {
         val databaseName = app.getString(R.string.database_name)
 
+        // Migration from version 2 to 3: Drop and recreate cards table
+        // This preserves expansions (with ownership state) and generated kingdoms
+        val migration2To3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Drop the old cards table
+                db.execSQL("DROP TABLE IF EXISTS cards")
+
+                // Recreate the cards table with the new schema
+                // id is now a primary key from JSON instead of auto-generated
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS cards (
+                        id INTEGER PRIMARY KEY NOT NULL,
+                        name TEXT NOT NULL,
+                        image_name TEXT NOT NULL,
+                        sets TEXT NOT NULL,
+                        types TEXT NOT NULL,
+                        categories TEXT NOT NULL,
+                        cost INTEGER,
+                        overpay INTEGER NOT NULL,
+                        special_cost INTEGER NOT NULL,
+                        potion INTEGER NOT NULL,
+                        debt INTEGER NOT NULL,
+                        supply INTEGER NOT NULL,
+                        landscape INTEGER NOT NULL,
+                        basic INTEGER NOT NULL,
+                        is_enabled INTEGER NOT NULL,
+                        is_favorite INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         return Room.databaseBuilder(
             app.applicationContext,
             AppDatabase::class.java,
             databaseName
-        ).fallbackToDestructiveMigration(true)
+        ).addMigrations(migration2To3)
             .build()
     }
 
