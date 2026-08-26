@@ -8,6 +8,7 @@ import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.model.Expansion
 import dev.msuhr.dominionkingdoms.data.entities.KingdomEntity
 import dev.msuhr.dominionkingdoms.model.Edition
+import dev.msuhr.dominionkingdoms.utils.Constants
 
 @Database(
     entities = [
@@ -16,7 +17,7 @@ import dev.msuhr.dominionkingdoms.model.Edition
         Edition::class,
         KingdomEntity::class
     ],
-    version = 3,
+    version = Constants.DATABASE_VERSION,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

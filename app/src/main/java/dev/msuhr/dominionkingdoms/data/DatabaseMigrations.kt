@@ -40,8 +40,6 @@ object DatabaseMigrations {
             )
 
             // 3. Copy data from old to new.
-            // Note: We copy the existing ID. CardDataUpdater will later reconcile
-            // any ID shifts by matching cards by name.
             db.execSQL(
                 """
                 INSERT INTO cards (

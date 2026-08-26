@@ -14,7 +14,8 @@ import dev.msuhr.dominionkingdoms.utils.Constants.PADDING_SMALL
 
 object Constants {
 
-    const val CARD_DATA_VERSION =4
+    const val CARD_DATA_VERSION = 4
+    const val DATABASE_VERSION = 3
 
 
     // UI TODO - SORT
@@ -43,7 +44,7 @@ object Constants {
     const val DEFAULT_RANDOM_EXPANSION_AMOUNT = 2
     val DEFAULT_VETO_MODE = VetoMode.REROLL_SAME
     const val DEFAULT_NUMBER_OF_CARDS_TO_GENERATE = 10
-    const val MAX_CARDS_TO_GENERATE = 20 // TODO use
+    //const val MAX_CARDS_TO_GENERATE = 20 // TODO use
     const val DEFAULT_LANDSCAPE_COUNT = 2
     const val DEFAULT_LANDSCAPE_DIFFERENT_CATEGORIES = true
     val DEFAULT_DARK_AGES_STARTER_CARDS = DarkAgesMode.TEN_PERCENT_PER_CARD
