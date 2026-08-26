@@ -45,8 +45,6 @@ object UserPreferencesKeys {
     val GENERATION_RULES = stringPreferencesKey("generation_rules")
     val LANDSCAPE_RULES = stringPreferencesKey("landscape_rules")
 
-    val SHOW_CARD_UPDATE_DIALOG = booleanPreferencesKey("show_database_reset_dialog")
-
     val KINGDOM_GRID_VIEW = booleanPreferencesKey("kingdom_grid_view")
 
     val CARD_DATA_VERSION = intPreferencesKey("card_data_version")
@@ -355,17 +353,6 @@ class UserPrefsRepository @Inject constructor(
         context.dataStore.edit { settings ->
             settings.remove(UserPreferencesKeys.GENERATION_RULES)
             settings.remove(UserPreferencesKeys.LANDSCAPE_RULES)
-        }
-    }
-
-    val showCardUpdateDialog: Flow<Boolean> = context.dataStore.data
-        .map { preferences ->
-            preferences[UserPreferencesKeys.SHOW_CARD_UPDATE_DIALOG] ?: false
-        }
-
-    suspend fun setShowCardUpdateDialog(show: Boolean) {
-        context.dataStore.edit { settings ->
-            settings[UserPreferencesKeys.SHOW_CARD_UPDATE_DIALOG] = show
         }
     }
 }

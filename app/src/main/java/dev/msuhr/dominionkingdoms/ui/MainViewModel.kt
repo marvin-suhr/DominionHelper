@@ -29,15 +29,6 @@ class MainViewModel @Inject constructor(
     val useSystemTheme: StateFlow<Boolean> = userPrefsRepository.useSystemTheme
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    val showCardUpdateDialog: StateFlow<Boolean> = userPrefsRepository.showCardUpdateDialog
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    fun dismissCardUpdateDialog() {
-        viewModelScope.launch {
-            userPrefsRepository.setShowCardUpdateDialog(false)
-        }
-    }
-
     init {
         initializeApp()
     }

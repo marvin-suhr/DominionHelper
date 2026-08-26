@@ -23,7 +23,6 @@ class CardDataUpdater @Inject constructor(
                 Log.i("CardDataUpdater", "Updating card data from version $storedVersion to $currentVersion")
                 updateCardData()
                 userPrefsRepository.setCardDataVersion(currentVersion)
-                userPrefsRepository.setShowCardUpdateDialog(true)
                 Log.i("CardDataUpdater", "Card data updated successfully to version $currentVersion")
             } else {
                 Log.d("CardDataUpdater", "Card data is up to date (version $storedVersion)")

@@ -98,17 +98,6 @@ class MainActivity : ComponentActivity() {
                 val currentKingdomViewModel = resolveViewModel<KingdomViewModel>(currentScreen, CurrentScreen.Kingdoms, navBackStackEntry)
                 val currentSettingsViewModel = resolveViewModel<SettingsViewModel>(currentScreen, CurrentScreen.Settings, navBackStackEntry)
 
-                // Observe the new card update state
-                val showUpdateDialog by mainViewModel.showCardUpdateDialog.collectAsStateWithLifecycle()
-                if (showUpdateDialog) {
-                    CardUpdateNotificationDialog(
-                        onDismiss = {
-                            mainViewModel.dismissCardUpdateDialog()
-                            currentKingdomViewModel?.refresh()
-                        }
-                    )
-                }
-
                 val currentViewModel: ScreenViewModel? = when (currentScreen) {
                     CurrentScreen.Library -> currentLibraryViewModel
                     CurrentScreen.Kingdoms -> currentKingdomViewModel
@@ -228,30 +217,4 @@ class MainActivity : ComponentActivity() {
         targetScreen: CurrentScreen,
         navBackStackEntry: NavBackStackEntry?
     ): T? = if (currentScreen == targetScreen && navBackStackEntry != null) hiltViewModel(navBackStackEntry) else null
-
-    @Composable
-    private fun CardUpdateNotificationDialog(onDismiss: () -> Unit) {
-        AlertDialog(
-            onDismissRequest = { /* Force explicit interaction */ },
-            title = {
-                Text(
-                    text = "Database structure updated",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "Hi and thanks for testing!\n\nUnfortunately, I had to overthink some database decisions and therefore had to delete user data concerning cards (banned and favorite state).\n\nSorry for the inconvenience, this shouldn't happen again!"
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(
-                        text = "Alright",
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        )
-    }
 }

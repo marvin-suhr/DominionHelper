@@ -552,9 +552,10 @@ class KingdomViewModel @Inject constructor(
         viewModelScope.launch { kingdomRepository.changeKingdomName(uuid, newName) }
     }
 
-    fun refresh() {
+    // Not needed anymore?
+    /*fun refresh() {
         kingdomRepository.refresh()
-    }
+    }*/
 
     private fun saveKingdomIfNeeded() {
         // Reset the new kingdom flag when navigating back
