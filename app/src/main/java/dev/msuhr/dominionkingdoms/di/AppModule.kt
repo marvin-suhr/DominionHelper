@@ -60,7 +60,7 @@ object AppModule {
                         overpay INTEGER NOT NULL,
                         specialCost INTEGER NOT NULL,
                         potion INTEGER NOT NULL,
-                        debt INTEGER NOT NULL,
+                        debt INTEGER,
                         supply INTEGER NOT NULL,
                         landscape INTEGER NOT NULL,
                         basic INTEGER NOT NULL,

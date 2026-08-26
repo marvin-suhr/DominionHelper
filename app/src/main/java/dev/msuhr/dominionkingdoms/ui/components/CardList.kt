@@ -593,7 +593,7 @@ fun KingdomGridCardItem(
                     if (card.cost != null) {
                         NumberCircle(card.cost.toString())
                     }
-                    if (card.debt != 0) {
+                    if (card.debt != null) {
                         NumberHexagon(card.debt)
                     }
                     if (card.potion) {
@@ -1090,9 +1090,9 @@ fun CardLabels(card: Card, amount: Int, modifier: Modifier) {
             }
 
             // Debt
-            if (card.debt > 0) {
+            if (card.debt != null) {
                 ConditionalSpacer(Constants.PADDING_MINI)
-                NumberHexagon(number = card.debt)
+                NumberHexagon(card.debt)
                 previousElementExists = true
             }
 

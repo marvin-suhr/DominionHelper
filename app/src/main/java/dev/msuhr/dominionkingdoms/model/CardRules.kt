@@ -26,7 +26,7 @@ object CardRules {
         GenerationRule("cost_4", "Cost 4", imageName = "cost_4") { it.cost == 4 },
         GenerationRule("cost_5", "Cost 5", imageName = "cost_5") { it.cost == 5 },
         GenerationRule("cost_6_plus", "Cost 6+", imageName = "cost_6") { (it.cost ?: 0) >= 6 },
-        GenerationRule("cost_debt", "Debt", imageName = "type_victory") { it.debt > 0 },
+        GenerationRule("cost_debt", "Debt", imageName = "type_victory") { it.debt != null },
         GenerationRule("cost_potion", "Potion", imageName = "set_alchemy") { it.potion },
         GenerationRule("cost_overpay", "Overpay", imageName = "cost_plus") { it.overpay }
     )

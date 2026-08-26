@@ -1,11 +1,22 @@
-Young witch / Way of the Mouse / Riverboat - divine wind?
-Sauna + Avanto can generate as single cards
+The way my group plays is that after the first kingdom, each player (usually 4-5 players) can remove one card from the current kingdom, except for the winner who removes two cards. Then we add new cards in randomly. So approximately 50% of the kingdom is refreshed every game. Two features that would be very helpful to support this play style would be:
 
-Tapping nav bar should take you to main view
+- Duplicate a kingdom
+- That way we could start from the same kingdom we had from the last game.
+
+- Edit a kingdom
+- That way we could strike cards from the duplicated kingdom and randomize in the new cards.
+
+
+When migrating, the kingdom list is empty (until reload?)
+
+
+Reroll x cards at the end of a game use case
+
 
 landscape options (0-2)
 
-when rerolling, we need to re-check dependent cards!!!
+in grid view, switch price and expansion icon?
+
 
 Harem / Farm weird ids
 
@@ -13,56 +24,21 @@ warning when always add promo card but 0 promos owned
 
 in search, split piles come at the very bottom (search "ast")
 
-show suggestions when searching type / category substrings
 
-swipe to fav / ban in card list -> option
 classic nav bar colors -> edgetoedge?
 settings focus wenn man hin und hherwechselt (tastatur geht automatisch auf)
 
 allow landscapes in DONT REROLL?
-
-when starting to edit a second name, commit the first one (kingdoms list)
-"- Banned" after banned card names
-
-
 allow promo to be owned but banned?
-
-card.isBannable() {!card.basic && card.supply}
-card.isFavoritable() {...}
-
 allow searching for split pile
-
-Cornucopia guilds
-- Check ownership stuff -> When owning 2nd edition guilds and then cycling through cornucopia, guilds switches to NOT OWNED
-
-debt is 0 but cost can be null (numbercircle takes string while numberhexagon takes int)
 
 dark_ages ist als einziges not all caps in sets (?)
 
-sort popup statt dropdown
-
-Allow forcing a landscape type or expansion
-landscape: allow / exclude / force 1?
-favorite star in gridview
-
-delete toast queue
-
-LAG with many kingdoms uh oh
 
 remove cards > 10 when saving kingdom (maybe warning)
 
-1st 2nd position verschiedene farben
+1st 2nd position verschiedene farben(??)
 
-TOP PRIO
-- Add split piles to additional material?? (upgrade cards sind drin)
-- SAUNA AVANTO GENERATED DISTINCTLY
-
-MID PRIO
-- Traits need to apply to a card
-- If only first edition is owned, always display first edition icon in card list -> komplexer, entweder muss jede Karte die ownership wissen, oder das kingdom muss es wissen
-- 5-6 players
-- Fehlende Kartenkategorien hinzufügen
-- kingdom count
 
 LOW PRIO
 - Island, pirate ship, native village are sorted wrong
@@ -72,20 +48,8 @@ LOW PRIO
   - MaterialTheme.typography.titleLarge/Medium/Small
   - MaterialTheme.typography.bodyLarge/Medium/Small
   - MaterialTheme.typography.labelLarge/Medium/Small
-- Search for can rip results in cantrip
-- card function / extension for "show fav / ban"
 
 LATER
-hints / popup system
-favorite / premade kingdoms tab
-- Custom build kingdom
-    - fab -> modal bottom sheet
-        🎲 Generate Random Kingdom: (Subtitle: "Based on your current expansion settings")
-        🛠️ Build Custom Kingdom: (Subtitle: "Hand-pick 10 cards for a specific setup")
-    - recommended sets
-- VP counter
-- Dominion wiki link (dominionstrategy.com)
-- There will be a problem in gridview when a card costs coins + debt. this is currently only the case for fortune and wedding, which are both not portrait supply cards.
 ADd explanation to each dependent card (dependency)
 - Advanced dependencies (reaction activation depends on certain conditions:
     attack: moat, diplomat, secret chamber, horse traders, guard dog, beggar, caravan guard, shield
@@ -95,9 +59,7 @@ ADd explanation to each dependent card (dependency)
     card with 2+ types gained: falconer
 some materials have different artworks (vp mats) -> randomize which one is shown
 Option: expansion name instead of icon
-Option: require a certain expansion
 Options: random mode als erstes
-reset button for rules, fav / ban
 pin cards after generating + reroll button
 make checkbox clickable in full rectangle
 
@@ -111,81 +73,51 @@ Think about making a map for drawables: "witch" to R.drawable.witch ...
 rename Base to Dominion?
 Range slider: Remove 0 -> none selected = exclude? + default mode all selected + onclick advanced slider?
 show bunte borders option in kingdomlist
-Align YEAR bottom right
 save card counts somewhere? they usually never change -> but they can be disabled hm
 KingdomGenerator - i think fillportraitsevenly can fuck up. if the rules have already added > target cards for an expansion
 for example, require 3 treasures + 3 cost 6 cards. select base and prosperity. generation will sometimes be forced to make 6 prosp cards
 idk if this can and should be fixed?
 Trash card?
-reset fav / ban?
 
 ---
 
 
 
 Can't reroll after banning in kingdom view
-veto toast
 prosperity dark ages: set%, % per card
 
 sort type favorite?
 remove unban "+"? nur in blacklisted cards zeigen
 
-veto vs pick + reroll
+Allow pin and reroll instead of veto
 more compact view
-andere sprachen? db prep / migration
-
-
-landscape detail view no rounded corners
 
 
 1 message for version code 4
 Warning
 This App Bundle contains native code, and you've not uploaded debug symbols. We recommend you upload a symbol file to make your crashes and ANRs easier to analyze and debug. Learn More
 
-
-return to "home" when tapping nav bar icon while in submenu
-
-Instead of hiding veto mode, just show as disabled?
-
-disable veto after switching screen when a kingdom has been generated -> set new to false
-
-when selecting a different expansion, the expansion card list state doesnt reset
+Instead of hiding veto mode, just show as disabled? Or animate
 
 ------------------------------
 
 UI bounds pass
 
 
-TODO NEXT:
-LinkedHashSets?
 
+sort kingdom list items by cost like in app!! Landscape
 
-    sort kingdom list items by cost like in app!! Landscape
+Make sure theres only 10 cards per saved kingdom? Or only show 10?
 
-    Make sure theres only 10 cards per saved kingdom? Or only show 10?
+when generating kingdom, the old one is selected first(??)
 
-    when generating kingdom, the old one is selected first
-
-- Skeleton while loading kingdom?
 - Rethink sorting? Maybe always split by categories, then by name / cost
-- Landscape cards color bar
 
-- Make complex routes to link to speciofic kingdoms? kingdoms://kingdom/1,2,3,4 ... list of card IDs
-
-
-
-GENERATION
-
-- Reload additional cards after veto, constraints berücksichtigen
-- Landscape veto
-- Traits attached to cards
-- Black market, young witch (mark bane!), divine wind, ferryman, riverboat, approaching army
 
 SETTINGS
 
 - Allow generating same type of landscape cards twice (never 2 prophecies / allies?)
 - Only pick landscapes when they were drawn randomly
-- Landscapes to generate setting? Quick way to disable all landscape types
 - Don’t generate any landscape / prefer physical
 - Allow pulling landscapes from expansions that are owned but not selected?
 - Show expansion icon / toggle button in search
@@ -195,23 +127,6 @@ UI
 -> Oben durchsichtige / moderne bar (flexible navigation bar)
 - Invisible top bar / only when header is relevant? (See Auth app)
 - Search pill
-
----
----
-
-TODO RELEASE
-FEATURES
-
-CODE
-
-- Rethink database scheme, especially expansions and editions suck
-- Firebase logs etc
-- Check if loading card by name throws exception if card doesn't exist
-- Use coil, glide or fresco to load images to avoid "image decoding logging dropped" warnings and increase performance
-- Split Kingdom list / library list
-
-UI
-
 - Kingdom landscape view to show all cards images (5x2)? Slider, option
 - Add (enabled) card count to expansion list items?
 - Enable all cards button (settings?) / list blacklisted cards somewhere (”expansion”)
@@ -224,42 +139,13 @@ UI
 
 UX
 
-- Show 5/6 player selector option
 - Wegswipen besser machen (zu leicht getriggert) / edit mode?
-- Make more stuff searchable: debt, landscape, supply, potion, overpay?
+- Make more stuff searchable: landscape, supply, overpay?
 - Show icon or text on second edition / removed cards
 - Swap icon in expansion list depending on expansion owned (Also in kingdom list)
 - Pin cards so they don't get rerolled (swipe left)
-- Karten in Kingdom abhaken? Zum gemeinsamen Karten suchen
 
-CODE
-
-- Use _somethingFromViewModel.update {} instead of setting _something.value
-- Check logs for redundancy
-- I think 'set' property can be removed from sets.json
-
----
----
-
-TODO AFTERWARDS
-
-FEATURES
-
-- VP Counter - attached to kingdom
-- Rating kingdoms, uploading
-- Other languages
-
-CODE
-
-- Applicationscope vs LifecycleScope vs CoroutineScope vs whatever
-- Flows instead of lists from DAO?
-- Try to thin out some parameters (TopBar)
-- Add Modifier to Compostable.parameters
-- Reset scroll state only when selecting different expansion -> oder Liststatemanager hash map für jede expansion
-- kotlin.collections.Set -> MutableSet / SET UMBENENNEN
-
----
----
+------
 
 TODO LOW PRIO
 
@@ -273,9 +159,7 @@ TODO LOW PRIO
 - Make system nav bar smaller
 - Animate clicking on a card -> detail
 - Animate nav bar blob
-- Detail view: 3d card switch effect? Or popup instead of fullscreen
 - Add player count to prefs(?), sortType too?
-- Explanation (i) icon for some stuff
 - Font: Princeps
 - Attack, Prize -> Prize, attack (order)=? Clash, Augur, Wizard too
 - Add source card to dependent cards in library
