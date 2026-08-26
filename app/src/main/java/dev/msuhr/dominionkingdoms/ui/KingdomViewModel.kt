@@ -552,6 +552,10 @@ class KingdomViewModel @Inject constructor(
         viewModelScope.launch { kingdomRepository.changeKingdomName(uuid, newName) }
     }
 
+    fun refresh() {
+        kingdomRepository.refresh()
+    }
+
     private fun saveKingdomIfNeeded() {
         // Reset the new kingdom flag when navigating back
         // The kingdom is already saved continuously after each veto

@@ -81,14 +81,6 @@ class MainActivity : ComponentActivity() {
 
             DominionKingdomsTheme(darkTheme = darkTheme, colorScheme = colorScheme) {
 
-                // Observe the new card update state
-                val showUpdateDialog by mainViewModel.showCardUpdateDialog.collectAsStateWithLifecycle()
-                if (showUpdateDialog) {
-                    CardUpdateNotificationDialog(
-                        onDismiss = { mainViewModel.dismissCardUpdateDialog() }
-                    )
-                }
-
                 // 3. Navigation Setup
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -105,6 +97,17 @@ class MainActivity : ComponentActivity() {
                 val currentLibraryViewModel = resolveViewModel<LibraryViewModel>(currentScreen, CurrentScreen.Library, navBackStackEntry)
                 val currentKingdomViewModel = resolveViewModel<KingdomViewModel>(currentScreen, CurrentScreen.Kingdoms, navBackStackEntry)
                 val currentSettingsViewModel = resolveViewModel<SettingsViewModel>(currentScreen, CurrentScreen.Settings, navBackStackEntry)
+
+                // Observe the new card update state
+                val showUpdateDialog by mainViewModel.showCardUpdateDialog.collectAsStateWithLifecycle()
+                if (showUpdateDialog) {
+                    CardUpdateNotificationDialog(
+                        onDismiss = {
+                            mainViewModel.dismissCardUpdateDialog()
+                            currentKingdomViewModel?.refresh()
+                        }
+                    )
+                }
 
                 val currentViewModel: ScreenViewModel? = when (currentScreen) {
                     CurrentScreen.Library -> currentLibraryViewModel
