@@ -26,7 +26,7 @@ data class Card(
     @SerialName("overpay") val overpay: Boolean = false,
     @SerialName("special_cost") val specialCost: Boolean = false,
     @SerialName("potion") val potion: Boolean = false,
-    @SerialName("debt") val debt: Int?,
+    @SerialName("debt") val debt: Int? = null,
 
     @SerialName("supply") val supply: Boolean = true,
     @SerialName("landscape") val landscape: Boolean = false,
