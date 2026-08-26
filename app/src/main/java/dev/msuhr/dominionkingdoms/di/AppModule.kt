@@ -2,11 +2,10 @@ package dev.msuhr.dominionkingdoms.di
 
 import android.app.Application
 import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.data.AppDatabase
 import dev.msuhr.dominionkingdoms.data.CardDao
+import dev.msuhr.dominionkingdoms.data.DatabaseMigrations
 import dev.msuhr.dominionkingdoms.data.ExpansionDao
 import dev.msuhr.dominionkingdoms.data.KingdomDao
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
@@ -38,45 +37,11 @@ object AppModule {
     ): AppDatabase {
         val databaseName = app.getString(R.string.database_name)
 
-        // Migration from version 2 to 3: Drop and recreate cards table
-        // This preserves expansions (with ownership state) and generated kingdoms
-        val migration2To3 = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // Drop the old cards table
-                db.execSQL("DROP TABLE IF EXISTS cards")
-
-                // Recreate the cards table with the new schema
-                // id is now a primary key from JSON instead of auto-generated
-                db.execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS cards (
-                        id INTEGER PRIMARY KEY NOT NULL,
-                        name TEXT NOT NULL,
-                        imageName TEXT NOT NULL,
-                        sets TEXT NOT NULL,
-                        types TEXT NOT NULL,
-                        categories TEXT NOT NULL,
-                        cost INTEGER,
-                        overpay INTEGER NOT NULL,
-                        specialCost INTEGER NOT NULL,
-                        potion INTEGER NOT NULL,
-                        debt INTEGER,
-                        supply INTEGER NOT NULL,
-                        landscape INTEGER NOT NULL,
-                        basic INTEGER NOT NULL,
-                        isEnabled INTEGER NOT NULL,
-                        isFavorite INTEGER NOT NULL
-                    )
-                    """.trimIndent()
-                )
-            }
-        }
-
         return Room.databaseBuilder(
             app.applicationContext,
             AppDatabase::class.java,
             databaseName
-        ).addMigrations(migration2To3)
+        ).addMigrations(DatabaseMigrations.MIGRATION_2_3)
             .build()
     }
 
