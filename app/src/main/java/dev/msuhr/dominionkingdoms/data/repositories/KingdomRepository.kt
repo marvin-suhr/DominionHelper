@@ -7,9 +7,12 @@ import dev.msuhr.dominionkingdoms.data.mappers.toEntity
 import dev.msuhr.dominionkingdoms.model.Kingdom
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -35,22 +38,35 @@ class KingdomRepository @Inject constructor(
     /**
      * Retrieves all kingdoms from the database as a Flow of domain models.
      * Each KingdomEntity is mapped to a Kingdom domain model.
-     * Note: This mapping involves fetching card details for each kingdom,
-     * which could be performance-intensive for large lists.
      *
-     * We combine it with cardDao.getAllCardsFlow() and a manual refreshTrigger
-     * to ensure that the list refreshes whenever the card database is updated.
+     * Performance Optimization:
+     * Instead of querying the database for cards for each kingdom (N+1 queries),
+     * we fetch all unique card IDs for the entire list in one go and use a
+     * pre-loaded map for mapping.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getAllKingdoms(): Flow<List<Kingdom>> {
         return combine(
             kingdomDao.getAllKingdomsFlow(),
-            cardDao.getAllCardsFlow(),
             refreshTrigger.onStart { emit(Unit) }
-        ) { kingdomEntities, _, _ ->
-            // Map each KingdomEntity to the Kingdom domain model
-            // This requires cardDao for fetching associated cards.
-            kingdomEntities.map { entity ->
-                entity.toDomainModel(cardDao)
+        ) { kingdomEntities, _ ->
+            kingdomEntities
+        }.flatMapLatest { entities ->
+            flow {
+                if (entities.isEmpty()) {
+                    emit(emptyList<Kingdom>())
+                    return@flow
+                }
+
+                // 1. Collect all unique card IDs across all kingdoms
+                val allCardIds = entities.flatMap { it.randomCardIds + it.landscapeCardIds }.toSet()
+
+                // 2. Fetch all cards in one database query
+                val cardMap = cardDao.getCardsByIds(allCardIds.toList()).associateBy { it.id }
+
+                // 3. Map entities to domain models using the pre-loaded map
+                val domainModels = entities.map { it.toDomainModel(cardMap) }
+                emit(domainModels)
             }
         }
     }

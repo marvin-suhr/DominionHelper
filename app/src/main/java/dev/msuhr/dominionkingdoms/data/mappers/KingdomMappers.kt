@@ -17,6 +17,7 @@ fun Kingdom.toEntity(): KingdomEntity {
     )
 }
 
+// Deprecated?
 // Convert KingdomEntity to Kingdom
 suspend fun KingdomEntity.toDomainModel(cardDao: CardDao): Kingdom {
     val randomCardObjects = cardDao.getCardsByIds(this.randomCardIds)
@@ -28,6 +29,31 @@ suspend fun KingdomEntity.toDomainModel(cardDao: CardDao): Kingdom {
 
     val landscapeCardsMap = LinkedHashMap<Card, Int>()
     landscapeCardObjects.forEach { landscapeCardsMap[it] = 1 }
+
+    return Kingdom(
+        randomCards = randomCardsMap,
+        landscapeCards = landscapeCardsMap,
+        uuid = this.uuid,
+        isFavorite = this.isFavorite,
+        creationTimeStamp = this.creationTimeStamp,
+        name = this.name
+    )
+}
+
+/**
+ * Synchronous version of toDomainModel that uses a pre-loaded card map.
+ * This is used for bulk mapping to avoid N+1 database queries.
+ */
+fun KingdomEntity.toDomainModel(cardMap: Map<Int, Card>): Kingdom {
+    val randomCardsMap = LinkedHashMap<Card, Int>()
+    this.randomCardIds.forEach { id ->
+        cardMap[id]?.let { randomCardsMap[it] = 1 }
+    }
+
+    val landscapeCardsMap = LinkedHashMap<Card, Int>()
+    this.landscapeCardIds.forEach { id ->
+        cardMap[id]?.let { landscapeCardsMap[it] = 1 }
+    }
 
     return Kingdom(
         randomCards = randomCardsMap,
