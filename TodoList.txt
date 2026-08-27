@@ -6,6 +6,7 @@ The way my group plays is that after the first kingdom, each player (usually 4-5
 - Edit a kingdom
 - That way we could strike cards from the duplicated kingdom and randomize in the new cards.
 
+kingdoms: wenn keine expansions mit landscape selected sind, warnung nicht anzeigen?
 
 When migrating, the kingdom list is empty (until reload?)
 
