@@ -37,3 +37,6 @@ iosApp/**/xcuserdata/
 iosApp/DerivedData/
 *.xcuserdatad
 shared/build/xcode-frameworks/
+
+# Kotlin Gradle Plugin local caches (KMP metadata transforms, build sessions)
+.kotlin/

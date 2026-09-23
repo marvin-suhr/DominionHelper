@@ -58,6 +58,12 @@ android {
 
         debug {
             applicationIdSuffix = ".debug"
+            // Kingdom sharing against the locally running web service.
+            // Uses `adb reverse tcp:8080 tcp:8080` (USB tunnel to the dev PC) -
+            // re-run that command after reconnecting the device.
+            // Alternative over Wi-Fi: http://192.168.178.188:8080 (needs inbound
+            // firewall rule on the PC) or http://10.0.2.2:8080 on the emulator.
+            buildConfigField("String", "SHARE_SERVICE_BASE_URL", "\"http://127.0.0.1:8080\"")
         }
 
         release {
@@ -77,6 +83,8 @@ android {
                 signingConfigs.getByName("debug")
             }
 
+            buildConfigField("String", "SHARE_SERVICE_BASE_URL", "\"https://kingdoms.msuhr.dev\"")
+
             configure<CrashlyticsExtension> {
                 mappingFileUploadEnabled = true
             }
@@ -88,6 +96,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

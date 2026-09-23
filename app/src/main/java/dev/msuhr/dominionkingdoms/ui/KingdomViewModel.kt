@@ -19,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.msuhr.dominionkingdoms.model.Type
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -46,7 +47,8 @@ class KingdomViewModel @Inject constructor(
     private val kingdomGenerator: KingdomGenerator,
     private val cardDependencyResolver: CardDependencyResolver,
     private val userPrefsRepository: UserPrefsRepository,
-    private val cardDao: dev.msuhr.dominionkingdoms.data.CardDao
+    private val cardDao: dev.msuhr.dominionkingdoms.data.CardDao,
+    private val kingdomSharingService: dev.msuhr.dominionkingdoms.data.KingdomSharingService
 ) : ViewModel(), ScreenViewModel {
 
     // Interface stuff
@@ -431,6 +433,32 @@ class KingdomViewModel @Inject constructor(
 
     fun clearError() {
         _errorMessage.value = null
+    }
+
+    // Kingdom sharing (upload to the web service)
+
+    private val _uploadingKingdomUuid = MutableStateFlow<String?>(null)
+    val uploadingKingdomUuid: StateFlow<String?> = _uploadingKingdomUuid.asStateFlow()
+
+    private val _shareUrlEvent = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val shareUrlEvent: SharedFlow<String> = _shareUrlEvent.asSharedFlow()
+
+    /** Uploads a saved kingdom to the share web service. Result arrives via [shareUrlEvent]. */
+    fun uploadKingdom(kingdom: Kingdom) {
+        if (_uploadingKingdomUuid.value != null) return // one upload at a time
+        _uploadingKingdomUuid.value = kingdom.uuid
+        viewModelScope.launch {
+            try {
+                val url = kingdomSharingService.uploadKingdom(kingdom, _playerCount.value)
+                Log.i("KingdomViewModel", "Uploaded kingdom '${kingdom.name}' -> $url")
+                _shareUrlEvent.tryEmit(url)
+            } catch (e: Exception) {
+                Log.e("KingdomViewModel", "Uploading kingdom '${kingdom.name}' failed", e)
+                triggerError("Uploading failed: ${e.message}")
+            } finally {
+                _uploadingKingdomUuid.value = null
+            }
+        }
     }
 
     // Card dismissal / reroll

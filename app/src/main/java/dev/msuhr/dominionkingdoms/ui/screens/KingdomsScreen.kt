@@ -1,6 +1,7 @@
 package dev.msuhr.dominionkingdoms.ui.screens
 
 import android.util.Log
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -14,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import dev.msuhr.dominionkingdoms.ui.KingdomUiState
 import dev.msuhr.dominionkingdoms.utils.calculatePadding
@@ -49,8 +51,22 @@ fun KingdomsScreen(
 
     val allKingdoms by viewModel.allKingdoms.collectAsState()
     val hasOwnedExpansions by viewModel.hasOwnedExpansions.collectAsState()
+    val uploadingKingdomUuid by viewModel.uploadingKingdomUuid.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    // Upload result: fire the system share sheet with the share URL + confirm via snackbar
+    LaunchedEffect(Unit) {
+        viewModel.shareUrlEvent.collect { url ->
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, "Check out this Dominion kingdom: $url")
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "Share kingdom"))
+            snackbarHostState.showSnackbar(message = "Kingdom uploaded!", duration = SnackbarDuration.Short)
+        }
+    }
 
     Log.i(
         "MainActivity",
@@ -125,6 +141,8 @@ fun KingdomsScreen(
                 onKingdomClicked = { viewModel.selectKingdom(it) },
                 onDeleteClick = { viewModel.deleteKingdom(it.uuid) },
                 onFavoriteClick = { viewModel.toggleFavorite(it) },
+                onUploadClick = { viewModel.uploadKingdom(it) },
+                uploadingKingdomUuid = uploadingKingdomUuid,
                 onKingdomNameChange = { uuid, newName -> viewModel.updateKingdomName(uuid, newName) },
                 listState = kingdomListState,
                 paddingValues = calculatePadding(innerPadding)

@@ -172,6 +172,12 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, BASE_URL);
   const pathName = decodeURIComponent(url.pathname);
 
+  // Access log - to debug reachability from devices
+  const requestStart = Date.now();
+  res.on('finish', () => {
+    console.log(`${new Date().toISOString()} ${req.method} ${pathName} -> ${res.statusCode} (${Date.now() - requestStart}ms) from ${req.socket.remoteAddress}`);
+  });
+
   try {
     // --- API -------------------------------------------------------------
     if (pathName === '/api/kingdoms' && req.method === 'POST') {

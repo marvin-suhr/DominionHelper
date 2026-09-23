@@ -29,11 +29,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Castle
+import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -84,6 +87,8 @@ fun KingdomList(
     onKingdomClicked: (Kingdom) -> Unit,
     onDeleteClick: (Kingdom) -> Unit,
     onFavoriteClick: (Kingdom) -> Unit,
+    onUploadClick: (Kingdom) -> Unit,
+    uploadingKingdomUuid: String?,
     onKingdomNameChange: (kingdomUuid: String, newName: String) -> Unit,
     listState: LazyListState = rememberLazyListState(),
     paddingValues: PaddingValues
@@ -115,6 +120,8 @@ fun KingdomList(
                     onDeleteClick = { onDeleteClick(kingdom) },
                     onKingdomClick = { onKingdomClicked(kingdom) },
                     onFavoriteClick = { onFavoriteClick(kingdom) },
+                    onUploadClick = { onUploadClick(kingdom) },
+                    isUploading = uploadingKingdomUuid == kingdom.uuid,
                     onKingdomNameChange = { uuid, newName -> onKingdomNameChange(uuid, newName) },
                     modifier = Modifier.animateItem()
                 )
@@ -174,6 +181,8 @@ fun KingdomCard(
     onDeleteClick: () -> Unit,
     onKingdomClick: () -> Unit,
     onFavoriteClick: () -> Unit,
+    onUploadClick: () -> Unit,
+    isUploading: Boolean,
     onKingdomNameChange: (uuid: String, newName: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -207,6 +216,8 @@ fun KingdomCard(
                     onFavoriteClick,
                     onKingdomNameChange,
                     onDeleteClick = onDeleteClick,
+                    onUploadClick = onUploadClick,
+                    isUploading = isUploading,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -238,6 +249,8 @@ fun EditableKingdomName(
     onFavoriteClick: () -> Unit,
     onNameChange: (uuid: String, newName: String) -> Unit,
     onDeleteClick: () -> Unit,
+    onUploadClick: () -> Unit,
+    isUploading: Boolean,
     modifier: Modifier = Modifier
 ) {
     val oldName = kingdom.name
@@ -272,6 +285,8 @@ fun EditableKingdomName(
     }
 
     FavoriteButton(onFavoriteClick, kingdom.isFavorite)
+
+    UploadButton(onUploadClick, isUploading)
 
     // Editable Kingdom Name Area
     Box(
@@ -412,6 +427,26 @@ fun FavoriteButton(onFavoriteClick: () -> Unit, isFavorite: Boolean) {
             .clickable { onFavoriteClick() }
             .padding(4.dp)
     )
+}
+
+@Composable
+fun UploadButton(onUploadClick: () -> Unit, isUploading: Boolean) {
+    if (isUploading) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .padding(4.dp)
+                .size(24.dp)
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Outlined.CloudUpload,
+            contentDescription = "Upload kingdom to share it online",
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { onUploadClick() }
+                .padding(4.dp)
+        )
+    }
 }
 
 @Composable

@@ -39,6 +39,12 @@ object Constants {
     // PREFERENCES
     const val USER_PREFERENCES_NAME = "settings_pref"
 
+    // KINGDOM SHARING
+    // Base URL of the share web service (see web/ in this repo) is defined per
+    // build type in app/build.gradle.kts as BuildConfig.SHARE_SERVICE_BASE_URL:
+    //   debug   -> http://192.168.178.188:8080  (PC running 'node web/server.js')
+    //   release -> https://kingdoms.msuhr.dev
+
     // -> UserPrefsRepo?
     val DEFAULT_RANDOM_MODE = RandomMode.EVEN_AMOUNTS
     const val DEFAULT_RANDOM_EXPANSION_AMOUNT = 2
