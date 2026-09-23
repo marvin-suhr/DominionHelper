@@ -20,7 +20,7 @@ kotlin {
 
 android {
     namespace = "dev.msuhr.dominionkingdoms"
-    compileSdk = 36
+    compileSdk = 37
 
     // Needed?
     signingConfigs {
@@ -45,7 +45,7 @@ android {
     defaultConfig {
         applicationId = "dev.msuhr.dominionkingdoms"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 37
         versionCode = 20
         versionName = "1.0"
 
