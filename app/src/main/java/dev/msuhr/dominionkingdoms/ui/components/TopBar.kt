@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.msuhr.dominionkingdoms.CurrentScreen
 import dev.msuhr.dominionkingdoms.model.AppSortType
+import dev.msuhr.dominionkingdoms.model.KingdomSortType
 import dev.msuhr.dominionkingdoms.ui.KingdomViewModel
 import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
 
@@ -127,7 +128,7 @@ fun SortDropdownMenu(
                     )
                 }
             } else if (currentScreen == CurrentScreen.Kingdoms) {
-                KingdomViewModel.SortType.entries.forEach { sortOption ->
+                KingdomSortType.entries.forEach { sortOption ->
                     val appSortType = AppSortType.Kingdom(sortOption)
                     SortDropdownMenuItem(
                         sortType = appSortType,

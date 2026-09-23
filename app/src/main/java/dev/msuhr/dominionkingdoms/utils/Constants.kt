@@ -5,11 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.msuhr.dominionkingdoms.CurrentScreen
-import dev.msuhr.dominionkingdoms.ui.DarkAgesMode
-import dev.msuhr.dominionkingdoms.ui.PromoMode
-import dev.msuhr.dominionkingdoms.ui.ProsperityMode
-import dev.msuhr.dominionkingdoms.ui.RandomMode
-import dev.msuhr.dominionkingdoms.ui.VetoMode
+import dev.msuhr.dominionkingdoms.model.DarkAgesMode
+import dev.msuhr.dominionkingdoms.model.PromoMode
+import dev.msuhr.dominionkingdoms.model.ProsperityMode
+import dev.msuhr.dominionkingdoms.model.RandomMode
+import dev.msuhr.dominionkingdoms.model.VetoMode
 import dev.msuhr.dominionkingdoms.utils.Constants.PADDING_SMALL
 
 object Constants {

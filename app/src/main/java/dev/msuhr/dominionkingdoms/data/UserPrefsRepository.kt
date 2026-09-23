@@ -5,13 +5,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dev.msuhr.dominionkingdoms.model.*
-import dev.msuhr.dominionkingdoms.ui.DarkAgesMode
-import dev.msuhr.dominionkingdoms.ui.ProsperityMode
-import dev.msuhr.dominionkingdoms.ui.RandomMode
-import dev.msuhr.dominionkingdoms.ui.VetoMode
+import dev.msuhr.dominionkingdoms.data.UserPrefsSource
+import dev.msuhr.dominionkingdoms.model.DarkAgesMode
+import dev.msuhr.dominionkingdoms.model.ProsperityMode
+import dev.msuhr.dominionkingdoms.model.PromoMode
+import dev.msuhr.dominionkingdoms.model.RandomMode
+import dev.msuhr.dominionkingdoms.model.VetoMode
 import dev.msuhr.dominionkingdoms.utils.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dev.msuhr.dominionkingdoms.ui.PromoMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
@@ -53,7 +54,7 @@ object UserPreferencesKeys {
 @Singleton
 class UserPrefsRepository @Inject constructor(
     @ApplicationContext private val context: Context
-) {
+) : UserPrefsSource {
     private val json = Json {
         ignoreUnknownKeys = false // Fail on unknown keys to catch typos/structural issues
         coerceInputValues = true // Use default values for missing fields
@@ -88,7 +89,7 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
-    val randomMode: Flow<RandomMode> = context.dataStore.data
+    override val randomMode: Flow<RandomMode> = context.dataStore.data
         .map { preferences ->
             // Read the string value, defaulting to the name of your default enum constant
             val modeName = preferences[UserPreferencesKeys.RANDOM_MODE] ?: Constants.DEFAULT_RANDOM_MODE.name
@@ -106,7 +107,7 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
-    val randomExpansionAmount: Flow<Int> = context.dataStore.data
+    override val randomExpansionAmount: Flow<Int> = context.dataStore.data
         .map { preferences ->
             preferences[UserPreferencesKeys.RANDOM_EXPANSION_AMOUNT] ?: Constants.DEFAULT_RANDOM_EXPANSION_AMOUNT
         }
@@ -118,7 +119,7 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Veto mode
-    val vetoMode: Flow<VetoMode> = context.dataStore.data
+    override val vetoMode: Flow<VetoMode> = context.dataStore.data
         .map { preferences ->
             val modeName = preferences[UserPreferencesKeys.VETO_MODE] ?: Constants.DEFAULT_VETO_MODE.name
             try {
@@ -147,7 +148,7 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Number of cards to generate
-    val numberOfCardsToGenerate: Flow<Int> = context.dataStore.data
+    override val numberOfCardsToGenerate: Flow<Int> = context.dataStore.data
         .map { preferences ->
             preferences[UserPreferencesKeys.NUMBER_OF_CARDS_TO_GENERATE] ?: Constants.DEFAULT_NUMBER_OF_CARDS_TO_GENERATE
         }
@@ -159,7 +160,7 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Landscape categories
-    val landscapeCount: Flow<Int> = context.dataStore.data
+    override val landscapeCount: Flow<Int> = context.dataStore.data
         .map { preferences ->
             preferences[UserPreferencesKeys.LANDSCAPE_COUNT] ?: Constants.DEFAULT_LANDSCAPE_COUNT
         }
@@ -171,7 +172,7 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Landscape different categories
-    val landscapeDifferentCategories: Flow<Boolean> = context.dataStore.data
+    override val landscapeDifferentCategories: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[UserPreferencesKeys.LANDSCAPE_DIFFERENT_CATEGORIES] ?: Constants.DEFAULT_LANDSCAPE_DIFFERENT_CATEGORIES
         }
@@ -182,7 +183,7 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
-    val pickLandscapesFromAnyOwned: Flow<Boolean> = context.dataStore.data
+    override val pickLandscapesFromAnyOwned: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[UserPreferencesKeys.PICK_LANDSCAPES_FROM_ANY_OWNED] ?: true
         }
@@ -194,7 +195,7 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Dark Ages starter cards
-    val darkAgesStarterCardsMode: Flow<DarkAgesMode> = context.dataStore.data
+    override val darkAgesStarterCardsMode: Flow<DarkAgesMode> = context.dataStore.data
         .map { preferences ->
             val modeName = preferences[UserPreferencesKeys.DARK_AGES_STARTER_CARDS] ?: Constants.DEFAULT_DARK_AGES_STARTER_CARDS.name
             try {
@@ -211,7 +212,7 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Prosperity starter cards
-    val prosperityBasicCardsMode: Flow<ProsperityMode> = context.dataStore.data
+    override val prosperityBasicCardsMode: Flow<ProsperityMode> = context.dataStore.data
         .map { preferences ->
             val modeName = preferences[UserPreferencesKeys.PROSPERITY_BASIC_CARDS] ?: Constants.DEFAULT_PROSPERITY_BASIC_CARDS.name
             try {
@@ -227,7 +228,7 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
-    val promoMode: Flow<PromoMode> = context.dataStore.data
+    override val promoMode: Flow<PromoMode> = context.dataStore.data
         .map { preferences ->
             val modeName = preferences[UserPreferencesKeys.PROMO_MODE] ?: Constants.DEFAULT_PROMO_MODE.name
             try {
@@ -243,7 +244,7 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
-    val kingdomSortType: Flow<String> = context.dataStore.data
+    override val kingdomSortType: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[UserPreferencesKeys.KINGDOM_SORT_TYPE] ?: "EXPANSION"
         }
@@ -279,7 +280,7 @@ class UserPrefsRepository @Inject constructor(
     }
 
     // Generation Rules (stored as Map<String, RuleOption> serialized to JSON via Kotlinx serialization)
-    val activeRules: Flow<Map<String, RuleOption>> = context.dataStore.data
+    override val activeRules: Flow<Map<String, RuleOption>> = context.dataStore.data
         .map { preferences ->
             val jsonString = preferences[UserPreferencesKeys.GENERATION_RULES] ?: "{}"
             try {
@@ -304,7 +305,7 @@ class UserPrefsRepository @Inject constructor(
 
     // Landscape Rules (stored as Map<String, Boolean> - whether each landscape type is enabled)
     // Default: all landscape types enabled
-    val landscapeRules: Flow<Map<String, Boolean>> = context.dataStore.data
+    override val landscapeRules: Flow<Map<String, Boolean>> = context.dataStore.data
         .map { preferences ->
             val jsonString = preferences[UserPreferencesKeys.LANDSCAPE_RULES] ?: null
             if (jsonString == null) {

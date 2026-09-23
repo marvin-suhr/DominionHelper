@@ -580,7 +580,7 @@ fun KingdomGridCardItem(
 
                 // Expansion icon
                 Image(
-                    painter = painterResource(id = card.expansionImageId),
+                    painter = painterResource(id = getDrawableId(LocalContext.current, card.expansionImageName)),
                     contentDescription = card.sets.first().displayName,
                     modifier = Modifier.size(30.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
@@ -869,7 +869,7 @@ fun CardView(
                 CardLabels(card, amount, modifier = Modifier.weight(1f))
 
                 if (showIcon) {
-                    CardIcon(card.expansionImageId, card.sets[0].name)
+                    CardIcon(getDrawableId(LocalContext.current, card.expansionImageName), card.sets[0].name)
                 } else if (card.sets.any { it == Set.PROMO } && card.supply) {
                     PromoToggle(card, onToggleEnable)
                 } else if (!card.isEnabled) {

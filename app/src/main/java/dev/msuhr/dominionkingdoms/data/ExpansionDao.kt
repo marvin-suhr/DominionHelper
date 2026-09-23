@@ -5,13 +5,14 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import dev.msuhr.dominionkingdoms.data.ExpansionDataSource
 import dev.msuhr.dominionkingdoms.model.Edition
 import dev.msuhr.dominionkingdoms.model.Expansion
 import dev.msuhr.dominionkingdoms.model.ExpansionWithEditions
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ExpansionDao {
+interface ExpansionDao : ExpansionDataSource {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExpansions(expansions: List<Expansion>)
@@ -37,7 +38,7 @@ interface ExpansionDao {
     fun hasAnyOwnedEdition(): Flow<Boolean>
 
     @Transaction
-    suspend fun getOwnedExpansionsWithEditions(): List<ExpansionWithEditions> {
+    override suspend fun getOwnedExpansionsWithEditions(): List<ExpansionWithEditions> {
         return getAllWithEditionsOnce().filter { it.isAnyOwned() }
     }
 }

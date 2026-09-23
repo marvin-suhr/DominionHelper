@@ -7,11 +7,12 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import dev.msuhr.dominionkingdoms.data.CardDataSource
 import dev.msuhr.dominionkingdoms.model.Card
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface CardDao {
+interface CardDao : CardDataSource {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(cards: List<Card>)
@@ -61,7 +62,7 @@ interface CardDao {
     suspend fun getCardsByExpansion(id: String): List<Card>
 
     @Query("SELECT * FROM cards AS c WHERE supply = 1 AND sets LIKE '%' || :id || '%' AND c.isEnabled = 1")
-    suspend fun getEnabledCardsByExpansion(id: String): List<Card>
+    override suspend fun getEnabledCardsByExpansion(id: String): List<Card>
 
     @Query("SELECT * FROM cards WHERE supply = 1 AND sets LIKE '%' || :id || '%'")
     fun getCardsByExpansionFlow(id: String): Flow<List<Card>>
@@ -77,7 +78,7 @@ interface CardDao {
         AND c.supply = 1
         """
     )
-    suspend fun getPortraitsByExpansion(id: String): List<Card>
+    override suspend fun getPortraitsByExpansion(id: String): List<Card>
 
     @Query(
         """
@@ -89,7 +90,7 @@ interface CardDao {
         ORDER BY RANDOM()
         """
     )
-    suspend fun getSupplyLandscapesByExpansion(id: String): List<Card>
+    override suspend fun getSupplyLandscapesByExpansion(id: String): List<Card>
 
     @Query("SELECT * FROM cards ORDER BY RANDOM() LIMIT :amount")
     suspend fun getRandomCards(amount: Int): List<Card>
@@ -150,7 +151,7 @@ interface CardDao {
         ORDER BY RANDOM()
     """
     )
-    suspend fun getEnabledOwnedCards(): List<Card>
+    override suspend fun getEnabledOwnedCards(): List<Card>
 
     @Query(
         """
@@ -164,7 +165,7 @@ interface CardDao {
         ORDER BY RANDOM()
     """
     )
-    suspend fun getEnabledOwnedSupplyLandscapes(): List<Card>
+    override suspend fun getEnabledOwnedSupplyLandscapes(): List<Card>
 
     @Query(
         """
@@ -179,7 +180,7 @@ interface CardDao {
         LIMIT 1
     """
     )
-    suspend fun getRandomEnabledProphecy(): Card?
+    override suspend fun getRandomEnabledProphecy(): Card?
 
     @Query(
         """
@@ -194,7 +195,7 @@ interface CardDao {
         LIMIT 1
     """
     )
-    suspend fun getRandomEnabledAlly(): Card?
+    override suspend fun getRandomEnabledAlly(): Card?
 
     @Query(
         """
@@ -210,7 +211,7 @@ interface CardDao {
         LIMIT 1
     """
     )
-    suspend fun getSingleCardFromOwnedExpansionsWithExceptions(
+    override suspend fun getSingleCardFromOwnedExpansionsWithExceptions(
         excludedCards: Set<Int>,
         isLandscape: Boolean
     ): Card?
@@ -234,7 +235,7 @@ interface CardDao {
         LIMIT 1
     """
     )
-    suspend fun getSingleCardFromExpansionWithExceptions(
+    override suspend fun getSingleCardFromExpansionWithExceptions(
         set1: String,
         set2: String?,
         excludedCards: Set<Int>,
@@ -264,7 +265,7 @@ interface CardDao {
     suspend fun getCardByName(name: String): Card?
 
     @Query("SELECT * FROM cards WHERE name IN (:names)")
-    suspend fun getCardsByNameList(names: List<String>): List<Card>
+    override suspend fun getCardsByNameList(names: List<String>): List<Card>
 
     @Query("SELECT * FROM cards WHERE id IN (:ids)")
     suspend fun getCardsByIds(ids: List<Int>): List<Card>

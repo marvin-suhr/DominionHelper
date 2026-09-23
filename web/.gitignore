@@ -1,0 +1,6 @@
+# runtime artifacts
+data/kingdoms.db
+data/kingdoms.db-journal
+data/kingdoms.db-shm
+data/kingdoms.db-wal
+node_modules/

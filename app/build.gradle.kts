@@ -93,6 +93,9 @@ android {
 
 dependencies {
 
+    // Shared KMP module (domain logic, also consumed by the iOS app)
+    implementation(project(":shared"))
+
     // Core Android and Kotlin
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

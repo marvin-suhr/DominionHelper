@@ -26,4 +26,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Dominion Kingdoms"
 include(":app")
+include(":shared")
  

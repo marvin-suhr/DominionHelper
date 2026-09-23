@@ -11,6 +11,8 @@ import dev.msuhr.dominionkingdoms.model.AppSortType
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.model.CardNames
 import dev.msuhr.dominionkingdoms.model.Kingdom
+import dev.msuhr.dominionkingdoms.model.KingdomSortType
+import dev.msuhr.dominionkingdoms.model.VetoMode
 import dev.msuhr.dominionkingdoms.data.repositories.KingdomRepository
 import dev.msuhr.dominionkingdoms.utils.insertOrReplaceAtKeyPosition
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,12 +48,6 @@ class KingdomViewModel @Inject constructor(
     private val userPrefsRepository: UserPrefsRepository,
     private val cardDao: dev.msuhr.dominionkingdoms.data.CardDao
 ) : ViewModel(), ScreenViewModel {
-
-    enum class SortType(val text: String) {
-        EXPANSION("Sort by expansion"),
-        ALPHABETICAL("Sort alphabetically"),
-        COST("Sort by cost")
-    }
 
     // Interface stuff
 
@@ -621,3 +617,6 @@ class KingdomViewModel @Inject constructor(
         return newMap
     }
 }
+
+/** Shared sort type - moved to the common domain module (KingdomSortType). */
+typealias SortType = KingdomSortType

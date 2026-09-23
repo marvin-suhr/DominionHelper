@@ -6,7 +6,6 @@ import android.content.Intent
 import android.util.Log
 import dev.msuhr.dominionkingdoms.R
 import dev.msuhr.dominionkingdoms.model.Card
-import kotlin.random.Random
 
 fun getDrawableId(context: Context, imageName: String): Int {
     /* TODO: try this (should be faster)
@@ -41,10 +40,6 @@ fun navigateToActivity(context: Context, activityClass: Class<*>) {
     context.startActivity(intent)
 }
 
-fun isPercentChance(percentChance: Double): Boolean {
-    require(percentChance in 0.0..100.0) { "percentChance must be between 0.0 and 100.0" }
-    return Random.nextDouble(0.0, 100.0) < percentChance
-}
 
 // Find the index of a specific card in a list by id (handles different object instances)
 fun findIndexOfReference(list: List<Any>, target: Card): Int {
@@ -158,10 +153,3 @@ fun <K, V> insertOrReplaceAtKeyPosition(
     return result
 }
 
-fun listToMap(list: List<Card>): LinkedHashMap<Card, Int> {
-    val map = linkedMapOf<Card, Int>()
-    list.forEach { card ->
-        map[card] = 1 // Default value of 1
-    }
-    return map
-}

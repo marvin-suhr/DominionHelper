@@ -10,11 +10,17 @@ import dev.msuhr.dominionkingdoms.data.ExpansionDao
 import dev.msuhr.dominionkingdoms.data.KingdomDao
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.data.repositories.KingdomRepository
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.msuhr.dominionkingdoms.CardDependencyResolver
+import dev.msuhr.dominionkingdoms.KingdomGenerator
 import dev.msuhr.dominionkingdoms.data.CardDataUpdater
+import dev.msuhr.dominionkingdoms.data.CardDataSource
+import dev.msuhr.dominionkingdoms.data.ExpansionDataSource
+import dev.msuhr.dominionkingdoms.data.UserPrefsSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -79,4 +85,41 @@ object AppModule {
     ): KingdomRepository {
         return KingdomRepository(kingdomDao, cardDao, Dispatchers.IO)
     }
+
+    // Domain classes moved to the shared KMP module: their constructors are no
+    // longer @Inject-annotated, so they are provided here.
+
+    @Provides
+    @Singleton
+    fun provideCardDependencyResolver(
+        cardDao: CardDao,
+        userPrefsRepository: UserPrefsRepository
+    ): CardDependencyResolver {
+        return CardDependencyResolver(cardDao, userPrefsRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideKingdomGenerator(
+        cardDao: CardDao,
+        expansionDao: ExpansionDao,
+        userPrefsRepository: UserPrefsRepository,
+        cardDependencyResolver: CardDependencyResolver
+    ): KingdomGenerator {
+        return KingdomGenerator(cardDao, expansionDao, userPrefsRepository, cardDependencyResolver)
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class BindingsModule {
+
+    @Binds
+    abstract fun bindCardDataSource(impl: CardDao): CardDataSource
+
+    @Binds
+    abstract fun bindExpansionDataSource(impl: ExpansionDao): ExpansionDataSource
+
+    @Binds
+    abstract fun bindUserPrefsSource(impl: UserPrefsRepository): UserPrefsSource
 }

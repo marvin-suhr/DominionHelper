@@ -30,3 +30,10 @@ local.properties
 /app/google-services.json
 /app/release
 /gradle/gradle-daemon-jvm.properties
+
+# iOS / Xcode
+iosApp/**/*.xcuserstate
+iosApp/**/xcuserdata/
+iosApp/DerivedData/
+*.xcuserdatad
+shared/build/xcode-frameworks/
