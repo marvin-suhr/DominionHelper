@@ -46,7 +46,7 @@ android {
         applicationId = "dev.msuhr.dominionkingdoms"
         minSdk = 24
         targetSdk = 37
-        versionCode = 20
+        versionCode = 21
         versionName = "1.0"
 
         var dataVersion = 1
