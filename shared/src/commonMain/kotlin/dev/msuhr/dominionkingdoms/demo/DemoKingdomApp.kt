@@ -164,7 +164,7 @@ private fun DemoCardTile(card: Card) {
                 buildString {
                     card.cost?.let { append("$it") }
                     if (card.potion) append(" P")
-                    if (card.debt > 0) append(" ${card.debt}D")
+                    card.debt?.let { if (it > 0) append(" ${card.debt}D") }
                     append("  ")
                     append(card.types.firstOrNull()?.displayText ?: card.types.firstOrNull()?.name?.lowercase()?.replaceFirstChar { it.uppercaseChar() } ?: "")
                 },
