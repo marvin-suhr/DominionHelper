@@ -60,7 +60,7 @@ class CardDataUpdater @Inject constructor(
 
                 updatedCard
             } else {
-                // Brand new card added to the game in an app update
+                // Brand-new card added to the game in an app update
                 newCardsCount++
                 jsonCard
             }

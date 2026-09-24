@@ -1,21 +1,14 @@
 import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    // Kotlin compilation via AGP built-in Kotlin (android.builtInKotlin=true)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.dagger.hilt.android)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.fromTarget("17")
-    }
 }
 
 android {
@@ -95,6 +88,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true // google-services generates string resources
     }
 }
 

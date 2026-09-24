@@ -59,7 +59,7 @@ object Constants {
 
     val START_DESTINATION = CurrentScreen.Kingdoms
 
-    const val KINGDOM_NAME_MAX_LENGTH = 80
+    const val KINGDOM_NAME_MAX_LENGTH = 40
 
 }
 

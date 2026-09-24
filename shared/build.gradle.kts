@@ -10,9 +10,9 @@ plugins {
 
 kotlin {
     // Android target consumed by the :app module
-    androidLibrary {
+    android {
         namespace = "dev.msuhr.dominionkingdoms.shared"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 24
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -32,10 +32,11 @@ kotlin {
             // Room annotations (@Entity, @PrimaryKey, ...) only - the actual Room
             // runtime + compiler stay Android-only in :app for now.
             implementation(libs.androidx.room.common)
-            implementation(compose.runtime)
-            implementation(compose.foundation)
+            implementation(libs.compose.multiplatform.runtime)
+            implementation(libs.compose.multiplatform.foundation)
+            // helper, not direct coordinates: material3 multiplatform has no stable 1.11.x release
             implementation(compose.material3)
-            implementation(compose.ui)
+            implementation(libs.compose.multiplatform.ui)
         }
     }
 

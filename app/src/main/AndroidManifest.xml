@@ -46,20 +46,16 @@
             <!-- Local development links (debug web service via adb reverse /
                  emulator). Not autoVerified - 127.0.0.1 cannot be. Harmless in
                  release builds: nothing serves these hosts publicly. -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:scheme="http"
-                    android:host="127.0.0.1"
-                    android:port="8085" />
-                <data
-                    android:scheme="http"
-                    android:host="10.0.2.2"
-                    android:port="8085" />
+                <data android:scheme="http" />
+                <data android:host="127.0.0.1" android:port="8085" />
+                <data android:scheme="http" />
+                <data android:host="10.0.2.2" android:port="8085" />
             </intent-filter>
         </activity>
     </application>
