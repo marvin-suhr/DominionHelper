@@ -451,7 +451,7 @@ class KingdomViewModel @Inject constructor(
 
     enum class KingdomsTab(val label: String) {
         MY("My kingdoms"),
-        SHARED("Shared"),
+        SHARED("Community"),
     }
 
     private val _kingdomsTab = MutableStateFlow(KingdomsTab.MY)

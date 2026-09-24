@@ -4,6 +4,7 @@ import android.util.Log
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -25,6 +27,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -78,6 +83,26 @@ fun KingdomsScreen(
     val uploadQuota by viewModel.uploadQuota.collectAsState()
     val sharedListState = rememberLazyListState()
 
+    // Infinite scroll: load the next page when the end of the community list
+    // comes into view. SnapshotFlow on the visible index - no sentinel item in
+    // the list (a moving sentinel item re-anchors the viewport to the bottom).
+    val communityLastVisibleIndex by remember {
+        derivedStateOf {
+            sharedListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+        }
+    }
+    LaunchedEffect(sharedKingdomItems.size, sharedHasMore) {
+        snapshotFlow { communityLastVisibleIndex }
+            .collect { lastVisible ->
+                if (sharedHasMore && !isSharedLoading &&
+                    sharedKingdomItems.isNotEmpty() &&
+                    lastVisible >= sharedKingdomItems.size - 3
+                ) {
+                    viewModel.loadSharedKingdoms(reset = false)
+                }
+            }
+    }
+
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -111,6 +136,20 @@ fun KingdomsScreen(
     LaunchedEffect(uiState) {
         if (uiState == KingdomUiState.KINGDOM_LIST) {
             singleKingdomState.scrollToItem(0)
+        }
+    }
+
+    // A newly opened kingdom always starts at the top. Keyed by uuid so
+    // returning from a card detail keeps the previous scroll position.
+    LaunchedEffect(kingdom.uuid) {
+        singleKingdomState.scrollToItem(0)
+    }
+
+    // Entering the community tab starts at the newest kingdom, regardless of
+    // any preserved scroll position from a previous visit.
+    LaunchedEffect(kingdomsTab) {
+        if (kingdomsTab == KingdomViewModel.KingdomsTab.SHARED) {
+            sharedListState.scrollToItem(0)
         }
     }
 
@@ -249,17 +288,30 @@ fun KingdomsScreen(
                         paddingValues = listPadding
                     )
 
-                    KingdomViewModel.KingdomsTab.SHARED -> SharedKingdomList(
-                        kingdoms = sharedKingdomItems,
-                        ratingLabels = sharedRatingLabels,
-                        isLoading = isSharedLoading,
-                        hasMore = sharedHasMore,
-                        onLoadMore = { viewModel.loadSharedKingdoms(reset = false) },
-                        onKingdomClick = { viewModel.openSharedKingdom(it.uuid) },
-                        onFavoriteClick = { viewModel.toggleSharedKingdomFavorite(it.uuid) },
-                        listState = sharedListState,
-                        paddingValues = listPadding
-                    )
+                    KingdomViewModel.KingdomsTab.SHARED -> {
+                        if (sharedKingdomItems.isEmpty() && isSharedLoading) {
+                            // First page still loading - keep the list out of
+                            // composition so it cannot anchor mid-load.
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            SharedKingdomList(
+                                kingdoms = sharedKingdomItems,
+                                ratingLabels = sharedRatingLabels,
+                                isLoading = isSharedLoading,
+                                hasMore = sharedHasMore,
+                                onLoadMore = { viewModel.loadSharedKingdoms(reset = false) },
+                                onKingdomClick = { viewModel.openSharedKingdom(it.uuid) },
+                                onFavoriteClick = { viewModel.toggleSharedKingdomFavorite(it.uuid) },
+                                listState = sharedListState,
+                                paddingValues = listPadding
+                            )
+                        }
+                    }
                 }
             }
         }

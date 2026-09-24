@@ -592,31 +592,8 @@ fun SharedKingdomList(
             )
         }
 
-        if (hasMore) {
-            item(key = "load-more") {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Constants.PADDING_MEDIUM),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(32.dp))
-                    } else {
-                        // Load the next page when this item scrolls into view
-                        LaunchedEffect(kingdoms.size) { onLoadMore() }
-                        Text(
-                            text = "Load more",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .clickable { onLoadMore() }
-                                .padding(Constants.PADDING_MEDIUM)
-                        )
-                    }
-                }
-            }
-        }
+        // Paging is driven by the scroll position (see the caller):
+        // no keyed sentinel item here - an item that moves from the visible
+        // position to the end of the list re-anchors the viewport to the bottom.
     }
 }
