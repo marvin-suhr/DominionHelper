@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dev.msuhr.dominionkingdoms.CardDependencyResolver
 import dev.msuhr.dominionkingdoms.KingdomGenerator
 import dev.msuhr.dominionkingdoms.data.ExpansionDao
+import dev.msuhr.dominionkingdoms.data.UploadLimitException
 import dev.msuhr.dominionkingdoms.data.UserPrefsRepository
 import dev.msuhr.dominionkingdoms.model.AppSortType
 import dev.msuhr.dominionkingdoms.model.Card
@@ -14,7 +15,10 @@ import dev.msuhr.dominionkingdoms.model.Kingdom
 import dev.msuhr.dominionkingdoms.model.KingdomSortType
 import dev.msuhr.dominionkingdoms.model.VetoMode
 import dev.msuhr.dominionkingdoms.data.repositories.KingdomRepository
+import dev.msuhr.dominionkingdoms.ui.components.SharedRatingLabel
+import dev.msuhr.dominionkingdoms.utils.formatTimeShort
 import dev.msuhr.dominionkingdoms.utils.insertOrReplaceAtKeyPosition
+import dev.msuhr.dominionkingdoms.utils.listToMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.msuhr.dominionkingdoms.model.Type
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -106,6 +110,11 @@ class KingdomViewModel @Inject constructor(
     // Track if the current kingdom is newly created (not yet saved) or previously saved
     private val _isNewKingdom = MutableStateFlow(false)
     val isNewKingdom: StateFlow<Boolean> = _isNewKingdom.asStateFlow()
+
+    // True while the displayed kingdom was opened from the shared feed / a
+    // share link. Such kingdoms are read-only: no upload action, no vetoing.
+    private val _isSharedKingdom = MutableStateFlow(false)
+    val isSharedKingdom: StateFlow<Boolean> = _isSharedKingdom.asStateFlow()
 
     // Grid view toggle for kingdom cards
     val isGridViewEnabled: StateFlow<Boolean> = userPrefsRepository.kingdomGridView
@@ -222,6 +231,7 @@ class KingdomViewModel @Inject constructor(
 
                 // The generator now returns a full Kingdom with all dependencies resolved
                 _kingdom.value = generatedKingdom
+                _isSharedKingdom.value = false
                 _isNewKingdom.value = true // Mark as new kingdom for UI purposes (vetoing)
                 switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
 
@@ -418,12 +428,14 @@ class KingdomViewModel @Inject constructor(
             // TODO sort
             _kingdom.value = kingdomWithMetadata
             _isNewKingdom.value = false
+            _isSharedKingdom.value = false
             switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
         }
     }
 
     fun clearKingdom() {
         _kingdom.value = Kingdom()
+        _isSharedKingdom.value = false
         switchUiStateTo(KingdomUiState.KINGDOM_LIST)
     }
 
@@ -435,7 +447,132 @@ class KingdomViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
+    // Shared kingdoms tab (browse kingdoms from the web service)
+
+    enum class KingdomsTab(val label: String) {
+        MY("My kingdoms"),
+        SHARED("Shared"),
+    }
+
+    private val _kingdomsTab = MutableStateFlow(KingdomsTab.MY)
+    val kingdomsTab: StateFlow<KingdomsTab> = _kingdomsTab.asStateFlow()
+
+    private val _sharedKingdoms = MutableStateFlow<List<dev.msuhr.dominionkingdoms.data.KingdomSharingService.SharedKingdomSummary>>(emptyList())
+
+    // cardId -> Card for the preview thumbnails of the shared list
+    private val _sharedPreviewCards = MutableStateFlow<Map<Int, Card>>(emptyMap())
+
+    private val _isSharedLoading = MutableStateFlow(false)
+    val isSharedLoading: StateFlow<Boolean> = _isSharedLoading.asStateFlow()
+
+    private val _sharedHasMore = MutableStateFlow(true)
+    val sharedHasMore: StateFlow<Boolean> = _sharedHasMore.asStateFlow()
+
+    private var sharedOffset = 0
+
+    // Shared kingdoms rendered with the same list item as personal kingdoms:
+    // display Kingdoms built from the feed summaries + resolved preview cards.
+    // Favorites are local-only (DataStore) and separate from personal kingdoms.
+    val sharedKingdomItems: StateFlow<List<Kingdom>> =
+        combine(_sharedKingdoms, _sharedPreviewCards, userPrefsRepository.sharedFavoriteKingdoms) {
+            summaries, previewCards, favoriteIds ->
+            summaries.map { summary ->
+                Kingdom(
+                    randomCards = LinkedHashMap(
+                        summary.previewCardIds.mapNotNull { previewCards[it] }.associateWith { 1 }
+                    ),
+                    uuid = summary.id,
+                    creationTimeStamp = summary.createdAt,
+                    isFavorite = summary.id in favoriteIds,
+                    name = summary.name,
+                )
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val sharedRatingLabels: StateFlow<Map<String, SharedRatingLabel>> = _sharedKingdoms
+        .map { summaries ->
+            summaries.associate { summary ->
+                val average = summary.ratingAverage
+                summary.id to if (average != null) {
+                    SharedRatingLabel("★ $average (${summary.ratingCount})", isRated = true)
+                } else {
+                    SharedRatingLabel("Unrated", isRated = false)
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    fun toggleSharedKingdomFavorite(id: String) {
+        viewModelScope.launch { userPrefsRepository.toggleSharedKingdomFavorite(id) }
+    }
+
+    fun selectKingdomsTab(tab: KingdomsTab) {
+        if (_kingdomsTab.value == tab) return
+        _kingdomsTab.value = tab
+        if (tab == KingdomsTab.SHARED && _sharedKingdoms.value.isEmpty()) {
+            loadSharedKingdoms(reset = true)
+        }
+    }
+
+    fun loadSharedKingdoms(reset: Boolean) {
+        if (_isSharedLoading.value) return
+        if (!reset && !_sharedHasMore.value) return
+        val offset = if (reset) 0 else sharedOffset
+        if (reset) {
+            sharedOffset = 0
+            _sharedHasMore.value = true
+        }
+        viewModelScope.launch {
+            _isSharedLoading.value = true
+            try {
+                val page = kingdomSharingService.getSharedKingdoms(limit = 20, offset = offset)
+                val previewCards = cardDao.getCardsByIds(page.kingdoms.flatMap { it.previewCardIds })
+                    .associateBy { it.id }
+                _sharedPreviewCards.value = if (reset) previewCards else _sharedPreviewCards.value + previewCards
+                _sharedKingdoms.value = if (reset) page.kingdoms else _sharedKingdoms.value + page.kingdoms
+                sharedOffset = offset + page.kingdoms.size
+                _sharedHasMore.value = _sharedKingdoms.value.size < page.total
+            } catch (e: Exception) {
+                Log.e("KingdomViewModel", "Loading shared kingdoms failed", e)
+                triggerError("Could not load shared kingdoms: ${e.message}")
+            } finally {
+                _isSharedLoading.value = false
+            }
+        }
+    }
+
     // Kingdom sharing (upload to the web service)
+
+    /** Set when the user taps Share in the top bar; consumed by the confirmation dialog. */
+    private val _uploadRequested = MutableStateFlow(false)
+    val uploadRequested: StateFlow<Boolean> = _uploadRequested.asStateFlow()
+
+    /** Remaining daily uploads, as last reported by the service. */
+    data class UploadQuotaUi(val remaining: Int?, val limit: Int?, val resetAt: Long?)
+
+    private val _uploadQuota = MutableStateFlow<UploadQuotaUi?>(null)
+    val uploadQuota: StateFlow<UploadQuotaUi?> = _uploadQuota.asStateFlow()
+
+    fun requestUpload() {
+        _uploadRequested.value = true
+        refreshUploadQuota()
+    }
+
+    fun consumeUploadRequest() {
+        _uploadRequested.value = false
+    }
+
+    private fun refreshUploadQuota() {
+        viewModelScope.launch {
+            try {
+                val quota = kingdomSharingService.getUploadQuota()
+                _uploadQuota.value = UploadQuotaUi(quota.remaining, quota.limit, quota.resetAt)
+            } catch (e: Exception) {
+                Log.w("KingdomViewModel", "Could not fetch upload quota", e)
+                // Dialog falls back to generic wording
+            }
+        }
+    }
 
     private val _uploadingKingdomUuid = MutableStateFlow<String?>(null)
     val uploadingKingdomUuid: StateFlow<String?> = _uploadingKingdomUuid.asStateFlow()
@@ -443,15 +580,76 @@ class KingdomViewModel @Inject constructor(
     private val _shareUrlEvent = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val shareUrlEvent: SharedFlow<String> = _shareUrlEvent.asSharedFlow()
 
+    /**
+     * Opens a kingdom shared via the web service (deep link https://kingdoms.msuhr.dev/<id>).
+     * Fetches the kingdom, resolves the card ids/names against the local database and
+     * displays it. Not saved to the user's kingdom list.
+     */
+    private var sharedLoadJob: kotlinx.coroutines.Job? = null
+    fun openSharedKingdom(id: String) {
+        if (sharedLoadJob?.isActive == true) return
+        sharedLoadJob = viewModelScope.launch {
+            try {
+                val dto = kingdomSharingService.getSharedKingdom(id)
+                val randomCards = cardDao.getCardsByIds(dto.randomCards)
+                val landscapeCards = cardDao.getCardsByIds(dto.landscapeCards)
+                val missingCount = (dto.randomCards.size - randomCards.size) +
+                    (dto.landscapeCards.size - landscapeCards.size)
+
+                val kingdom = Kingdom(
+                    randomCards = listToMap(randomCards),
+                    basicCards = loadCardsWithCounts(dto.basicCards),
+                    dependentCards = loadCardsWithCounts(dto.dependentCards),
+                    startingCards = loadCardsWithCounts(dto.startingCards),
+                    landscapeCards = listToMap(landscapeCards),
+                    name = dto.name,
+                )
+
+                _playerCount.value = dto.playerCount.coerceIn(2, 6)
+                _kingdom.value = applyPlayerCountToKingdom(kingdom, _playerCount.value)
+                _isNewKingdom.value = false
+                _isSharedKingdom.value = true
+                switchUiStateTo(KingdomUiState.SINGLE_KINGDOM)
+
+                Log.i("KingdomViewModel", "Opened shared kingdom '$id' (${dto.name})")
+                if (missingCount > 0) {
+                    triggerError("Some cards of this kingdom are newer than your card database ($missingCount skipped).")
+                }
+            } catch (e: Exception) {
+                Log.e("KingdomViewModel", "Opening shared kingdom '$id' failed", e)
+                triggerError("Could not load shared kingdom: ${e.message}")
+            }
+        }
+    }
+
+    /** Resolves card names to cards, keeping the server's order and counts; unknown names are skipped. */
+    private suspend fun loadCardsWithCounts(countsByName: Map<String, Int>): LinkedHashMap<Card, Int> {
+        val result = LinkedHashMap<Card, Int>()
+        if (countsByName.isEmpty()) return result
+        val byName = cardDao.getCardsByNameList(countsByName.keys.toList()).associateBy { it.name }
+        countsByName.forEach { (name, count) -> byName[name]?.let { result[it] = count } }
+        return result
+    }
+
     /** Uploads a saved kingdom to the share web service. Result arrives via [shareUrlEvent]. */
     fun uploadKingdom(kingdom: Kingdom) {
         if (_uploadingKingdomUuid.value != null) return // one upload at a time
         _uploadingKingdomUuid.value = kingdom.uuid
         viewModelScope.launch {
             try {
-                val url = kingdomSharingService.uploadKingdom(kingdom, _playerCount.value)
-                Log.i("KingdomViewModel", "Uploaded kingdom '${kingdom.name}' -> $url")
-                _shareUrlEvent.tryEmit(url)
+                val outcome = kingdomSharingService.uploadKingdom(kingdom, _playerCount.value)
+                Log.i("KingdomViewModel", "Uploaded kingdom '${kingdom.name}' -> ${outcome.url}")
+                _uploadQuota.value = UploadQuotaUi(
+                    outcome.uploadsRemaining, outcome.dailyLimit, outcome.resetAt
+                )
+                _shareUrlEvent.tryEmit(outcome.url)
+            } catch (e: UploadLimitException) {
+                Log.w("KingdomViewModel", "Upload limit reached for '${kingdom.name}'")
+                _uploadQuota.value = UploadQuotaUi(0, e.dailyLimit, e.resetAt)
+                triggerError(
+                    "Daily share limit reached (${e.dailyLimit} per day) - " +
+                        "you can share again after " + formatTimeShort(e.resetAt) + "."
+                )
             } catch (e: Exception) {
                 Log.e("KingdomViewModel", "Uploading kingdom '${kingdom.name}' failed", e)
                 triggerError("Uploading failed: ${e.message}")

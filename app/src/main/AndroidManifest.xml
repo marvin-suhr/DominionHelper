@@ -20,12 +20,46 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.DominionKingdoms"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Kingdom share links: https://kingdoms.msuhr.dev/<id>.
+                 autoVerify requires /.well-known/assetlinks.json on the domain
+                 (served by the kingdoms-web repo, data/assetlinks.json). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="kingdoms.msuhr.dev" />
+            </intent-filter>
+
+            <!-- Local development links (debug web service via adb reverse /
+                 emulator). Not autoVerified - 127.0.0.1 cannot be. Harmless in
+                 release builds: nothing serves these hosts publicly. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="http"
+                    android:host="127.0.0.1"
+                    android:port="8085" />
+                <data
+                    android:scheme="http"
+                    android:host="10.0.2.2"
+                    android:port="8085" />
             </intent-filter>
         </activity>
     </application>

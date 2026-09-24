@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dev.msuhr.dominionkingdoms.model.*
-import dev.msuhr.dominionkingdoms.data.UserPrefsSource
 import dev.msuhr.dominionkingdoms.model.DarkAgesMode
 import dev.msuhr.dominionkingdoms.model.ProsperityMode
 import dev.msuhr.dominionkingdoms.model.PromoMode
@@ -14,6 +13,7 @@ import dev.msuhr.dominionkingdoms.model.VetoMode
 import dev.msuhr.dominionkingdoms.utils.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -49,6 +49,9 @@ object UserPreferencesKeys {
     val KINGDOM_GRID_VIEW = booleanPreferencesKey("kingdom_grid_view")
 
     val CARD_DATA_VERSION = intPreferencesKey("card_data_version")
+
+    val SHARED_FAVORITE_KINGDOMS = stringSetPreferencesKey("shared_favorite_kingdoms")
+    val CLIENT_INSTANCE_ID = stringPreferencesKey("client_instance_id")
 }
 
 @Singleton
@@ -279,6 +282,35 @@ class UserPrefsRepository @Inject constructor(
         }
     }
 
+    // Favorites for kingdoms from the online shared feed. Local-only and
+    // intentionally separate from the personal kingdom favorites in Room.
+    val sharedFavoriteKingdoms: Flow<Set<String>> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.SHARED_FAVORITE_KINGDOMS] ?: emptySet()
+        }
+
+    /**
+     * Persistent anonymous id used by the share service for upload quotas.
+     * Not tied to any account or device identity - regenerated on reinstall.
+     */
+    suspend fun getClientInstanceId(): String {
+        val existing = context.dataStore.data.first()[UserPreferencesKeys.CLIENT_INSTANCE_ID]
+        if (existing != null) return existing
+        val newId = java.util.UUID.randomUUID().toString()
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.CLIENT_INSTANCE_ID] = newId
+        }
+        return newId
+    }
+
+    suspend fun toggleSharedKingdomFavorite(kingdomId: String) {
+        context.dataStore.edit { settings ->
+            val current = settings[UserPreferencesKeys.SHARED_FAVORITE_KINGDOMS] ?: emptySet()
+            settings[UserPreferencesKeys.SHARED_FAVORITE_KINGDOMS] =
+                if (kingdomId in current) current - kingdomId else current + kingdomId
+        }
+    }
+
     // Generation Rules (stored as Map<String, RuleOption> serialized to JSON via Kotlinx serialization)
     override val activeRules: Flow<Map<String, RuleOption>> = context.dataStore.data
         .map { preferences ->
@@ -307,7 +339,7 @@ class UserPrefsRepository @Inject constructor(
     // Default: all landscape types enabled
     override val landscapeRules: Flow<Map<String, Boolean>> = context.dataStore.data
         .map { preferences ->
-            val jsonString = preferences[UserPreferencesKeys.LANDSCAPE_RULES] ?: null
+            val jsonString = preferences[UserPreferencesKeys.LANDSCAPE_RULES]
             if (jsonString == null) {
                 // Default: all landscape types enabled
                 mapOf(

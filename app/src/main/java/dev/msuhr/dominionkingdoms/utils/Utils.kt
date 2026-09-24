@@ -153,3 +153,7 @@ fun <K, V> insertOrReplaceAtKeyPosition(
     return result
 }
 
+/** Formats an epoch-ms timestamp as a short local time, e.g. "18:32". */
+fun formatTimeShort(epochMs: Long): String =
+    java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+        .format(java.util.Date(epochMs))

@@ -49,8 +49,6 @@ android {
         versionCode = 21
         versionName = "1.0"
 
-        var dataVersion = 1
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -59,11 +57,11 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             // Kingdom sharing against the locally running web service.
-            // Uses `adb reverse tcp:8080 tcp:8080` (USB tunnel to the dev PC) -
+            // Uses `adb reverse tcp:8085 tcp:8085` (USB tunnel to the dev PC) -
             // re-run that command after reconnecting the device.
-            // Alternative over Wi-Fi: http://192.168.178.188:8080 (needs inbound
-            // firewall rule on the PC) or http://10.0.2.2:8080 on the emulator.
-            buildConfigField("String", "SHARE_SERVICE_BASE_URL", "\"http://127.0.0.1:8080\"")
+            // Alternative over Wi-Fi: http://192.168.178.188:8085 (needs inbound
+            // firewall rule on the PC) or http://10.0.2.2:8085 on the emulator.
+            buildConfigField("String", "SHARE_SERVICE_BASE_URL", "\"http://127.0.0.1:8085\"")
         }
 
         release {

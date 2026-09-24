@@ -1,5 +1,6 @@
 package dev.msuhr.dominionkingdoms.ui.components
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -29,14 +30,15 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Castle
-import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
+import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -75,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import dev.msuhr.dominionkingdoms.model.Card
 import dev.msuhr.dominionkingdoms.model.Kingdom
+import dev.msuhr.dominionkingdoms.ui.KingdomViewModel
 import dev.msuhr.dominionkingdoms.utils.Constants
 import dev.msuhr.dominionkingdoms.utils.getDrawableId
 import kotlin.text.ifEmpty
@@ -87,8 +90,6 @@ fun KingdomList(
     onKingdomClicked: (Kingdom) -> Unit,
     onDeleteClick: (Kingdom) -> Unit,
     onFavoriteClick: (Kingdom) -> Unit,
-    onUploadClick: (Kingdom) -> Unit,
-    uploadingKingdomUuid: String?,
     onKingdomNameChange: (kingdomUuid: String, newName: String) -> Unit,
     listState: LazyListState = rememberLazyListState(),
     paddingValues: PaddingValues
@@ -120,8 +121,6 @@ fun KingdomList(
                     onDeleteClick = { onDeleteClick(kingdom) },
                     onKingdomClick = { onKingdomClicked(kingdom) },
                     onFavoriteClick = { onFavoriteClick(kingdom) },
-                    onUploadClick = { onUploadClick(kingdom) },
-                    isUploading = uploadingKingdomUuid == kingdom.uuid,
                     onKingdomNameChange = { uuid, newName -> onKingdomNameChange(uuid, newName) },
                     modifier = Modifier.animateItem()
                 )
@@ -181,10 +180,13 @@ fun KingdomCard(
     onDeleteClick: () -> Unit,
     onKingdomClick: () -> Unit,
     onFavoriteClick: () -> Unit,
-    onUploadClick: () -> Unit,
-    isUploading: Boolean,
     onKingdomNameChange: (uuid: String, newName: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // Shared kingdoms render read-only: no rename, no delete; the online
+    // rating replaces the delete button.
+    allowEdit: Boolean = true,
+    showDelete: Boolean = true,
+    rating: SharedRatingLabel? = null,
 ) {
     val cardsToDisplay = kingdom.randomCards.entries.take(10).toList()
     val numColumns = 5
@@ -216,8 +218,9 @@ fun KingdomCard(
                     onFavoriteClick,
                     onKingdomNameChange,
                     onDeleteClick = onDeleteClick,
-                    onUploadClick = onUploadClick,
-                    isUploading = isUploading,
+                    allowEdit = allowEdit,
+                    showDelete = showDelete,
+                    rating = rating,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -249,9 +252,10 @@ fun EditableKingdomName(
     onFavoriteClick: () -> Unit,
     onNameChange: (uuid: String, newName: String) -> Unit,
     onDeleteClick: () -> Unit,
-    onUploadClick: () -> Unit,
-    isUploading: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    allowEdit: Boolean = true,
+    showDelete: Boolean = true,
+    rating: SharedRatingLabel? = null,
 ) {
     val oldName = kingdom.name
     val uuid = kingdom.uuid
@@ -279,14 +283,53 @@ fun EditableKingdomName(
         focusManager.clearFocus()
     }
 
+    val context = LocalContext.current
+
+    // Long-press is the intentional rename gesture; a plain tap just hints
+    // at it. Shared kingdoms are read-only and get no hint.
+    val startNameEditing = {
+        isEditingName = true
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
+
     // Handle back navigation while editing
     BackHandler(enabled = isEditingName) {
         commitNameChange()
     }
 
-    FavoriteButton(onFavoriteClick, kingdom.isFavorite)
+    if (rating != null) {
+        // Shared kingdoms: star left, rating right, and the title centered
+        // across the full card width regardless of the rating label's width.
+        Box(modifier = modifier.fillMaxWidth()) {
+            Text(
+                text = kingdom.name,
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+                    .padding(horizontal = 72.dp)
+            )
+            Row(modifier = Modifier.align(Alignment.CenterStart)) {
+                FavoriteButton(onFavoriteClick, kingdom.isFavorite)
+            }
+            Text(
+                text = rating.text,
+                style = MaterialTheme.typography.labelMedium,
+                color = if (rating.isRated) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(horizontal = 8.dp)
+            )
+        }
+        return
+    }
 
-    UploadButton(onUploadClick, isUploading)
+    FavoriteButton(onFavoriteClick, kingdom.isFavorite)
 
     // Editable Kingdom Name Area
     Box(
@@ -355,18 +398,32 @@ fun EditableKingdomName(
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
+                    .clip(CircleShape)
                     .combinedClickable(
-                        onClick = { },
+                        // padding AFTER clickable: the ripple covers the whole
+                        // padded pill, not just the text bounds
+
+                        onClick = {
+                            if (allowEdit) {
+                                Toast.makeText(
+                                    context,
+                                    "Long-press to edit the name",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
                         onLongClick = {
-                            isEditingName = true
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            if (allowEdit) startNameEditing()
                         }
                     )
+                    .padding(horizontal = 16.dp, vertical = 7.dp)
             )
         }
     }
 
-    DeleteButton(onDeleteClick, isEditingName, commitNameChange)
+    if (showDelete) {
+        DeleteButton(onDeleteClick, isEditingName, commitNameChange)
+    }
 }
 
 @Composable
@@ -430,26 +487,6 @@ fun FavoriteButton(onFavoriteClick: () -> Unit, isFavorite: Boolean) {
 }
 
 @Composable
-fun UploadButton(onUploadClick: () -> Unit, isUploading: Boolean) {
-    if (isUploading) {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .padding(4.dp)
-                .size(24.dp)
-        )
-    } else {
-        Icon(
-            imageVector = Icons.Outlined.CloudUpload,
-            contentDescription = "Upload kingdom to share it online",
-            modifier = Modifier
-                .clip(CircleShape)
-                .clickable { onUploadClick() }
-                .padding(4.dp)
-        )
-    }
-}
-
-@Composable
 fun DeleteButton(onDeleteClick: () -> Unit, isEditing: Boolean, commitNameChange: () -> Unit) {
     if (isEditing) {
         Icon(
@@ -469,5 +506,117 @@ fun DeleteButton(onDeleteClick: () -> Unit, isEditing: Boolean, commitNameChange
                 .clickable { onDeleteClick() }
                 .padding(4.dp)
         )
+    }
+}
+
+@Composable
+fun KingdomsTabToggle(
+    selected: KingdomViewModel.KingdomsTab,
+    onSelect: (KingdomViewModel.KingdomsTab) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
+        KingdomViewModel.KingdomsTab.entries.forEachIndexed { index, tab ->
+            SegmentedButton(
+                selected = selected == tab,
+                onClick = { onSelect(tab) },
+                shape = SegmentedButtonDefaults.itemShape(index, KingdomViewModel.KingdomsTab.entries.size)
+            ) {
+                Text(tab.label)
+            }
+        }
+    }
+}
+
+/** Rating chip shown on shared kingdom rows: a star rating or an "unrated" hint. */
+data class SharedRatingLabel(val text: String, val isRated: Boolean)
+
+@Composable
+fun SharedKingdomList(
+    kingdoms: List<Kingdom>,
+    ratingLabels: Map<String, SharedRatingLabel>,
+    isLoading: Boolean,
+    hasMore: Boolean,
+    onLoadMore: () -> Unit,
+    onKingdomClick: (Kingdom) -> Unit,
+    onFavoriteClick: (Kingdom) -> Unit,
+    listState: LazyListState = rememberLazyListState(),
+    paddingValues: PaddingValues
+) {
+    LazyColumn(
+        contentPadding = paddingValues,
+        state = listState,
+        verticalArrangement = Arrangement.spacedBy(Constants.PADDING_MEDIUM),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (kingdoms.isEmpty() && !isLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillParentMaxHeight()
+                        .fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "No kingdoms shared yet",
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = "Upload one of your kingdoms from its detail view - it will show up here for everyone.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+
+        items(items = kingdoms, key = { it.uuid }) { kingdom ->
+            KingdomCard(
+                kingdom = kingdom,
+                onDeleteClick = { },
+                onKingdomClick = { onKingdomClick(kingdom) },
+                onFavoriteClick = { onFavoriteClick(kingdom) },
+                onKingdomNameChange = { _, _ -> },
+                modifier = Modifier.animateItem(),
+                allowEdit = false,
+                showDelete = false,
+                rating = ratingLabels[kingdom.uuid]
+            )
+        }
+
+        if (hasMore) {
+            item(key = "load-more") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Constants.PADDING_MEDIUM),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                    } else {
+                        // Load the next page when this item scrolls into view
+                        LaunchedEffect(kingdoms.size) { onLoadMore() }
+                        Text(
+                            text = "Load more",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable { onLoadMore() }
+                                .padding(Constants.PADDING_MEDIUM)
+                        )
+                    }
+                }
+            }
+        }
     }
 }

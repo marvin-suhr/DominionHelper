@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material.icons.outlined.ViewModule
@@ -29,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import dev.msuhr.dominionkingdoms.CurrentScreen
 import dev.msuhr.dominionkingdoms.model.AppSortType
 import dev.msuhr.dominionkingdoms.model.KingdomSortType
-import dev.msuhr.dominionkingdoms.ui.KingdomViewModel
 import dev.msuhr.dominionkingdoms.ui.LibraryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +44,8 @@ fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showGridViewToggle: Boolean = false,
     isGridViewEnabled: Boolean = false,
-    onGridViewToggle: () -> Unit = {}
+    onGridViewToggle: () -> Unit = {},
+    customActions: @Composable () -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -68,13 +69,15 @@ fun TopBar(
             }
         },
         actions = {
+            customActions()
+
             var expanded by remember { mutableStateOf(false) }
 
             // Grid view toggle icon (only shown when viewing a kingdom)
             if (showGridViewToggle) {
                 IconButton(onClick = onGridViewToggle) {
                     Icon(
-                        if (isGridViewEnabled) Icons.Outlined.ViewModule else Icons.Filled.ViewList,
+                        if (isGridViewEnabled) Icons.Outlined.ViewModule else Icons.AutoMirrored.Filled.ViewList,
                         contentDescription = if (isGridViewEnabled) "Show list view" else "Show grid view"
                     )
                 }
