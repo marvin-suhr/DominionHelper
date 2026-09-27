@@ -34,9 +34,14 @@ kotlin {
             implementation(libs.androidx.room.common)
             implementation(libs.compose.multiplatform.runtime)
             implementation(libs.compose.multiplatform.foundation)
-            // helper, not direct coordinates: material3 multiplatform has no stable 1.11.x release
-            implementation(compose.material3)
+            // CMP 1.12 removed the compose.material3 DSL helper; the helper
+            // itself pinned this last stable multiplatform material3 release
+            implementation("org.jetbrains.compose.material3:material3:1.9.0")
             implementation(libs.compose.multiplatform.ui)
+            // Frozen at 1.7.3 upstream but compatible with newer CMP - provides
+            // Castle/WebStories etc. for the shared iOS UI.
+            implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+            implementation("org.jetbrains.compose.components:components-resources:1.12.1")
         }
     }
 
@@ -46,5 +51,13 @@ kotlin {
             baseName = "shared"  // must match `import shared` in iosApp/ContentView.swift
             isStatic = true
         }
+    }
+}
+
+// Shared UI resources (card art) live in iosMain/composeResources so they
+// are only packaged into the iOS app, not the Android APK.
+compose {
+    resources {
+        packageOfResClass = "dev.msuhr.dominionkingdoms.shared.res"
     }
 }

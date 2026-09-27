@@ -1,14 +1,22 @@
 package dev.msuhr.dominionkingdoms
 
 import androidx.compose.ui.window.ComposeUIViewController
-import dev.msuhr.dominionkingdoms.data.BUNDLED_CARDS_JSON
-import dev.msuhr.dominionkingdoms.demo.DemoKingdomApp
+import dev.msuhr.dominionkingdoms.data.InMemoryAppDataStore
+import dev.msuhr.dominionkingdoms.shared.AppContainer
+import dev.msuhr.dominionkingdoms.shared.ui.KingdomsApp
 
 /**
  * Entry point called from the Xcode project (iosApp/ContentView.swift).
- * The card data is embedded in the framework (BundledCards.kt) so the iOS
- * demo works without any additional resource setup.
+ * Runs the full shared Dominion Kingdoms UI (a port of the Android app) on
+ * top of in-memory data sources over the bundled card / set databases.
  */
 fun MainViewController() = ComposeUIViewController {
-    DemoKingdomApp(cardsJson = BUNDLED_CARDS_JSON)
+    val store = InMemoryAppDataStore()
+    val container = AppContainer(
+        cardSource = store.cardSource,
+        expansionSource = store.expansionSource,
+        prefsSource = store.prefsSource,
+        kingdomStore = store.kingdomStore
+    )
+    KingdomsApp(container = container)
 }

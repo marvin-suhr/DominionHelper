@@ -1,4 +1,4 @@
-# iOS app shell (prototype)
+# iOS app shell
 
 Xcode project wrapping the shared Kotlin/Compose code. **Opening and building
 this requires macOS with Xcode** (iOS builds cannot run on Windows).
@@ -18,28 +18,52 @@ open iosApp/iosApp.xcodeproj
 Xcode invokes `./gradlew :shared:embedAndSignAppleFrameworkForXcode` during
 each build, so the Swift app always links against the current shared module.
 
+Requires **Apple Silicon** to run on the simulator: Compose Multiplatform 1.11+
+dropped the x86_64 iOS targets, so Intel Macs cannot run the Compose iOS app
+in their simulator (cross-compiling the framework for arm64 from Intel works,
+so development and CI builds are still possible - the app just needs an
+arm64 simulator or a physical device to actually run).
+
 ## What is implemented
 
 - `shared/` - Kotlin Multiplatform module containing the **entire domain
   layer** (models, card data parsing, generation rules, KingdomGenerator,
   CardDependencyResolver) compiled for Android and iOS.
-- `shared/src/iosMain/.../BundledCards.kt` - the card database embedded as a
-  string (no Xcode resource setup needed). Regenerate it when cards.json
-  changes:
-  `python -c "..."` (see root README "Sync points").
-- `shared/src/commonMain/.../demo/DemoKingdomApp.kt` - a minimal Compose UI:
-  **Generate Kingdom** button + card grid, wired to the real generator with
-  in-memory data sources (everything owned/enabled, default settings).
+- `shared/src/commonMain/.../shared/` - the **full app UI ported from the
+  Android app** (theme, navigation, Library/Kingdoms/Settings screens, card
+  tiles, kingdom cards, card detail, settings with range rule picker, and the
+  Library/Kingdom/Settings ViewModels). Lives in the
+  `dev.msuhr.dominionkingdoms.shared.*` packages so it never collides with
+  the Android app's own UI classes.
+- `shared/src/iosMain/.../data/BundledCards.kt` + `BundledSets.kt` - the card
+  and expansion databases embedded as strings (no Xcode resource setup
+  needed). Regenerate when cards.json / sets.json change.
+- `shared/src/iosMain/.../data/InMemoryAppDataStore.kt` - in-memory
+  implementations of the extended data sources (all expansions owned,
+  default settings). Everything (kingdoms, favourites, bans, ownership,
+  settings) works but resets on app restart until persistence is ported.
+- `shared/src/iosMain/composeResources/drawable/` - the 954 card /
+  expansion / category images copied from the Android drawables, packaged
+  into the framework by the Compose resources system (iOS-only, they are
+  not added to the Android APK).
 - This Xcode project (from JetBrains' official CMP template) that hosts the
   Compose UI via `MainViewController()`.
 
+## Differences from the Android app
+
+- Community kingdoms tab, uploading/sharing kingdoms, and the card database
+  auto-updater are Android-only (they need the share web service / network
+  stack). The Community tab shows its empty state.
+- Dynamic color ("Material You") does not exist on iOS - the custom
+  "Official" Dominion palette is always used (light + dark).
+- No persistence yet (next step: Room KMP + DataStore KMP).
+
 ## Not ported yet (roadmap)
 
-- Full UI (Library/Kingdoms/Settings screens) - currently Android-only.
-- Persistence on iOS: Room/DataStore are still Android-only; the demo uses
-  in-memory sources. Next step is moving the Room schema to commonMain
+- Persistence on iOS: Room/DataStore are still Android-only; the iOS app
+  uses in-memory sources. Next step is moving the Room schema to commonMain
   (Room 2.8 supports KMP) with a native SQLite driver, plus DataStore KMP.
-- App icon, assets, App Store targets, CI signing.
+- App Store targets, CI signing (TEAM_ID in `Configuration/Config.xcconfig`).
 
 ## Files
 

@@ -1,0 +1,56 @@
+// GENERATED FILE - do not edit by hand.
+// Mirrors app/src/main/assets/sets.json so the iOS app has the same
+// expansion / edition metadata without Xcode resource setup.
+package dev.msuhr.dominionkingdoms.data
+
+internal const val BUNDLED_SETS_JSON: String = """
+{
+  "expansions": [
+    { "id": "BASE", "name": "Base", "image_name": "set_dominion_2e" },
+    { "id": "INTRIGUE", "name": "Intrigue", "image_name": "set_intrigue_2e" },
+    { "id": "SEASIDE", "name": "Seaside", "image_name": "set_seaside_2e" },
+    { "id": "ALCHEMY", "name": "Alchemy", "image_name": "set_alchemy" },
+    { "id": "PROSPERITY", "name": "Prosperity", "image_name": "set_prosperity_2e" },
+    { "id": "CORNUCOPIA", "name": "Cornucopia", "image_name": "set_cornucopia" },
+    { "id": "HINTERLANDS", "name": "Hinterlands", "image_name": "set_hinterlands_2e" },
+    { "id": "DARK_AGES", "name": "Dark Ages", "image_name": "set_dark_ages" },
+    { "id": "GUILDS", "name": "Guilds", "image_name": "set_guilds" },
+    { "id": "CORNUCOPIA_GUILDS", "name": "Cornucopia & Guilds", "image_name": "set_cornucopia_guilds_2e" },
+    { "id": "ADVENTURES", "name": "Adventures", "image_name": "set_adventures" },
+    { "id": "EMPIRES", "name": "Empires", "image_name": "set_empires" },
+    { "id": "NOCTURNE", "name": "Nocturne", "image_name": "set_nocturne" },
+    { "id": "RENAISSANCE", "name": "Renaissance", "image_name": "set_renaissance" },
+    { "id": "MENAGERIE", "name": "Menagerie", "image_name": "set_menagerie" },
+    { "id": "ALLIES", "name": "Allies", "image_name": "set_allies" },
+    { "id": "PLUNDER", "name": "Plunder", "image_name": "set_plunder" },
+    { "id": "RISING_SUN", "name": "Rising Sun", "image_name": "set_rising_sun" },
+    { "id": "PROMO", "name": "Promo Cards", "image_name": "set_promo" }
+  ],
+  "editions": [
+    { "id": "BASE_1E", "expansionId": "BASE", "editionNumber": 1, "isOwned": false, "year": 2008, "size": "Medium", "image_name": "set_dominion_1e", "cards": 25, "landscapes": 0 },
+    { "id": "BASE_2E", "expansionId": "BASE", "editionNumber": 2, "isOwned": false, "year": 2016, "size": "Medium", "image_name": "set_dominion_2e", "cards": 26, "landscapes": 0 },
+    { "id": "INTRIGUE_1E", "expansionId": "INTRIGUE", "editionNumber": 1, "isOwned": false, "year": 2009, "size": "Medium", "image_name": "set_intrigue_1e", "cards": 25, "landscapes": 0 },
+    { "id": "INTRIGUE_2E", "expansionId": "INTRIGUE", "editionNumber": 2, "isOwned": false, "year": 2016, "size": "Medium", "image_name": "set_intrigue_2e", "cards": 26, "landscapes": 0 },
+    { "id": "SEASIDE_1E", "expansionId": "SEASIDE", "editionNumber": 1, "isOwned": false, "year": 2009, "size": "Medium", "image_name": "set_seaside_1e", "cards": 26, "landscapes": 0 },
+    { "id": "SEASIDE_2E", "expansionId": "SEASIDE", "editionNumber": 2, "isOwned": false, "year": 2022, "size": "Medium", "image_name": "set_seaside_2e", "cards": 27, "landscapes": 0 },
+    { "id": "ALCHEMY", "expansionId": "ALCHEMY", "editionNumber": 1, "isOwned": false, "year": 2010, "size": "Small", "image_name": "set_alchemy", "cards": 12, "landscapes": 0 },
+    { "id": "PROSPERITY_1E", "expansionId": "PROSPERITY", "editionNumber": 1, "isOwned": false, "year": 2010, "size": "Medium", "image_name": "set_prosperity_1e", "cards": 25, "landscapes": 0 },
+    { "id": "PROSPERITY_2E", "expansionId": "PROSPERITY", "editionNumber": 2, "isOwned": false, "year": 2022, "size": "Medium", "image_name": "set_prosperity_2e", "cards": 25, "landscapes": 0 },
+    { "id": "CORNUCOPIA_1E", "expansionId": "CORNUCOPIA", "editionNumber": 1, "isOwned": false, "year": 2011, "size": "Small", "image_name": "set_cornucopia", "cards": 13, "landscapes": 0 },
+    { "id": "HINTERLANDS_1E", "expansionId": "HINTERLANDS", "editionNumber": 1, "isOwned": false, "year": 2011, "size": "Medium", "image_name": "set_hinterlands_1e", "cards": 26, "landscapes": 0 },
+    { "id": "HINTERLANDS_2E", "expansionId": "HINTERLANDS", "editionNumber": 2, "isOwned": false, "year": 2022, "size": "Medium", "image_name": "set_hinterlands_2e", "cards": 26, "landscapes": 0 },
+    { "id": "DARK_AGES", "expansionId": "DARK_AGES", "editionNumber": 1, "isOwned": false, "year": 2012, "size": "Large", "image_name": "set_dark_ages", "cards": 35, "landscapes": 0 },
+    { "id": "GUILDS_1E", "expansionId": "GUILDS", "editionNumber": 1, "isOwned": false, "year": 2013, "size": "Small", "image_name": "set_guilds", "cards": 13, "landscapes": 0 },
+    { "id": "CORNUCOPIA_GUILDS_2E", "expansionId": "CORNUCOPIA_GUILDS", "editionNumber": 2, "isOwned": false, "year": 2024, "size": "Medium", "image_name": "set_cornucopia_guilds_2e", "cards": 26, "landscapes": 0 },
+    { "id": "ADVENTURES", "expansionId": "ADVENTURES", "editionNumber": 1, "isOwned": false, "year": 2015, "size": "Large", "image_name": "set_adventures", "cards": 30, "landscapes": 20 },
+    { "id": "EMPIRES", "expansionId": "EMPIRES", "editionNumber": 1, "isOwned": false, "year": 2016, "size": "Medium", "image_name": "set_empires", "cards": 24, "landscapes": 0 },
+    { "id": "NOCTURNE", "expansionId": "NOCTURNE", "editionNumber": 1, "isOwned": false, "year": 2017, "size": "Large", "image_name": "set_nocturne", "cards": 33, "landscapes": 0 },
+    { "id": "RENAISSANCE", "expansionId": "RENAISSANCE", "editionNumber": 1, "isOwned": false, "year": 2018, "size": "Medium", "image_name": "set_renaissance", "cards": 25, "landscapes": 20 },
+    { "id": "MENAGERIE", "expansionId": "MENAGERIE", "editionNumber": 1, "isOwned": false, "year": 2020, "size": "Large", "image_name": "set_menagerie", "cards": 30, "landscapes": 40 },
+    { "id": "ALLIES", "expansionId": "ALLIES", "editionNumber": 1, "isOwned": false, "year": 2022, "size": "Large", "image_name": "set_allies", "cards": 31, "landscapes": 23 },
+    { "id": "PLUNDER", "expansionId": "PLUNDER", "editionNumber": 1, "isOwned": false, "year": 2022, "size": "Large", "image_name": "set_plunder", "cards": 40, "landscapes": 30 },
+    { "id": "RISING_SUN", "expansionId": "RISING_SUN", "editionNumber": 1, "isOwned": false, "year": 2024, "size": "Medium", "image_name": "set_rising_sun", "cards": 25, "landscapes": 25 },
+    { "id": "PROMO", "expansionId": "PROMO", "editionNumber": 1, "isOwned": false, "year": 2008, "size": "Small", "image_name": "set_promo", "cards": 11, "landscapes": 1 }
+  ]
+}
+"""
