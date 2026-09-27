@@ -18,11 +18,17 @@ open iosApp/iosApp.xcodeproj
 Xcode invokes `./gradlew :shared:embedAndSignAppleFrameworkForXcode` during
 each build, so the Swift app always links against the current shared module.
 
-Requires **Apple Silicon** to run on the simulator: Compose Multiplatform 1.11+
-dropped the x86_64 iOS targets, so Intel Macs cannot run the Compose iOS app
-in their simulator (cross-compiling the framework for arm64 from Intel works,
-so development and CI builds are still possible - the app just needs an
-arm64 simulator or a physical device to actually run).
+Requires **Apple Silicon** or a **Metal-capable Intel Mac** to run in the
+simulator: CMP 1.8+ renders iOS via Metal only, so GPU-less macOS VMs (VMware
+etc.) crash with "Metal is not supported on this system" in *any* modern
+Compose version. To keep x86_64 simulator support, the toolchain is
+temporarily downgraded (Kotlin 2.2.21 + CMP 1.10.3 + kotlinx-serialization
+1.9.0 - see the DOWNGRADED comments in `gradle/libs.versions.toml`), and
+`iosX64()` is enabled again in `shared/build.gradle.kts`.
+Undo: `git checkout -- gradle/libs.versions.toml shared/build.gradle.kts`
+(restores Kotlin 2.4.20 + CMP 1.12.1), then re-add `iosX64()` removal if
+desired. Cross-compiling the framework for arm64 from Intel still works, so
+development and CI builds are possible without a Metal host.
 
 ## What is implemented
 

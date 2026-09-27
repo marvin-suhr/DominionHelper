@@ -641,13 +641,10 @@ private fun DismissableCard(
             initialValue = SwipeToDismissBoxValue.Settled,
             density = density,
             confirmValueChange = { dismissValue ->
-                if (dismissValue == SwipeToDismissBoxValue.Settled) {
-                    true
-                } else {
-                    when (dismissValue) {
-                        SwipeToDismissBoxValue.StartToEnd -> currentEnableStartToEnd
-                        SwipeToDismissBoxValue.EndToStart -> currentEnableEndToStart
-                    }
+                when (dismissValue) {
+                    SwipeToDismissBoxValue.Settled -> true
+                    SwipeToDismissBoxValue.StartToEnd -> currentEnableStartToEnd
+                    SwipeToDismissBoxValue.EndToStart -> currentEnableEndToStart
                 }
             },
             positionalThreshold = { totalDistance -> totalDistance * 0.25f }

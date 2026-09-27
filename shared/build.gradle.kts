@@ -21,9 +21,11 @@ kotlin {
 
     // iOS targets. Compiling these requires macOS + Xcode:
     //   ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
-    // (iosX64 dropped upstream - CMP 1.12 no longer publishes it)
+    // iosX64 is back (after being dropped upstream) so the app can also run
+    // in the simulator on Intel Macs - requires the CMP/Kotlin downgrade.
     iosArm64()
     iosSimulatorArm64()
+    iosX64()
 
     sourceSets {
         commonMain.dependencies {
@@ -41,7 +43,8 @@ kotlin {
             // Frozen at 1.7.3 upstream but compatible with newer CMP - provides
             // Castle/WebStories etc. for the shared iOS UI.
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
-            implementation("org.jetbrains.compose.components:components-resources:1.12.1")
+            // must match the composeMultiplatform version in libs.versions.toml
+            implementation("org.jetbrains.compose.components:components-resources:1.10.3")
         }
     }
 
